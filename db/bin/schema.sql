@@ -1,0 +1,65 @@
+--  FAA personnel database
+
+DROP DATABASE IF EXISTS mojo;
+CREATE DATABASE mojo;
+USE mojo;
+GRANT ALL PRIVILEGES ON mojo TO 'ec2-user'@'localhost';
+GRANT ALL PRIVILEGES ON mojo.* TO 'ec2-user'@'localhost';
+GRANT ALL PRIVILEGES ON mojo TO 'adbuser'@'localhost';
+GRANT ALL PRIVILEGES ON mojo.* TO 'adbuser'@'localhost';
+
+-- **************************************
+-- ****                              ****
+-- ****        MOJO  DATABASE        ****
+-- ****                              ****
+-- **************************************
+
+CREATE TABLE People (
+    PID BIGINT NOT NULL AUTO_INCREMENT,                         -- person id
+    FirstName VARCHAR(100) DEFAULT '',
+    MiddleName VARCHAR(100) DEFAULT '',
+    LastName VARCHAR(100) DEFAULT '',
+    PreferredName VARCHAR(100) DEFAULT '',
+    JobTitle VARCHAR(100) DEFAULT '',
+    OfficePhone VARCHAR(100) DEFAULT '',
+    OfficeFax VARCHAR(100) DEFAULT '',
+    Email1 VARCHAR(50) DEFAULT '',
+    MailAddress VARCHAR(50) DEFAULT '',
+    MailAddress2 VARCHAR(50) DEFAULT '',
+    MailCity VARCHAR(100) DEFAULT '',
+    MailState VARCHAR(50) DEFAULT '',
+    MailPostalCode VARCHAR(50) DEFAULT '',
+    MailCountry VARCHAR(50) DEFAULT '',
+    RoomNumber VARCHAR(50) DEFAULT '',
+    MailStop VARCHAR(100) DEFAULT '',
+    Status SMALLINT DEFAULT 0,                                  -- 0 = they're in, 1 = they've opted out
+    OptOutDate DATE NOT NULL DEFAULT '1970-01-01 00:00:00',     -- if State is 1, the date/time when the person opted out
+    LastModTime TIMESTAMP,
+    LastModBy BIGINT NOT NULL DEFAULT 0,
+    PRIMARY KEY (PID)     
+);      
+
+CREATE TABLE EGroup (
+    GID BIGINT NOT NULL AUTO_INCREMENT,                         -- Group ID
+    GroupName VARCHAR(50) NOT NULL DEFAULT '',                  -- Name of the group
+    LastModTime TIMESTAMP,
+    LastModBy BIGINT NOT NULL DEFAULT 0,
+    PRIMARY KEY (GID)     
+);
+
+CREATE TABLE PGroup (
+    PID BIGINT NOT NULL DEFAULT 0,                              -- person id
+    GID BIGINT NOT NULL DEFAULT 0,                              -- group
+    LastModTime TIMESTAMP,
+    LastModBy BIGINT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE DataUpdate (
+    DUID BIGINT NOT NULL AUTO_INCREMENT,
+    GID BIGINT NOT NULL DEFAULT 0,                              -- group
+    DtStart DATE NOT NULL DEFAULT '1970-01-01 00:00:00',
+    DtStop DATE NOT NULL DEFAULT '1970-01-01 00:00:00',
+    LastModTime TIMESTAMP,
+    LastModBy BIGINT NOT NULL DEFAULT 0,
+    PRIMARY KEY(DUID)
+);
