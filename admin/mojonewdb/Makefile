@@ -1,22 +1,20 @@
 TOP=../..
-
-
-NEWDBPROG="mojonewdb"
+THISDIR="mojonewdb"
 
 mojonewdb: *.sh
 
 clean:
-	rm -f ${NEWDBPROG} fail
-	@echo "*** Clean completed in admin/${NEWDBPROG} ***"
+	rm -f ${THISDIR} fail
+	@echo "*** Clean completed in admin/${THISDIR} ***"
 
 install: mojonewdb
-	@echo "*** install completed in admin/${NEWDBPROG} ***"
+	@echo "*** install completed in admin/${THISDIR} ***"
 
 package: mojonewdb
 	touch fail
-	cp ${NEWDBPROG} ${TOP}/tmp/mojo/
-	@echo "*** Packaging completed in admin/${NEWDBPROG} ***"
+	cp ${THISDIR} ${TOP}/tmp/mojo/
+	@echo "*** Packaging completed in admin/${THISDIR} ***"
 	rm -f fail
 
 test:
-	@echo "*** Testing completed in admin/${NEWDBPROG} ***"
+	@echo "*** Testing completed in admin/${THISDIR} ***"

@@ -1,5 +1,7 @@
-DIRS = util db scrapers admin mojosrv
+DIRS = util db scrapers admin mojosrv test
 RELDIR = ./tmp/mojo
+
+.PHONY:  test
 
 mojo:
 	for dir in $(DIRS); do make -C $$dir;done
@@ -13,7 +15,11 @@ package:
 	mkdir -p ./tmp/mojo
 	for dir in $(DIRS); do make -C $$dir package;done
 
-all: clean mojo package stats
+test:
+	for dir in $(DIRS); do make -C $$dir test;done
+	cat test/testreport.txt
+
+all: clean mojo package test stats
 
 stats:
 	@echo "GO SOURCE CODE STATISTICS"

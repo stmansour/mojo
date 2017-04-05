@@ -125,7 +125,7 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 	)
 
 	order := "PID ASC"                                                   // default ORDER
-	q := fmt.Sprintf("SELECT %s FROM Person ", db.DB.DBFields["Person"]) // the fields we want
+	q := fmt.Sprintf("SELECT %s FROM People ", db.DB.DBFields["People"]) // the fields we want
 	qw := fmt.Sprintf("PID>0")                                           // will probably change this at some point
 	q += "WHERE " + qw + " ORDER BY "
 	if len(d.wsSearchReq.Sort) > 0 {
@@ -143,7 +143,7 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 	q += fmt.Sprintf(" LIMIT %d OFFSET %d", d.wsSearchReq.Limit, d.wsSearchReq.Offset)
 	fmt.Printf("rowcount query conditions: %s\ndb query = %s\n", qw, q)
 
-	g.Total, err = GetRowCount("Person", qw)
+	g.Total, err = GetRowCount("People", qw)
 	if err != nil {
 		fmt.Printf("Error from GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
@@ -163,7 +163,7 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 		var q PersonGrid
 		p, err := db.ReadPersonFromRows(rows)
 		if err != nil {
-			fmt.Printf("%s.  Error reading person: %s\n", funcname, err.Error())
+			fmt.Printf("%s.  Error reading Person: %s\n", funcname, err.Error())
 		}
 		util.MigrateStructVals(&p, &q)
 		g.Records = append(g.Records, q)

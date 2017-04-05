@@ -374,7 +374,7 @@ genericlogcheck() {
 startMojoServer () {
 	if [ ${MANAGESERVER} -eq 1 ]; then
 		stopMojoServer
-		${MOJOBIN}/mojosrv -p ${MOJOPORT} > ${MOJOBIN}/rrlog 2>&1 &
+		${MOJOBIN}/mojosrv -p ${MOJOPORT} > ${MOJOBIN}/mojolog 2>&1 &
 		sleep 1
 	fi
 }

@@ -9,4 +9,7 @@ clean:
 package:
 	for dir in $(DIRS); do make -C $$dir package;done
 
-all: clean scrapers package
+test:
+	for dir in $(DIRS); do make -C $$dir test;done
+
+all: clean scrapers package test
