@@ -13,4 +13,10 @@ package:
 	mkdir -p ./tmp/mojo
 	for dir in $(DIRS); do make -C $$dir package;done
 
-all: clean mojo package
+all: clean mojo package stats
+
+stats:
+	@echo "GO SOURCE CODE STATISTICS"
+	@echo "----------------------------------------"
+	@find . -name "*.go" | srcstats
+	@echo "----------------------------------------"
