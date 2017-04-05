@@ -6,6 +6,7 @@ scrapers:
 clean:
 	for dir in $(DIRS); do make -C $$dir clean;done
 
-install:
+package:
+	for dir in $(DIRS); do make -C $$dir package;done
 
-all: clean scrapers
+all: clean scrapers package

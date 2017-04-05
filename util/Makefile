@@ -8,6 +8,7 @@ util: *.go
 clean:
 	go clean
 
-install:
+package:
+	@echo "*** util completed package **"
 
 all: clean util

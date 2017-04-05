@@ -1,4 +1,4 @@
-package faa
+package main
 
 import (
 	"fmt"

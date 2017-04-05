@@ -1,4 +1,4 @@
-package faa
+package main
 
 import (
 	"bufio"
@@ -58,7 +58,7 @@ func parseProfileMatrix(m [][]string, p *db.Person) {
 	// Name: (16,0)   that is, row 16 column 0
 	var first, middle, last string
 	parseProfileName(m[16][0], &first, &middle, &last)
-	fmt.Printf("Name parsed as: first: %s, middle: %s, last: %s\n", first, middle, last)
+	// fmt.Printf("Name parsed as: first: %s, middle: %s, last: %s\n", first, middle, last)
 
 	// if the first names do not match, assume that the smaller of the two is the Preferred Name
 	if first != p.FirstName {
@@ -78,9 +78,12 @@ func parseProfileMatrix(m [][]string, p *db.Person) {
 	}
 
 	phone := strings.TrimSpace(m[23][1])
-	fmt.Printf("Office phone: %s\n", phone)
 	if phone != p.OfficePhone {
-		fmt.Printf("Search OfficePhone does not match Profile OfficePhone: %s vs %s\n", p.OfficePhone, phone)
+		// look for innocuous miscompares, for example:  N/A  vs  ""
+		if p.OfficePhone != "N/A" || len(phone) != 0 {
+			// could be a problem
+			fmt.Printf("Search OfficePhone does not match Profile OfficePhone: %s vs %s\n", p.OfficePhone, phone)
+		}
 	}
 
 	// room number is at row 18. Mailstop is row 19
@@ -98,10 +101,13 @@ func parseProfileMatrix(m [][]string, p *db.Person) {
 		}
 	}
 	parseCityStateZip(addr, p)
-	fmt.Printf("Mail Address:    %s\n", p.MailAddress)
-	fmt.Printf("Mail City:       %s\n", p.MailCity)
-	fmt.Printf("Mail State:      %s\n", p.MailState)
-	fmt.Printf("Mail PostalCode: %s\n", p.MailPostalCode)
+
+	if false { // debug printing
+		fmt.Printf("Mail Address:    %s\n", p.MailAddress)
+		fmt.Printf("Mail City:       %s\n", p.MailCity)
+		fmt.Printf("Mail State:      %s\n", p.MailState)
+		fmt.Printf("Mail PostalCode: %s\n", p.MailPostalCode)
+	}
 }
 
 // removeTags returns a string in which all tags within the supplied string have been removed
@@ -175,7 +181,7 @@ func parseCellData(s string) []string {
 // PreferredName
 //-----------------------------------------------------------------------------
 func parseProfileHTML(s string, p *db.Person) {
-	fmt.Printf("Entered parseProfileHTML for: %s %s %s\n", p.FirstName, p.MiddleName, p.LastName)
+	//fmt.Printf("Entered parseProfileHTML for: %s %s %s\n", p.FirstName, p.MiddleName, p.LastName)
 	url := urlbase + s
 
 	// let's do retries here... 3 tries.  Wait 5 seconds between each try...
@@ -218,7 +224,7 @@ func parseProfileHTML(s string, p *db.Person) {
 	}
 	parseProfileMatrix(strMatrix, p)
 
-	if true { // for debugging
+	if false { // for debugging
 		for i := 0; i < len(strMatrix); i++ {
 			fmt.Printf("%d.  ", i)
 			for j := 0; j < len(strMatrix[i]); j++ {
@@ -319,10 +325,10 @@ func InsertOrUpdatePerson(p *db.Person) {
 // ignore them. Go Playground: https://play.golang.org/p/-NGrjQ1A7p
 //-----------------------------------------------------------------------------
 func parseHTML(s string) {
-	fmt.Printf("entered parseHTML.  s = %s\n", s)
+	// fmt.Printf("entered parseHTML.  s = %s\n", s)
 	r := re.FindAllStringSubmatch(s, -1)
 	l := len(r)
-	fmt.Printf("submatches found %d\n", l)
+	// fmt.Printf("submatches found %d\n", l)
 	if l == 0 {
 		return
 	}
@@ -337,7 +343,7 @@ func parseHTML(s string) {
 		p.OfficePhone = r[2][1]
 		profre := reprof.FindAllStringSubmatch(s, -1)
 		if len(profre) > 0 {
-			fmt.Printf("profile url = %s\n", profre[0][1])
+			// fmt.Printf("profile url = %s\n", profre[0][1])
 			parseProfileHTML(profre[0][1], &p)
 		}
 		emailBuilder(&p)

@@ -7,9 +7,10 @@ mojo:
 clean:
 	for dir in $(DIRS); do make -C $$dir clean;done
 	go clean
-	rm -f mojo
+	rm -rf mojo tmp
 
-install:
-	for dir in $(DIRS); do make -C $$dir install;done
+package:
+	mkdir -p ./tmp/mojo
+	for dir in $(DIRS); do make -C $$dir package;done
 
-all: clean mojo
+all: clean mojo package

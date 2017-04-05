@@ -12,9 +12,8 @@ clean:
 	for dir in $(DIRS); do make -C $$dir clean;done
 	go clean
 
-install:
-	if [ -d ./bin ]; then rm -rf ./bin; fi
-	mkdir ./bin
-	for dir in $(DIRS); do make -C $$dir install;done
+package:
+	go install
+	for dir in $(DIRS); do make -C $$dir package;done
 
-all: clean db
+all: clean db package

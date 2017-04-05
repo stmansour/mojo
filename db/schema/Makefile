@@ -2,7 +2,6 @@ TOP=../..
 
 newdb:
 	mysql --no-defaults < schema.sql
-	mysql --no-defaults < testdb.sql
 
 clean:
 	@echo "*** CLEAN completed in schema ***"
@@ -10,8 +9,8 @@ clean:
 test:
 	@echo "*** TEST completed in schema ***"
 
-install:
-	cp schema.sql ../bin/
+package:
+	cp schema.sql ${TOP}/tmp/mojo/
 
 testdb:
 	mysql --no-defaults < schema.sql

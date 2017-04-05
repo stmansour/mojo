@@ -8,13 +8,14 @@ mojosrv: *.go ver.go
 
 ver.go:
 	./mkver.sh
+
 clean:
 	go clean
 	rm -f mojosrv, ver.go, tmp *.log
 
-install:
+package:
 	mkdir -p ${RELDIR}
 	cp mojosrv ${RELDIR}/mojosrv
 
 
-all: clean mojosrv
+all: clean mojosrv package

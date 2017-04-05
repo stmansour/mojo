@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"mojo/db"
-	"mojo/scrapers/faa"
 	"mojo/util"
 	"os"
 
@@ -33,7 +32,7 @@ func initFAAMojo() {
 	if err != nil {
 		if util.IsSQLNoResultsError(err) {
 			g.GroupName = "FAA"
-			err = db.InsertGroup(&g)
+			err = db.InsertEGroup(&g)
 			if err != nil {
 				fmt.Printf("Error inserting group: %s\n", err.Error())
 				os.Exit(1)
@@ -81,7 +80,9 @@ func main() {
 		fmt.Printf("App.db.Ping for database=%s, dbuser=%s: Error = %v\n", App.DBName, App.DBUser, err)
 		os.Exit(1)
 	}
+	db.InitDB(App.db)
 	db.BuildPreparedStatements()
-	faa.InitFAAScraper(App.GID, App.quick, App.workers)
-	faa.ScrapeFAA()
+	initFAAMojo()
+	InitFAAScraper(App.GID, App.quick, App.workers)
+	ScrapeFAA()
 }

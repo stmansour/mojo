@@ -178,16 +178,16 @@ func GetGroupByName(s string) (EGroup, error) {
 	return readGroup(DB.Prepstmt.GetGroupByName.QueryRow(s))
 }
 
-// InsertGroup writes a new EGroup record to the database
-func InsertGroup(a *EGroup) error {
-	res, err := DB.Prepstmt.InsertGroup.Exec(a.GroupName, a.LastModBy)
+// InsertEGroup writes a new EGroup record to the database
+func InsertEGroup(a *EGroup) error {
+	res, err := DB.Prepstmt.InsertEGroup.Exec(a.GroupName, a.LastModBy)
 	if nil == err {
 		id, err := res.LastInsertId()
 		if err == nil {
 			a.GID = int64(id)
 		}
 	} else {
-		util.Ulog("InsertGroup: error inserting EGroup:  %v\n", err)
+		util.Ulog("InsertEGroup: error inserting EGroup:  %v\n", err)
 		util.Ulog("EGroup = %#v\n", *a)
 	}
 	return err
@@ -208,11 +208,11 @@ func GetPGroup(pid, gid int64) (PGroup, error) {
 	return readPGroup(DB.Prepstmt.GetPGroup.QueryRow(pid, gid))
 }
 
-// InsertPGroup inserts a new EGroup record into the database
+// InsertPGroup inserts a new PGroup record into the database
 func InsertPGroup(a *PGroup) error {
-	_, err := DB.Prepstmt.InsertGroup.Exec(a.PID, a.GID, a.LastModBy)
+	_, err := DB.Prepstmt.InsertPGroup.Exec(a.PID, a.GID, a.LastModBy)
 	if nil != err {
-		util.Ulog("InsertGroup: error inserting EGroup:  %v\n", err)
+		util.Ulog("InsertEGroup: error inserting EGroup:  %v\n", err)
 		util.Ulog("EGroup = %#v\n", *a)
 	}
 	return err
@@ -268,7 +268,7 @@ func GetDataUpdateByGroup(id int64) ([]DataUpdate, error) {
 
 // InsertDataUpdate inserts a new DataUpdate record into the database
 func InsertDataUpdate(a *DataUpdate) error {
-	res, err := DB.Prepstmt.InsertDataUpdate.Exec(a.DtStart, a.DtStop, a.LastModBy)
+	res, err := DB.Prepstmt.InsertDataUpdate.Exec(a.GID, a.DtStart, a.DtStop, a.LastModBy)
 	if nil == err {
 		id, err := res.LastInsertId()
 		if err == nil {
@@ -283,6 +283,6 @@ func InsertDataUpdate(a *DataUpdate) error {
 
 // UpdateDataUpdate updates the existing DataUpdate record
 func UpdateDataUpdate(a *DataUpdate) error {
-	_, err := DB.Prepstmt.UpdateDataUpdate.Exec(a.DtStart, a.DtStop, a.LastModBy, a.DUID)
+	_, err := DB.Prepstmt.UpdateDataUpdate.Exec(a.GID, a.DtStart, a.DtStop, a.LastModBy, a.DUID)
 	return err
 }
