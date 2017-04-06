@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script>
+/*global
+    w2ui, console, plural, monthBack, monthFwd, dayBack, dayFwd, setToRAForm, setToForm,
+    w2uiDateControlString, w2popup, getCurrentBusiness, dateControlString, dateMonthFwd,
+    tcidPickerDropRender, tcidRAPayorPickerRender, tcidPickerCompare, dateMonthBack,
+    ridRentablePickerRender, ridRentableDropRender,ridRentableCompare, calcRarGridContractRent,
+    handleDateToolbarAction, setDateControlsInToolbar, genDateRangeNavigator, getPaymentTypeName,
+    getBUDfromBID, buildPaymentTypeOptions, getPaymentTypeID, buildPaymentTypeSelectList,
+    tcidReceiptPayorPickerRender
+*/
+
+/*globals $:false */
+"use strict";
+
+function getPeopleCount() {
+    $.post('/v1/peoplecount/')
+    .done(function(data) {
+        if (typeof data == 'string') {  // it's weird, a successful data add gets parsed as an object, an error message does not
+            var msg = JSON.parse(data);
+            console.log('Response to peoplecount: ' + msg.status);
+            return;
+        }
+        if (data.status == 'success') {
+            var c = data.record.Count;
+            var e = document.getElementById('mojoPeopleCount');
+            e.innerHTML = '' + c; 
+        } else {
+            console.log('data.status = ' + data.status);
+        }
+    })
+    .fail(function(data) {
+        console.log('data = ' + data);
+    });
+}
+$(function () {
+    getPeopleCount();
+}
+);
+
+</script>
+
+</head>
+<body>
+
+<div id="mojoWidgetPeopleCount">People count:  <span id="mojoPeopleCount"></span></div>
+<div id="mojoWidgetGroupCount">Group count: <span id="mojoGroupCount"></span></div>
+
+</body>
+</html>

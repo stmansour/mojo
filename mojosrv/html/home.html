@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="/js/w2ui-1.5.rc1.min.css" />
+    <link rel="stylesheet" href="/html/fa/css/font-awesome.min.css">
+    <link rel="icon" type="image/png" href="/html/images/favicon32x32.png">
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/w2ui-1.5.rc1.js"></script>
+</head>
+<body>
+
+<!--  color Icon images:  icon-page, w2ui-icon-check, ... see below in toptoolbar -->
+
+<script>
+/*global
+    w2ui, console, plural, monthBack, monthFwd, dayBack, dayFwd, setToRAForm, setToForm,
+    w2uiDateControlString, w2popup, getCurrentBusiness, dateControlString, dateMonthFwd,
+    tcidPickerDropRender, tcidRAPayorPickerRender, tcidPickerCompare, dateMonthBack,
+    ridRentablePickerRender, ridRentableDropRender,ridRentableCompare, calcRarGridContractRent,
+    handleDateToolbarAction, setDateControlsInToolbar, genDateRangeNavigator, getPaymentTypeName,
+    getBUDfromBID, buildPaymentTypeOptions, getPaymentTypeID, buildPaymentTypeSelectList,
+    tcidReceiptPayorPickerRender
+*/
+
+/*globals $:false */
+
+"use strict";
+
+// The mojo app object. Used to manage app-level data.
+var app = {
+    lastReport: '',
+    serverversion: '',
+    protocolVersion: '1',
+    language: "{{.Language}}",
+    template: "{{.Template}}",
+    pstyle: 'border: 1px solid #dfdfdf; padding: 0px;',
+    pstyleNB: 'border: 0px solid #dfdfdf; padding: 0px;',
+    pstyle4: 'border: 1px solid #bbbbbb; padding: 0px;',
+    pstyle2: 'border: 1px solid #cfcfcf; padding: 0px;',
+    prefmt: 'border:4px; solid #bbbbbb; background-color: white;',
+    bgyellow: 'background-color: yellow;',
+    stdfmt: 'font-family: "Open Sans","Roboto",sans-serif; font-size: 8pt; border: 1px solid #dfdfdf; border-spacing:0px; padding: 3px; color: #777777;',
+};
+
+
+// The reason to load these elements in this way rather than storing them as part of a
+// 'config' variable then passing them into the widget generators is that we need to
+// download the lists first. Making the elements part of a config.* variable would evaluate
+// the dropdown lists prior to downloading their values. By doing it this way, we download
+// the lists first so that their values will be set by the server before we build the UI.
+function buildPageElements() {
+    // "use strict";
+    //------------------------------------------------------------------------
+    //          mainlayout
+    //------------------------------------------------------------------------
+    $('#layout').w2layout({
+        name: 'mainlayout',
+        padding: 2,
+        panels: [
+            { type: 'top', size: 55, style: app.pstyle, content: 'top' },
+            { type: 'left', size: 200, hidden: true, style: app.pstyle, content: 'left' },
+            { type: 'main', style: app.pstyle, content: 'main' },
+            { type: 'preview', size: '50%', resizable: true, hidden: true, style: app.pstyle, content: 'preview' },
+            { type: 'right', size: 200, resizable: true, style: app.pstyle, hidden: true, content: 'Details' },
+            { type: 'bottom', size: 20, resizable: false, style: app.stdfmt, content: '&copy; 2015-2017 Accord Interests' }
+        ]
+    });
+
+
+    //------------------------------------------------------------------------
+    //          NEWS LAYOUT
+    //------------------------------------------------------------------------
+    $().w2layout({
+        name: 'newsLayout',
+        padding: 0,
+        panels: [
+            { type: 'left', hidden: false, style: app.pstyleNB, size: 20 },
+            { type: 'top', hidden: true },
+            { type: 'main', size: '90%', resizable: true, hidden: false, style: app.pstyleNB, content: 'Hi.  I should load w2ui.newsLayout' },
+            { type: 'preview', hidden: true },
+            { type: 'bottom', hidden: true },
+            { type: 'right', hidden: true }
+        ]
+    });
+
+    //------------------------------------------------------------------------
+    //          toplayout
+    //------------------------------------------------------------------------
+    w2ui.mainlayout.content('main', $().w2layout({
+        name: 'toplayout',
+        padding: 2,
+        panels: [
+            { type: 'top',     size: 200, style: app.pstyle2,  hidden: true, resizable: true, content: w2ui.newsLayout},
+            { type: 'left',    size: 200, style: app.pstyle2,                resizable: true, content: 'sidebar' },
+            { type: 'main',               style: app.pstyle2   },
+            { type: 'preview', size: 0,   style: app.bgyellow, hidden: true, resizable: true, content: 'preview' },
+            { type: 'right',   size: 200, style: app.pstyle2,  hidden: true, resizable: true },
+            { type: 'bottom',  size: 0,   style: app.pstyle2,  hidden: true, resizable: true, content: 'toplayout - bottom' }
+        ]
+    }));
+
+    //------------------------------------------------------------------------
+    //          toptoolbar
+    //------------------------------------------------------------------------
+    w2ui.mainlayout.content('top', $().w2toolbar({
+        name: 'toptoolbar',
+        items: [
+             { type: 'html',  id: 'logo',
+                html: '<div style="padding: 4px 0px;">'+
+                      '<img src="/html/images/logo.png">'+
+                      '</div>'
+            },
+            { type: 'break', id: 'break1' },
+            { type: 'menu',    id: 'moduleMenu', caption: 'Select Module',    icon: 'fa fa-sitemap', items: [
+                { text: 'Directory',          icon: 'fa fa-user' },
+                { text: 'RentRoll',           icon: 'fa fa-building-o' },
+                { text: 'Mojo',               icon: 'fa fa-envelope-o' },
+                { text: 'Forms & Procedures', icon: 'fa fa-book' },
+            ]},
+            { type: 'break', id: 'break2' },
+            { type: 'button', id: 'msgButton', caption: 'News Flash', icon: 'fa fa-spinner fa-pulse fa-3x fa-fw'},
+        ],
+        onClick: function (event) {
+            console.log('target = ' + event.target);
+            switch(event.target) {
+                case "moduleMenu:Directory":      
+                    window.location.href = 'https://directory.airoller.com/';
+                    break;
+                case "moduleMenu:RentRoll":
+                    window.location.href = 'https://localhost:8271/home/';
+                    break;
+                case "msgButton":
+                    w2ui.toplayout.toggle('top',true);
+                    w2ui.toplayout.set('top',{ content: w2ui.newsLayout});
+                    w2ui.newsLayout.load('main', '/html/news.html', 'flip-down');
+                    w2ui.toptoolbar.set('msgButton', {icon: 'fa fa-newspaper-o'});
+                    break;
+            }
+        },
+    }));
+
+    //------------------------------------------------------------------------
+    //          sidebarL1
+    //------------------------------------------------------------------------
+    w2ui.toplayout.content('left',$().w2sidebar({
+        name: 'sidebarL1',
+        nodes: [
+            { id: 'view', text: 'View', img: 'icon-folder', expanded: true, group: true,
+                nodes: [
+                        { id: 'dashboard', text: 'Dshboard', icon: 'fa fa-tachometer' },
+                ]
+            },
+            { id: 'workflows', text: 'Workflows', img: 'icon-folder', expanded: true, group: true,
+                nodes: [
+                        { id: 'deflst', text: 'Define A List', icon: 'fa fa-list' },
+                        { id: 'sendml', text: 'Send Email To List', icon: 'fa fa-envelope-o' },
+                        { id: 'stats',  text: 'Statistics', icon: 'fa fa-bar-chart' },
+                ]
+            },
+            { id: 'admin', text: 'Admin', img: 'icon-wrench', expanded: true, group: true,
+                nodes: [
+                        { id: 'people', text: 'Show People', icon: 'fa fa-users' },
+                ]
+            },
+        ],
+        onClick: function (event) {
+            console.log('event.target = ' + event.target);
+            switch(event.target) {
+                case 'dashboard':
+                    w2ui.toplayout.load('main','/html/dashboard.html'); 
+                    w2ui.toplayout.hide('right',true);
+                    break;
+                case 'people':
+                    var grid = event.target + 'Grid';
+                    w2ui[grid].url = '/v' + app.protocolVersion + '/' + event.target + '/';
+                    console.log('url = ' + w2ui[grid].url);
+                    w2ui.toplayout.content('main', w2ui[grid]);
+                    w2ui.toplayout.hide('right',true);
+                    break;
+            }
+        },
+        onContent: function(event) {
+            if (event.panel == 'main') {
+                console.log('main content has been changed.');
+            }
+
+            // w2ui.toplayout.load('main','/html/dashboard.html')
+        }
+    }));
+
+    //------------------------------------------------------------------------
+    //          peopleGrid
+    //------------------------------------------------------------------------
+    $().w2grid({
+        name: 'peopleGrid',
+        url: '/v1/people',
+        show: {
+            header: false,
+            toolbar: true,
+            footer: true,
+            lineNumbers: false,
+            selectColumn: false,
+            expandColumn: false
+        },
+        columns: [
+            {field: 'PID',          caption: 'PID',           size: '100px', sortable: true, hidden: true},
+            {field: 'FirstName',    caption: 'FirstName',     size: '100px', sortable: true, hidden: false},
+            {field: 'MiddleName',   caption: 'MiddleName',    size: '100px', sortable: true, hidden: false},
+            {field: 'LastName',     caption: 'LastName',      size: '100px', sortable: true, hidden: false},
+            {field: 'PreferredName',caption: 'PreferredName', size: '100px', sortable: true, hidden: true},
+            {field: 'JobTitle',     caption: 'JobTitle',      size: '100px', sortable: true, hidden: false},
+            {field: 'OfficePhone',  caption: 'OfficePhone',   size: '100px', sortable: true, hidden: false},
+            {field: 'OfficeFax',    caption: 'OfficeFax',     size: '100px', sortable: true, hidden: true},
+            {field: 'Email1',       caption: 'Email1',        size: '100px', sortable: true, hidden: false},
+            {field: 'MailAddress',  caption: 'MailAddress',   size: '100px', sortable: true, hidden: false},
+            {field: 'MailAddress2', caption: 'MailAddress2',  size: '100px', sortable: true, hidden: true},
+            {field: 'MailCity',     caption: 'MailCity',      size: '100px', sortable: true, hidden: false},
+            {field: 'MailState',    caption: 'MailState',     size: '100px', sortable: true, hidden: false},
+            {field: 'MailPostalCode',caption:'MailPostalCode',size: '100px', sortable: true, hidden: false},
+            {field: 'MailCountry',  caption: 'MailCountry',   size: '100px', sortable: true, hidden: false},
+            {field: 'RoomNumber',   caption: 'RoomNumber',    size: '100px', sortable: true, hidden: false},
+            {field: 'MailStop',     caption: 'MailStop',      size: '100px', sortable: true, hidden: false},
+            {field: 'Status',       caption: 'Status',        size: '100px', sortable: true, hidden: false},
+            {field: 'OptOutDate',   caption: 'OptOutDate',    size: '100px', sortable: true, hidden: false},
+            {field: 'LastModTime',  caption: 'LastModTime',   size: '100px', sortable: true, hidden: true},
+        ],
+    });
+}
+
+
+function finishInitialization() {
+    buildPageElements();
+}
+
+function handleData(data,status) {
+    if (status == "success") {
+        if (data.substring(11,14) == "err") {
+            console.log('ERROR: '+data);
+        } else {
+            app.serverversion = data;
+        }
+    } else {
+        console.log( '**** YIPES! ****  status on /v1/ping/ = ' + status);
+    }
+    finishInitialization();
+    w2ui.toplayout.load('main','/html/dashboard.html')    
+}
+
+$(function () {
+    $.get('/v1/ping/' + app.language + '/' + app.template)
+    .done(handleData)
+    .fail( function() {
+        console.log('Error getting /v1/ping');
+     });
+}
+);
+
+</script>
+
+<div id="layout"style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px;"></div>
+
+</body>
+</html>

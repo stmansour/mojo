@@ -39,6 +39,15 @@ func InitFAAScraper(gid int64, q bool, w int) {
 
 }
 
+func safeMatrixGet(m [][]string, row, col int) string {
+	if len(m) > row {
+		if len(m[row]) > col {
+			return strings.TrimSpace(m[row][col])
+		}
+	}
+	return ""
+}
+
 // parseProfileMatrix takes a matrix of strings producted by parseProfileHTML and plucks
 // out useful values.  The profile page consists of 42 lines of html. These are parsed into
 // a matrix of 42 rows and up to 5 columns per row.  Some locations (row,column) in this
@@ -77,7 +86,7 @@ func parseProfileMatrix(m [][]string, p *db.Person) {
 		fmt.Printf("Search LastName does not match Profile LastName: %s vs %s\n", p.LastName, last)
 	}
 
-	phone := strings.TrimSpace(m[23][1])
+	phone := safeMatrixGet(m, 23, 1)
 	if phone != p.OfficePhone {
 		// look for innocuous miscompares, for example:  N/A  vs  ""
 		if p.OfficePhone != "N/A" || len(phone) != 0 {
@@ -87,8 +96,8 @@ func parseProfileMatrix(m [][]string, p *db.Person) {
 	}
 
 	// room number is at row 18. Mailstop is row 19
-	p.RoomNumber = strings.TrimSpace(m[32][3])
-	p.MailStop = strings.TrimSpace(m[33][3])
+	p.RoomNumber = safeMatrixGet(m, 32, 3)
+	p.MailStop = safeMatrixGet(m, 33, 3)
 
 	// Update the address.  The address is contained in the array of strings between
 	// rows 14-17 in column 3.   that is [14..17][3]
@@ -298,7 +307,7 @@ func InsertOrUpdatePerson(p *db.Person) {
 		util.Ulog("GetPersonByEmail returned: %s\n", err.Error())
 		return
 	}
-	if err == nil {
+	if err == nil && p2.PID > 0 && len(plist) > 0 {
 		MergePerson(&p2, &plist[0])
 		db.UpdatePerson(&plist[0]) // force the timestamp to update
 		AddPersonToGroup(plist[0].PID, FAAScraper.GID)
@@ -440,15 +449,16 @@ func ScrapeFAA() {
 	//------------------------------------------
 	FAAScraper.c = make(chan string)
 	wg := new(sync.WaitGroup)
+	fmt.Printf("Adding %d workers\n", FAAScraper.workers)
 	for i := 0; i < FAAScraper.workers; i++ {
 		wg.Add(1)
 		go worker(FAAScraper.c, wg)
 	}
 
 	for i := 'a'; i <= 'z'; i++ {
-		fmt.Printf("Searching %c*\n", i)
 		for j := 'a'; j <= 'z'; j++ {
 			q := fmt.Sprintf("%c%c", i, j)
+			fmt.Printf("Searching %c%c\n", i, j)
 			FAAScraper.c <- q
 			if FAAScraper.quick {
 				break

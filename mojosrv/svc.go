@@ -115,6 +115,7 @@ type ServiceData struct { // position 0 is 'v1'
 // Svcs is the table of all service handlers
 var Svcs = []ServiceHandler{
 	{"people", SvcSearchHandlerPeople},
+	{"peoplecount", SvcPeopleCount},
 	{"person", SvcHandlerPerson},
 	{"ping", SvcHandlerPing},
 }
@@ -155,8 +156,19 @@ func V1ServiceHandler(w http.ResponseWriter, r *http.Request) {
 	//-----------------------------------------------------------------------
 	ss := strings.Split(r.RequestURI[1:], "?") // it could be GET command
 	pathElements := strings.Split(ss[0], "/")
-	if len(pathElements) > 1 {
+	lpe := len(pathElements)
+	if lpe > 1 {
 		d.Service = pathElements[1]
+	}
+	if lpe > 2 {
+		var err error
+		d.ID, err = util.IntFromString(pathElements[2], "bad ID")
+		if err != nil {
+			e := fmt.Errorf("ID in URL is invalid: %s", err.Error())
+			fmt.Printf("***ERROR IN URL***  %s", e.Error())
+			SvcGridErrorReturn(w, e)
+			return
+		}
 	}
 
 	svcDebugURL(r, &d)

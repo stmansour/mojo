@@ -52,6 +52,19 @@ type PersonGridSave struct {
 	Changes  []PersonGrid `json:"changes"`
 }
 
+// RecordCount is a structure with the count of records
+// for some particular table.
+type RecordCount struct {
+	Recid int64 `json:"recid"`
+	Count int64
+}
+
+// CountResponse is the response to a PersonCount request
+type CountResponse struct {
+	Status string      `json:"status"`
+	Record RecordCount `json:"record"`
+}
+
 // PersonGetResponse is the response to a GetPerson request
 type PersonGetResponse struct {
 	Status string     `json:"status"`
@@ -62,7 +75,10 @@ type PersonGetResponse struct {
 func GetRowCount(table, where string) (int64, error) {
 	count := int64(0)
 	var err error
-	s := fmt.Sprintf("SELECT COUNT(*) FROM %s WHERE %s", table, where)
+	s := fmt.Sprintf("SELECT COUNT(*) FROM %s", table)
+	if len(where) > 0 {
+		s += fmt.Sprintf(" WHERE %s", where)
+	}
 	de := db.DB.Db.QueryRow(s).Scan(&count)
 	if de != nil {
 		err = fmt.Errorf("GetRowCount: query=\"%s\"    err = %s", s, de.Error())
@@ -105,10 +121,40 @@ func SvcHandlerPerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	}
 }
 
+// SvcPeopleCount returns the number of people in the database
+// wsdoc {
+//  @Title  People Count
+//	@URL /v1/peoplecount/[GID]
+//  @Method  POST GET
+//	@Synopsis Get the count of people in the database
+//  @Descr  Returns a count of all people in the database. If GID
+//  @Descr  is provided it returns the count of people in grop GID
+//	@Input WebGridSearchRequest
+//  @Response PersonSearchResponse
+// wsdoc }
+func SvcPeopleCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+	funcname := "SvcSearchHandlerPeople"
+	fmt.Printf("Entered %s\n", funcname)
+	var (
+		g   CountResponse
+		err error
+	)
+
+	g.Record.Count, err = GetRowCount("People", "")
+	if err != nil {
+		fmt.Printf("Error from GetRowCount: %s\n", err.Error())
+		SvcGridErrorReturn(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	g.Status = "success"
+	SvcWriteResponse(&g, w)
+}
+
 // SvcSearchHandlerPeople generates a report of all People defined business d.BID
 // wsdoc {
 //  @Title  Search People
-//	@URL /v1/dep/:BUI
+//	@URL /v1/people/[:GID]
 //  @Method  POST
 //	@Synopsis Search People
 //  @Descr  Search all Person and return those that match the Search Logic.
@@ -126,8 +172,11 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 
 	order := "PID ASC"                                                   // default ORDER
 	q := fmt.Sprintf("SELECT %s FROM People ", db.DB.DBFields["People"]) // the fields we want
-	qw := fmt.Sprintf("PID>0")                                           // will probably change this at some point
-	q += "WHERE " + qw + " ORDER BY "
+	qw := fmt.Sprintf("")                                                // don't need WHERE clause on this query
+	if len(qw) > 0 {
+		q += "WHERE " + qw
+	}
+	q += " ORDER BY "
 	if len(d.wsSearchReq.Sort) > 0 {
 		for i := 0; i < len(d.wsSearchReq.Sort); i++ {
 			if i > 0 {
