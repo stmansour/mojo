@@ -17,8 +17,9 @@ type PrepSQL struct {
 	GetPersonByName                *sql.Stmt
 	GetPersonByRecordFieldMatching *sql.Stmt
 	GetGroup                       *sql.Stmt
+	GetGroups                      *sql.Stmt
 	GetGroupByName                 *sql.Stmt
-	InsertEGroup                   *sql.Stmt
+	InsertGroup                    *sql.Stmt
 	UpdateGroup                    *sql.Stmt
 	DeleteGroup                    *sql.Stmt
 	GetPGroup                      *sql.Stmt
@@ -62,14 +63,14 @@ func BuildPreparedStatements() {
 	//--------------------------------------------
 	//    EGROUPS
 	//--------------------------------------------
-	flds = "GID,GroupName,LastModTime,LastModBy"
+	flds = "GID,GroupName,GroupDescription,DtStart,DtStop,LastModTime,LastModBy"
 	DB.DBFields["EGroup"] = flds
 	s1, s2, s3 = GenSQLInsertAndUpdateStrings(flds)
 	DB.Prepstmt.GetGroup, err = DB.Db.Prepare("SELECT " + flds + " FROM EGroup WHERE GID=?")
 	util.ErrCheck(err)
 	DB.Prepstmt.GetGroupByName, err = DB.Db.Prepare("SELECT " + flds + " FROM EGroup WHERE GroupName=?")
 	util.ErrCheck(err)
-	DB.Prepstmt.InsertEGroup, err = DB.Db.Prepare("INSERT INTO EGroup (" + s1 + ") VALUES(" + s2 + ")")
+	DB.Prepstmt.InsertGroup, err = DB.Db.Prepare("INSERT INTO EGroup (" + s1 + ") VALUES(" + s2 + ")")
 	util.ErrCheck(err)
 	DB.Prepstmt.UpdateGroup, err = DB.Db.Prepare("UPDATE EGroup SET " + s3 + " WHERE GID=?")
 	util.ErrCheck(err)

@@ -1,5 +1,6 @@
 TOP=../..
 THISDIR="faa"
+BINDIR=${TOP}/tmp/mojo
 
 faa: *.go
 	go vet
@@ -18,5 +19,11 @@ package:
 
 test:
 	@echo "*** ${THISDIR}: completed test ***"
+
+q:
+	@echo "Create a new db in quick mode..."
+	@${BINDIR}/mojonewdb
+	@./faa -q
+	@mysqldump --no-defaults mojo >restore.sql
 
 all: clean faa package test

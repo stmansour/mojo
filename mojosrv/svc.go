@@ -114,8 +114,12 @@ type ServiceData struct { // position 0 is 'v1'
 
 // Svcs is the table of all service handlers
 var Svcs = []ServiceHandler{
+	{"group", SvcHandlerGroup},
+	{"groups", SvcSearchHandlerGroups},
+	{"groupcount", SvcGroupsCount},
 	{"people", SvcSearchHandlerPeople},
 	{"peoplecount", SvcPeopleCount},
+	{"peoplestats", SvcPeopleStats},
 	{"person", SvcHandlerPerson},
 	{"ping", SvcHandlerPing},
 }

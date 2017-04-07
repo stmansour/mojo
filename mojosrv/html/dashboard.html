@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" href="/html/dashboard.css">
 
 <script>
 /*global
@@ -17,16 +18,37 @@
 "use strict";
 
 function getPeopleCount() {
-    $.post('/v1/peoplecount/')
+    $.post('/v1/peoplestats/')
     .done(function(data) {
         if (typeof data == 'string') {  // it's weird, a successful data add gets parsed as an object, an error message does not
             var msg = JSON.parse(data);
-            console.log('Response to peoplecount: ' + msg.status);
+            console.log('Response to peoplestats: ' + msg.status);
+            return;
+        }
+        if (data.status == 'success') {
+            ;
+            document.getElementById('mojoPeopleCount').innerHTML = '' + data.record.Count; 
+            document.getElementById('mojoOptOut').innerHTML = '' + data.record.OptOut; 
+            document.getElementById('mojoBouncedAddresses').innerHTML = '' + data.record.Bounced; 
+        } else {
+            console.log('data.status = ' + data.status);
+        }
+    })
+    .fail(function(data) {
+        console.log('data = ' + data);
+    });
+}
+function getGroupCount() {
+    $.post('/v1/groupcount/')
+    .done(function(data) {
+        if (typeof data == 'string') {  // it's weird, a successful data add gets parsed as an object, an error message does not
+            var msg = JSON.parse(data);
+            console.log('Response to groupcount: ' + msg.status);
             return;
         }
         if (data.status == 'success') {
             var c = data.record.Count;
-            var e = document.getElementById('mojoPeopleCount');
+            var e = document.getElementById('mojoGroupCount');
             e.innerHTML = '' + c; 
         } else {
             console.log('data.status = ' + data.status);
@@ -38,6 +60,7 @@ function getPeopleCount() {
 }
 $(function () {
     getPeopleCount();
+    getGroupCount();
 }
 );
 
@@ -46,8 +69,16 @@ $(function () {
 </head>
 <body>
 
-<div id="mojoWidgetPeopleCount">People count:  <span id="mojoPeopleCount"></span></div>
-<div id="mojoWidgetGroupCount">Group count: <span id="mojoGroupCount"></span></div>
+<table cellspacing="4">
+<tr><td width="30"></td><td colspan="2"><p class="title1">MOJO Database Statistics</p></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">People count:</span></td><td><span class="mojoStatValue" id="mojoPeopleCount"></span></td></tr>
+<tr><td colspan=3 height="8"></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">People opted-out:</span></td><td><span class="mojoStatValue" id="mojoOptOut"></span></td></tr>
+<tr><td colspan=3 height="8"></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">Bounced email addresses:</span></td><td><span class="mojoStatValue" id="mojoBouncedAddresses"></span></td></tr>
+<tr><td colspan=3 height="8"></td></tr>
+<tr class="mojorow"><td></td><td align="baseline"><span class="mojoStatLabel">Group count:</span></td><td><span class="mojoStatValue" id="mojoGroupCount"></span></td></tr>
+</table>
 
 </body>
 </html>

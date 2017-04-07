@@ -8,6 +8,7 @@ import (
 	"mojo/db"
 	"mojo/util"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -32,7 +33,9 @@ func initFAAMojo() {
 	if err != nil {
 		if util.IsSQLNoResultsError(err) {
 			g.GroupName = "FAA"
-			err = db.InsertEGroup(&g)
+			g.GroupDescription = "Employees of the Federal Aviation Administration"
+			g.DtStart = time.Now()
+			err = db.InsertGroup(&g)
 			if err != nil {
 				fmt.Printf("Error inserting group: %s\n", err.Error())
 				os.Exit(1)
@@ -41,9 +44,18 @@ func initFAAMojo() {
 			fmt.Printf("Error reading group \"FAA\": %s\n", err.Error())
 			os.Exit(1)
 		}
+	} else {
+		// if it's already in the database, we update the record to force the
+		// last modified date to reflect the fact that we're scraping now
+		fmt.Printf("FAA exists, updating timestamp\n")
+		g.DtStart = time.Now()
+		err = db.UpdateGroup(&g)
+		if err != nil {
+			fmt.Printf("Error inserting group: %s\n", err.Error())
+			os.Exit(1)
+		}
 	}
 	App.GID = g.GID
-
 }
 
 func readCommandLineArgs() {
@@ -53,7 +65,7 @@ func readCommandLineArgs() {
 	sPtr := flag.String("s", "", "skip names until you find this name, then engage")
 	dbgPtr := flag.Bool("D", false, "use this option to turn on debug mode")
 	qPtr := flag.Bool("q", false, "quick mode - only loop once - enables fast start to finish testing")
-	wpPtr := flag.Int("w", 25, "Number of workers in the worker pool")
+	wpPtr := flag.Int("w", 35, "Number of workers in the worker pool")
 	flag.Parse()
 	App.debug = *dbgPtr
 	App.workers = *wpPtr

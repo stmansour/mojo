@@ -37,7 +37,7 @@ var app = {
     pstyleNB: 'border: 0px solid #dfdfdf; padding: 0px;',
     pstyle4: 'border: 1px solid #bbbbbb; padding: 0px;',
     pstyle2: 'border: 1px solid #cfcfcf; padding: 0px;',
-    prefmt: 'border:4px; solid #bbbbbb; background-color: white;',
+    pstylewhite: 'border:4px; solid #bbbbbb; background-color: white;',
     bgyellow: 'background-color: yellow;',
     stdfmt: 'font-family: "Open Sans","Roboto",sans-serif; font-size: 8pt; border: 1px solid #dfdfdf; border-spacing:0px; padding: 3px; color: #777777;',
 };
@@ -92,7 +92,7 @@ function buildPageElements() {
         panels: [
             { type: 'top',     size: 200, style: app.pstyle2,  hidden: true, resizable: true, content: w2ui.newsLayout},
             { type: 'left',    size: 200, style: app.pstyle2,                resizable: true, content: 'sidebar' },
-            { type: 'main',               style: app.pstyle2   },
+            { type: 'main',               style: app.pstylewhite   },
             { type: 'preview', size: 0,   style: app.bgyellow, hidden: true, resizable: true, content: 'preview' },
             { type: 'right',   size: 200, style: app.pstyle2,  hidden: true, resizable: true },
             { type: 'bottom',  size: 0,   style: app.pstyle2,  hidden: true, resizable: true, content: 'toplayout - bottom' }
@@ -159,7 +159,8 @@ function buildPageElements() {
             },
             { id: 'admin', text: 'Admin', img: 'icon-wrench', expanded: true, group: true,
                 nodes: [
-                        { id: 'people', text: 'Show People', icon: 'fa fa-users' },
+                        { id: 'people', text: 'Show People', icon: 'fa fa-user' },
+                        { id: 'groups', text: 'Show Groups', icon: 'fa fa-users' },
                 ]
             },
         ],
@@ -177,15 +178,15 @@ function buildPageElements() {
                     w2ui.toplayout.content('main', w2ui[grid]);
                     w2ui.toplayout.hide('right',true);
                     break;
+                case 'groups':
+                    var grid = event.target + 'Grid';
+                    w2ui[grid].url = '/v' + app.protocolVersion + '/' + event.target + '/';
+                    console.log('url = ' + w2ui[grid].url);
+                    w2ui.toplayout.content('main', w2ui[grid]);
+                    w2ui.toplayout.hide('right',true);
+                    break;
             }
         },
-        onContent: function(event) {
-            if (event.panel == 'main') {
-                console.log('main content has been changed.');
-            }
-
-            // w2ui.toplayout.load('main','/html/dashboard.html')
-        }
     }));
 
     //------------------------------------------------------------------------
@@ -223,6 +224,28 @@ function buildPageElements() {
             {field: 'Status',       caption: 'Status',        size: '100px', sortable: true, hidden: false},
             {field: 'OptOutDate',   caption: 'OptOutDate',    size: '100px', sortable: true, hidden: false},
             {field: 'LastModTime',  caption: 'LastModTime',   size: '100px', sortable: true, hidden: true},
+        ],
+    });
+
+    //------------------------------------------------------------------------
+    //          groupsGrid
+    //------------------------------------------------------------------------
+    $().w2grid({
+        name: 'groupsGrid',
+        url: '/v1/groups',
+        show: {
+            header: false,
+            toolbar: true,
+            footer: true,
+            lineNumbers: false,
+            selectColumn: false,
+            expandColumn: false
+        },
+        columns: [
+            {field: 'GID',              caption: 'GID',           size: '100px', sortable: true, hidden: true},
+            {field: 'GroupName',        caption: 'GroupName',     size: '100px', sortable: true, hidden: false},
+            {field: 'GroupDescription', caption: 'MiddleName',    size: '300px', sortable: true, hidden: false},
+            {field: 'LastModTime',      caption: 'LastModTime',   size: '100px', sortable: true, hidden: true},
         ],
     });
 }

@@ -65,6 +65,19 @@ type CountResponse struct {
 	Record RecordCount `json:"record"`
 }
 
+// PeopleStats is a structure some interesting statistics for the People table
+type PeopleStats struct {
+	Count   int64
+	OptOut  int64
+	Bounced int64
+}
+
+// PeopleStatResponse is the response to a PersonCount request
+type PeopleStatResponse struct {
+	Status string      `json:"status"`
+	Record PeopleStats `json:"record"`
+}
+
 // PersonGetResponse is the response to a GetPerson request
 type PersonGetResponse struct {
 	Status string     `json:"status"`
@@ -128,12 +141,12 @@ func SvcHandlerPerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 //  @Method  POST GET
 //	@Synopsis Get the count of people in the database
 //  @Descr  Returns a count of all people in the database. If GID
-//  @Descr  is provided it returns the count of people in grop GID
+//  @Descr  is provided it returns the count of people in group GID.
 //	@Input WebGridSearchRequest
-//  @Response PersonSearchResponse
+//  @Response CountResponse
 // wsdoc }
 func SvcPeopleCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
-	funcname := "SvcSearchHandlerPeople"
+	funcname := "SvcPeopleCount"
 	fmt.Printf("Entered %s\n", funcname)
 	var (
 		g   CountResponse
@@ -141,6 +154,51 @@ func SvcPeopleCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	)
 
 	g.Record.Count, err = GetRowCount("People", "")
+	if err != nil {
+		fmt.Printf("Error from GetRowCount: %s\n", err.Error())
+		SvcGridErrorReturn(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	g.Status = "success"
+	SvcWriteResponse(&g, w)
+}
+
+// SvcPeopleStats returns statistics on the people table in the database
+// wsdoc {
+//  @Title  People Stats
+//	@URL /v1/peoplestats/[:GID]
+//  @Method  POST GET
+//	@Synopsis Get statistics on the people table.
+//  @Descr  Returns a count all the people, how many have opted out
+//  @Descr  and how many email addresses have bounced.
+//	@Input WebGridSearchRequest
+//  @Response CountResponse
+// wsdoc }
+func SvcPeopleStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+	funcname := "SvcPeopleStats"
+	fmt.Printf("Entered %s\n", funcname)
+	var (
+		g   PeopleStatResponse
+		err error
+	)
+	s := ""
+	if d.ID > 0 {
+		s = fmt.Sprintf("GID=%d AND ", d.ID)
+	}
+	g.Record.Count, err = GetRowCount("People", s+"")
+	if err != nil {
+		fmt.Printf("Error from GetRowCount: %s\n", err.Error())
+		SvcGridErrorReturn(w, err)
+		return
+	}
+	g.Record.OptOut, err = GetRowCount("People", s+"Status=1")
+	if err != nil {
+		fmt.Printf("Error from GetRowCount: %s\n", err.Error())
+		SvcGridErrorReturn(w, err)
+		return
+	}
+	g.Record.Bounced, err = GetRowCount("People", s+"Status=2")
 	if err != nil {
 		fmt.Printf("Error from GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)

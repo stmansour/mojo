@@ -477,6 +477,15 @@ func ScrapeFAA() {
 	fmt.Printf("Elapsed time: %s\n", elapsed)
 	err := db.UpdateDataUpdate(&du)
 	if err != nil {
-		fmt.Printf("Error updating DataUpdate record: %s\n", err.Error())
+		util.Ulog("Error updating DataUpdate record: %s\n", err.Error())
+	}
+	g, err := db.GetGroupByName("FAA")
+	if err != nil {
+		util.Ulog("Error getting group FAA: %s\n", err.Error())
+	}
+	g.DtStop = du.DtStop
+	err = db.UpdateGroup(&g)
+	if err != nil {
+		util.Ulog("Error inserting group: %s\n", err.Error())
 	}
 }

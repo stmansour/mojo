@@ -28,6 +28,8 @@ curl http://localhost:8275/v1/ping/
 echo "request%3D%7B%22cmd%22%3A%22get%22%2C%22selected%22%3A%5B%5D%2C%22limit%22%3A100%2C%22offset%22%3A0%7D" > request
 dojsonPOST "http://localhost:8275/v1/people/1" "request" "y"  "WebService--GetPeople"
 dojsonGET "http://localhost:8275/v1/peoplecount/" "a"  "WebService--PeopleCount"
+dojsonGET "http://localhost:8275/v1/groupcount/" "b"  "WebService--GroupCount"
+dojsonGET "http://localhost:8275/v1/peoplestats/" "c"  "WebService--PeopleStats"
 
 
 stopMojoServer

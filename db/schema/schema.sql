@@ -32,7 +32,7 @@ CREATE TABLE People (
     MailCountry VARCHAR(50) DEFAULT '',
     RoomNumber VARCHAR(50) DEFAULT '',
     MailStop VARCHAR(100) DEFAULT '',
-    Status SMALLINT DEFAULT 0,                                  -- 0 = they're in, 1 = they've opted out
+    Status SMALLINT DEFAULT 0,                                  -- 0 = they're in, 1 = they've opted out, 2 = address bounced
     OptOutDate DATE NOT NULL DEFAULT '1970-01-01 00:00:00',     -- if State is 1, the date/time when the person opted out
     LastModTime TIMESTAMP,
     LastModBy BIGINT NOT NULL DEFAULT 0,
@@ -42,6 +42,9 @@ CREATE TABLE People (
 CREATE TABLE EGroup (
     GID BIGINT NOT NULL AUTO_INCREMENT,                         -- Group ID
     GroupName VARCHAR(50) NOT NULL DEFAULT '',                  -- Name of the group
+    GroupDescription VARCHAR(1000) NOT NULL DEFAULT '',         -- Description of the group
+    DtStart DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',    -- start time of last scrape
+    DtStop DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',     -- stop time of last scrap
     LastModTime TIMESTAMP,
     LastModBy BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY (GID)     
@@ -57,8 +60,8 @@ CREATE TABLE PGroup (
 CREATE TABLE DataUpdate (
     DUID BIGINT NOT NULL AUTO_INCREMENT,
     GID BIGINT NOT NULL DEFAULT 0,                              -- group
-    DtStart DATE NOT NULL DEFAULT '1970-01-01 00:00:00',
-    DtStop DATE NOT NULL DEFAULT '1970-01-01 00:00:00',
+    DtStart DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',
+    DtStop DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',
     LastModTime TIMESTAMP,
     LastModBy BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY(DUID)

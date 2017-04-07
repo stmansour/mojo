@@ -34,10 +34,13 @@ type Person struct {
 
 // EGroup is a structure of all attributes of a EGroup to which Persons can belong
 type EGroup struct {
-	GID         int64
-	GroupName   string
-	LastModTime time.Time
-	LastModBy   int64
+	GID              int64
+	GroupName        string
+	GroupDescription string
+	DtStart          time.Time // start time of last scrape
+	DtStop           time.Time // stop time of last scrape
+	LastModTime      time.Time // last time this record was updated
+	LastModBy        int64
 }
 
 // PGroup is used to indicate that a person is a member of a group. A person can
@@ -50,11 +53,12 @@ type PGroup struct {
 }
 
 // DataUpdate is used to describe a run where the data is updated.
+// Every run generates this. So we have a history of updates
 type DataUpdate struct {
 	DUID        int64
-	GID         int64
-	DtStart     time.Time
-	DtStop      time.Time
+	GID         int64     // group being scraped
+	DtStart     time.Time // start time of a scrape
+	DtStop      time.Time // stop time of a scrape
 	LastModTime time.Time
 	LastModBy   int64
 }
@@ -160,35 +164,59 @@ func DeletePerson(id int64) error {
 }
 
 //=================================================
-//                    GROUP
+//                    EGROUP
 //=================================================
-func readGroup(row *sql.Row) (EGroup, error) {
+
+// ReadGroup reads a row from the database EGroup table based on the supplied row
+func ReadGroup(row *sql.Row) (EGroup, error) {
 	var a EGroup
-	err := row.Scan(&a.GID, &a.GroupName, &a.LastModTime, &a.LastModBy)
+	err := row.Scan(&a.GID, &a.GroupName, &a.GroupDescription, &a.DtStart, &a.DtStop, &a.LastModTime, &a.LastModBy)
 	return a, err
 }
 
 // GetGroup reads a EGroup the structure for the supplied id
 func GetGroup(id int64) (EGroup, error) {
-	return readGroup(DB.Prepstmt.GetGroup.QueryRow(id))
+	return ReadGroup(DB.Prepstmt.GetGroup.QueryRow(id))
 }
 
 // GetGroupByName reads a EGroup the structure for the supplied group name
 func GetGroupByName(s string) (EGroup, error) {
-	return readGroup(DB.Prepstmt.GetGroupByName.QueryRow(s))
+	return ReadGroup(DB.Prepstmt.GetGroupByName.QueryRow(s))
 }
 
-// InsertEGroup writes a new EGroup record to the database
-func InsertEGroup(a *EGroup) error {
-	res, err := DB.Prepstmt.InsertEGroup.Exec(a.GroupName, a.LastModBy)
+// ReadGroups reads one row from the supplied rows struct.
+func ReadGroups(rows *sql.Rows) (EGroup, error) {
+	var a EGroup
+	err := rows.Scan(&a.GID, &a.GroupName, &a.GroupDescription, &a.DtStart, &a.DtStop, &a.LastModTime, &a.LastModBy)
+	return a, err
+}
+
+// InsertGroup writes a new EGroup record to the database
+func InsertGroup(a *EGroup) error {
+	res, err := DB.Prepstmt.InsertGroup.Exec(a.GroupName, a.GroupDescription, a.DtStart, a.DtStop, a.LastModBy)
 	if nil == err {
 		id, err := res.LastInsertId()
 		if err == nil {
 			a.GID = int64(id)
 		}
 	} else {
-		util.Ulog("InsertEGroup: error inserting EGroup:  %v\n", err)
+		util.Ulog("InsertGroup: error inserting EGroup:  %v\n", err)
 		util.Ulog("EGroup = %#v\n", *a)
+	}
+	return err
+}
+
+// UpdateGroup updates the existing database record for a
+func UpdateGroup(a *EGroup) error {
+	_, err := DB.Prepstmt.UpdateGroup.Exec(a.GroupName, a.GroupDescription, a.DtStart, a.DtStop, a.LastModBy, a.GID)
+	return err
+}
+
+// DeleteGroup deletes Group records with the supplied id
+func DeleteGroup(id int64) error {
+	_, err := DB.Prepstmt.DeleteGroup.Exec(id)
+	if err != nil {
+		util.Ulog("Error deleting Group for id = %d, error: %v\n", id, err)
 	}
 	return err
 }
@@ -212,7 +240,7 @@ func GetPGroup(pid, gid int64) (PGroup, error) {
 func InsertPGroup(a *PGroup) error {
 	_, err := DB.Prepstmt.InsertPGroup.Exec(a.PID, a.GID, a.LastModBy)
 	if nil != err {
-		util.Ulog("InsertEGroup: error inserting EGroup:  %v\n", err)
+		util.Ulog("InsertGroup: error inserting EGroup:  %v\n", err)
 		util.Ulog("EGroup = %#v\n", *a)
 	}
 	return err

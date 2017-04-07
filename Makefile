@@ -15,11 +15,11 @@ package:
 	mkdir -p ./tmp/mojo
 	for dir in $(DIRS); do make -C $$dir package;done
 
-test:
+test: package
 	for dir in $(DIRS); do make -C $$dir test;done
 	cat test/testreport.txt
 
-all: clean mojo package test stats
+all: clean mojo test stats
 
 stats:
 	@echo "GO SOURCE CODE STATISTICS"

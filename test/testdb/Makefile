@@ -4,10 +4,19 @@ BINDIR=../../tmp/mojo
 testdb:
 	@echo "**** build complete in testdb ***"
 
+bigdb:
+	@gunzip bigdb.sql.gz
+	mysql --no-defaults mojo <bigdb.sql
+	@gzip bigdb.sql
+
+smalldb:
+	@gunzip smalldb.sql.gz
+	mysql --no-defaults mojo <smalldb.sql
+	@gzip smalldb.sql
+
 test:
 	@touch fail
-	./functest.sh
-	mysqldump --no-defaults rentroll >restore.sql
+	mysqldump --no-defaults mojo  >restore.sql
 	mv restore.sql ../ws/
 	@rm -f fail
 
