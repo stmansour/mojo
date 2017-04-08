@@ -7,6 +7,7 @@ clean:
 	rm -f testreport.txt
 	for dir in $(DIRS); do make -C $$dir clean;done
 	cd ./testdb;make clean
+	cd ./sendmail;make clean
 	@echo "*** CLEAN completed in test ***"
 
 test:

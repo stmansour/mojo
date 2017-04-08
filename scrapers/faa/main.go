@@ -40,6 +40,23 @@ func initFAAMojo() {
 				fmt.Printf("Error inserting group: %s\n", err.Error())
 				os.Exit(1)
 			}
+			var p db.Person
+			p.FirstName = "Steve"
+			p.MiddleName = "F"
+			p.LastName = "Mansour"
+			p.PreferredName = "Steve"
+			p.JobTitle = "CTO, Accord Interests"
+			p.OfficePhone = ""
+			p.OfficeFax = ""
+			p.Email1 = "sman@accordinterests.com"
+			p.MailAddress = "2215 Wellington Drive"
+			p.MailAddress2 = ""
+			p.MailCity = "Milpitas"
+			p.MailState = "CA"
+			p.MailPostalCode = "95035"
+			p.MailCountry = "USA"
+			p.RoomNumber = ""
+			p.MailStop = ""
 		} else {
 			fmt.Printf("Error reading group \"FAA\": %s\n", err.Error())
 			os.Exit(1)
@@ -51,11 +68,11 @@ func initFAAMojo() {
 		g.DtStart = time.Now()
 		err = db.UpdateGroup(&g)
 		if err != nil {
-			fmt.Printf("Error inserting group: %s\n", err.Error())
+			fmt.Printf("Error updating group: %s\n", err.Error())
 			os.Exit(1)
 		}
 	}
-	App.GID = g.GID
+
 }
 
 func readCommandLineArgs() {
