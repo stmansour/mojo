@@ -29,6 +29,11 @@ type PrepSQL struct {
 	UpdateDataUpdate               *sql.Stmt
 	GetDataUpdate                  *sql.Stmt
 	GetDataUpdateByGroup           *sql.Stmt
+	GetQuery                       *sql.Stmt
+	GetQueryByName                 *sql.Stmt
+	InsertQuery                    *sql.Stmt
+	UpdateQuery                    *sql.Stmt
+	DeleteQuery                    *sql.Stmt
 }
 
 // BuildPreparedStatements creates all the prepared statements for this db
@@ -102,6 +107,23 @@ func BuildPreparedStatements() {
 	DB.Prepstmt.InsertDataUpdate, err = DB.Db.Prepare("INSERT INTO DataUpdate (" + s1 + ") VALUES(" + s2 + ")")
 	util.ErrCheck(err)
 	DB.Prepstmt.UpdateDataUpdate, err = DB.Db.Prepare("UPDATE DataUpdate SET " + s3 + " WHERE DUID=?")
+	util.ErrCheck(err)
+
+	//--------------------------------------------
+	//    QUERY
+	//--------------------------------------------
+	flds = "QID,QueryName,QueryDescr,QueryJSON,LastModTime,LastModBy"
+	DB.DBFields["Query"] = flds
+	s1, s2, s3 = GenSQLInsertAndUpdateStrings(flds)
+	DB.Prepstmt.GetQuery, err = DB.Db.Prepare("SELECT " + flds + " FROM Query WHERE QID=?")
+	util.ErrCheck(err)
+	DB.Prepstmt.GetQueryByName, err = DB.Db.Prepare("SELECT " + flds + " FROM Query WHERE QueryName=?")
+	util.ErrCheck(err)
+	DB.Prepstmt.InsertQuery, err = DB.Db.Prepare("INSERT INTO Query (" + s1 + ") VALUES(" + s2 + ")")
+	util.ErrCheck(err)
+	DB.Prepstmt.UpdateQuery, err = DB.Db.Prepare("UPDATE Query SET " + s3 + " WHERE QID=?")
+	util.ErrCheck(err)
+	DB.Prepstmt.DeleteQuery, err = DB.Db.Prepare("DELETE FROM Query WHERE QID=?")
 	util.ErrCheck(err)
 }
 

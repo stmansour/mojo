@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"mojo/db"
+	"mojo/sendmail"
 	"mojo/util"
 	"os"
 	"time"
@@ -109,6 +110,29 @@ func setupTestGroup() {
 			os.Exit(1)
 		}
 	}
+
+	var q db.Query
+	q, err = db.GetQueryByName("MojoTest")
+	if err != nil {
+		if util.IsSQLNoResultsError(err) {
+			q.QueryName = "MojoTest"
+			q.QueryDescr = "Steve's test query"
+
+			// TBD: until we work out the generic sql query builder,
+			// I will just store the actual query for now.  This will be
+			// replaced when the query builder is completed
+			q.QueryJSON = "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID && PGroup.GID=2 WHERE people.status=0"
+			err = db.InsertQuery(&q)
+			if err != nil {
+				fmt.Printf("Error inserting query: %s\n", err.Error())
+				os.Exit(1)
+			}
+		} else {
+			fmt.Printf("Error reading query \"MojoTest\": %s\n", err.Error())
+			os.Exit(1)
+		}
+	}
+	App.QueryName = q.QueryName
 }
 
 func readCommandLineArgs() {
@@ -116,7 +140,7 @@ func readCommandLineArgs() {
 	dbnmPtr := flag.String("N", "mojo", "database name")
 	mPtr := flag.String("b", "msg.html", "filename containing the html message to send")
 	aPtr := flag.String("a", "", "filename of attachment")
-	qPtr := flag.String("q", "query", "name of the query to send messages to")
+	qPtr := flag.String("q", "MojoTest", "name of the query to send messages to")
 	flag.Parse()
 	App.DBName = *dbnmPtr
 	App.DBUser = *dbuPtr
@@ -144,17 +168,18 @@ func main() {
 	db.InitDB(App.db)
 	db.BuildPreparedStatements()
 
+	si := sendmail.Info{
+		From:        "sman@accordinterests.com",
+		QName:       App.QueryName,
+		Subject:     "Perks Email",
+		MsgFName:    App.MsgFile,
+		AttachFName: App.AttachFile,
+	}
 	setupTestGroup()
-	// si := sendmail.Info{
-	// 	From:        "sman@accordinterests.com",
-	// 	QName:       App.QueryName,
-	// 	Subject:     "Perks Email",
-	// 	MsgFName:    App.MsgFile,
-	// 	AttachFName: App.AttachFile,
-	// }
-	// err := sendmail.Sendmail(&si)
-	// if err != nil {
-	// 	fmt.Printf("error sending mail: %s\n", err.Error())
-	// 	os.Exit(1)
-	// }
+	err = sendmail.Sendmail(&si)
+	if err != nil {
+		fmt.Printf("error sending mail: %s\n", err.Error())
+		os.Exit(1)
+	}
+	fmt.Printf("Successfully sent %d message(s)\n", si.SentCount)
 }

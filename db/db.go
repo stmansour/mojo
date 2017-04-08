@@ -63,6 +63,18 @@ type DataUpdate struct {
 	LastModBy   int64
 }
 
+// Query is a struct that represents a database query
+// The QueryJSON is in a format that can be translated
+// into SQL and used as a database query
+type Query struct {
+	QID         int64
+	QueryName   string
+	QueryDescr  string
+	QueryJSON   string
+	LastModTime time.Time
+	LastModBy   int64
+}
+
 // DB is a struct of context data available for all the DB routines
 var DB struct {
 	Prepstmt PrepSQL
@@ -312,5 +324,66 @@ func InsertDataUpdate(a *DataUpdate) error {
 // UpdateDataUpdate updates the existing DataUpdate record
 func UpdateDataUpdate(a *DataUpdate) error {
 	_, err := DB.Prepstmt.UpdateDataUpdate.Exec(a.GID, a.DtStart, a.DtStop, a.LastModBy, a.DUID)
+	return err
+}
+
+//=================================================
+//               QUERY
+//=================================================
+
+// ReadQuery reads a query record based on the supplied row
+func ReadQuery(row *sql.Row) (Query, error) {
+	var a Query
+	err := row.Scan(&a.QID, &a.QueryName, &a.QueryDescr, &a.QueryJSON, &a.LastModTime, &a.LastModBy)
+	return a, err
+}
+
+// ReadQuerys reads the next query record based on the supplied rows
+func ReadQuerys(rows *sql.Rows) (Query, error) {
+	var a Query
+	err := rows.Scan(&a.QID, &a.QueryName, &a.QueryDescr, &a.QueryJSON, &a.LastModTime, &a.LastModBy)
+	return a, err
+}
+
+// GetQuery reads a Query the structure for the supplied id
+func GetQuery(id int64) (Query, error) {
+	return ReadQuery(DB.Prepstmt.GetQuery.QueryRow(id))
+}
+
+// GetQueryByName reads a Query the structure for the supplied id
+func GetQueryByName(s string) (Query, error) {
+	return ReadQuery(DB.Prepstmt.GetQueryByName.QueryRow(s))
+}
+
+// InsertQuery inserts a new Query record into the database
+func InsertQuery(a *Query) error {
+	res, err := DB.Prepstmt.InsertQuery.Exec(a.QueryName, a.QueryDescr, a.QueryJSON, a.LastModBy)
+	if nil == err {
+		id, err := res.LastInsertId()
+		if err == nil {
+			a.QID = int64(id)
+		}
+	} else {
+		util.Ulog("InsertQuery: error inserting Query:  %v\n", err)
+		util.Ulog("Query = %#v\n", *a)
+	}
+	return err
+}
+
+// UpdateQuery updates the existing Query record
+func UpdateQuery(a *Query) error {
+	_, err := DB.Prepstmt.UpdateQuery.Exec(a.QueryName, a.QueryDescr, a.QueryJSON, a.LastModBy, a.QID)
+	if err != nil {
+		util.Ulog("InsertQuery: error updating Query:  %v\n", err)
+	}
+	return err
+}
+
+// DeleteQuery deletes a Query record from the database
+func DeleteQuery(id int64) error {
+	_, err := DB.Prepstmt.DeleteQuery.Exec(id)
+	if err != nil {
+		util.Ulog("Error deleting Query for id = %d, error: %v\n", id, err)
+	}
 	return err
 }

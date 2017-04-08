@@ -21,8 +21,23 @@ test: package
 
 all: clean mojo test stats
 
+try: clean mojo package
+
 stats:
 	@echo "GO SOURCE CODE STATISTICS"
 	@echo "----------------------------------------"
 	@find . -name "*.go" | srcstats
 	@echo "----------------------------------------"
+
+# Sometimes the database schema changes. When this happens many
+# things won't work because to speed up testing we use mysql to 
+# restore test databases -- and the restored databases will not
+# have the correct schema to match the updated schema. So, use
+# this target to regenerate the databases. The way to use this
+# target is typically as follows:
+# 	a) make try
+#	b) make schemachange
+#	c) make test
+schemachange:
+	@echo "recreating databases used in testing..."
+	cd scrapers/faa;make q
