@@ -25,7 +25,7 @@ q:
 	@${BINDIR}/mojonewdb
 	@./faa -q
 	@mysqldump --no-defaults mojo >smalldb.sql
-	@gzip smalldb.sql
+	@gzip -f smalldb.sql
 	@cp smalldb.sql.gz ../../test/testdb/
 
 all: clean faa package test

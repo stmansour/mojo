@@ -122,6 +122,9 @@ var Svcs = []ServiceHandler{
 	{"peoplestats", SvcPeopleStats},
 	{"person", SvcHandlerPerson},
 	{"ping", SvcHandlerPing},
+	{"qrescount", SvcQueryResultsCount},
+	{"queries", SvcSearchHandlerQueries},
+	{"query", SvcHandlerQuery},
 }
 
 // SvcHandlerPing is the most basic test that you can run against the server

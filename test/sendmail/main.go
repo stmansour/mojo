@@ -21,6 +21,7 @@ var App struct {
 	db         *sql.DB
 	DBName     string
 	DBUser     string
+	SetupOnly  bool
 }
 
 // AddPersonToGroup creates a PGroup record for the specified pid,gid pair
@@ -121,7 +122,7 @@ func setupTestGroup() {
 			// TBD: until we work out the generic sql query builder,
 			// I will just store the actual query for now.  This will be
 			// replaced when the query builder is completed
-			q.QueryJSON = "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID && PGroup.GID=2 WHERE people.status=0"
+			q.QueryJSON = "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=2 WHERE People.Status=0"
 			err = db.InsertQuery(&q)
 			if err != nil {
 				fmt.Printf("Error inserting query: %s\n", err.Error())
@@ -141,12 +142,14 @@ func readCommandLineArgs() {
 	mPtr := flag.String("b", "msg.html", "filename containing the html message to send")
 	aPtr := flag.String("a", "", "filename of attachment")
 	qPtr := flag.String("q", "MojoTest", "name of the query to send messages to")
+	soPtr := flag.Bool("n", false, "just run the setup, do not send email")
 	flag.Parse()
 	App.DBName = *dbnmPtr
 	App.DBUser = *dbuPtr
 	App.MsgFile = *mPtr
 	App.AttachFile = *aPtr
 	App.QueryName = *qPtr
+	App.SetupOnly = *soPtr
 }
 
 func main() {
@@ -176,10 +179,14 @@ func main() {
 		AttachFName: App.AttachFile,
 	}
 	setupTestGroup()
-	err = sendmail.Sendmail(&si)
-	if err != nil {
-		fmt.Printf("error sending mail: %s\n", err.Error())
-		os.Exit(1)
+	if App.SetupOnly {
+		fmt.Printf("Setup completed\n")
+	} else {
+		err = sendmail.Sendmail(&si)
+		if err != nil {
+			fmt.Printf("error sending mail: %s\n", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("Successfully sent %d message(s)\n", si.SentCount)
 	}
-	fmt.Printf("Successfully sent %d message(s)\n", si.SentCount)
 }

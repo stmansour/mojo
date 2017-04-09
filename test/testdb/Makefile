@@ -28,3 +28,7 @@ clean:
 	rm -f log mojolog llog ll.g err.txt [a-z] [a-z][a-z1-9] [a-z].g gold/*.g fail
 	@echo "*** CLEAN completed in testdb ***"
 
+snapshot:
+	@echo "*** snapshot current database as smalldb"
+	@mysqldump --no-defaults mojo >smalldb.sql
+	@gzip -f smalldb.sql

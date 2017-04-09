@@ -31,6 +31,11 @@ dojsonGET "http://localhost:8275/v1/peoplecount/" "a"  "WebService--PeopleCount"
 dojsonGET "http://localhost:8275/v1/groupcount/" "b"  "WebService--GroupCount"
 dojsonGET "http://localhost:8275/v1/peoplestats/" "c"  "WebService--PeopleStats"
 
+echo "request%3D%7B%22cmd%22%3A%22%22%2C%22limit%22%3A100%2C%22offset%22%3A0%7D" > request
+dojsonPOST "http://localhost:8275/v1/queries/" "request" "d"  "WebService--SearchQueries"
+
+dojsonGET "http://localhost:8275/v1/qrescount/1" "e"  "WebService--QueryResultsCount"
+
 
 stopMojoServer
 echo "RENTROLL SERVER STOPPED" 

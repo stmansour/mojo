@@ -338,8 +338,8 @@ func ReadQuery(row *sql.Row) (Query, error) {
 	return a, err
 }
 
-// ReadQuerys reads the next query record based on the supplied rows
-func ReadQuerys(rows *sql.Rows) (Query, error) {
+// ReadQueries reads the next query record based on the supplied rows
+func ReadQueries(rows *sql.Rows) (Query, error) {
 	var a Query
 	err := rows.Scan(&a.QID, &a.QueryName, &a.QueryDescr, &a.QueryJSON, &a.LastModTime, &a.LastModBy)
 	return a, err

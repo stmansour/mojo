@@ -152,14 +152,14 @@ function buildPageElements() {
             },
             { id: 'workflows', text: 'Workflows', img: 'icon-folder', expanded: true, group: true,
                 nodes: [
-                        { id: 'deflst', text: 'Define A List', icon: 'fa fa-list' },
+                        { id: 'query',  text: 'Queries', icon: 'fa fa-list' },
                         { id: 'sendml', text: 'Send Email To List', icon: 'fa fa-envelope-o' },
                         { id: 'stats',  text: 'Statistics', icon: 'fa fa-bar-chart' },
                 ]
             },
             { id: 'admin', text: 'Admin', img: 'icon-wrench', expanded: true, group: true,
                 nodes: [
-                        { id: 'people', text: 'Show People', icon: 'fa fa-user' },
+                        { id: 'people', text: 'Show People', icon: 'fa fa-user'  },
                         { id: 'groups', text: 'Show Groups', icon: 'fa fa-users' },
                 ]
             },
@@ -169,6 +169,13 @@ function buildPageElements() {
             switch(event.target) {
                 case 'dashboard':
                     w2ui.toplayout.load('main','/html/dashboard.html'); 
+                    w2ui.toplayout.hide('right',true);
+                    break;
+                case 'query':
+                    var grid = event.target + 'Grid';
+                    w2ui[grid].url = '/v' + app.protocolVersion + '/' + event.target + '/';
+                    console.log('url = ' + w2ui[grid].url);
+                    w2ui.toplayout.content('main', w2ui[grid]);
                     w2ui.toplayout.hide('right',true);
                     break;
                 case 'people':
@@ -242,10 +249,33 @@ function buildPageElements() {
             expandColumn: false
         },
         columns: [
-            {field: 'GID',              caption: 'GID',           size: '100px', sortable: true, hidden: true},
-            {field: 'GroupName',        caption: 'GroupName',     size: '100px', sortable: true, hidden: false},
-            {field: 'GroupDescription', caption: 'MiddleName',    size: '300px', sortable: true, hidden: false},
-            {field: 'LastModTime',      caption: 'LastModTime',   size: '100px', sortable: true, hidden: true},
+            {field: 'GID',              caption: 'GID',               size: '100px', sortable: true, hidden: true},
+            {field: 'GroupName',        caption: 'Group Name',        size: '100px', sortable: true, hidden: false},
+            {field: 'GroupDescription', caption: 'Group Description', size: '300px', sortable: true, hidden: false},
+            {field: 'LastModTime',      caption: 'LastModTime',       size: '100px', sortable: true, hidden: true},
+        ],
+    });
+
+    //------------------------------------------------------------------------
+    //          queryGrid
+    //------------------------------------------------------------------------
+    $().w2grid({
+        name: 'queryGrid',
+        url: '/v1/query',
+        show: {
+            header: false,
+            toolbar: true,
+            footer: true,
+            lineNumbers: false,
+            selectColumn: false,
+            expandColumn: false
+        },
+        columns: [
+            {field: 'QID',        caption: 'QID',              size: '100px', sortable: true, hidden: true},
+            {field: 'QueryName',  caption: 'QueryName',        size: '100px', sortable: true, hidden: false},
+            {field: 'QueryDescr', caption: 'Query Description',size: '300px', sortable: true, hidden: false},
+            {field: 'QueryJSON',  caption: 'Query JSON',       size: '30%',   sortable: true, hidden: false},
+            {field: 'LastModTime',caption: 'LastModTime',      size: '100px', sortable: true, hidden: true},
         ],
     });
 }

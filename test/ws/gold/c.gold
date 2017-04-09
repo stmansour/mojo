@@ -1,8 +1,8 @@
 {
     "record": {
         "Bounced": 0,
-        "Count": 9,
-        "OptOut": 0
+        "Count": 11,
+        "OptOut": 1
     },
     "status": "success"
 }

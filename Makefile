@@ -40,4 +40,14 @@ stats:
 #	c) make test
 schemachange:
 	@echo "recreating databases used in testing..."
+	@echo "Getting people with last name Aa* from FAA"
 	cd scrapers/faa;make q
+	@echo "Adding sendmail test info"
+	cd test/sendmail;./sendmail -n
+	@echo "Setting updated small testdb to db used in ./test/ws"
+	cd test/testdb;make snapshot;make test
+	@echo "Completed."
+
+smalldb:
+	@echo "making smalldb..."
+	cd test/testdb;make smalldb

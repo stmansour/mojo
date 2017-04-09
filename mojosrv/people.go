@@ -86,12 +86,18 @@ type PersonGetResponse struct {
 
 // GetRowCount returns the number of database rows in the supplied table with the supplied where clause
 func GetRowCount(table, where string) (int64, error) {
+	if len(where) > 0 {
+		where = " WHERE " + where
+	}
+	return GetRowCountRaw(table, where)
+}
+
+// GetRowCountRaw returns the number of database rows in the supplied table with the supplied where clause
+func GetRowCountRaw(table, where string) (int64, error) {
 	count := int64(0)
 	var err error
-	s := fmt.Sprintf("SELECT COUNT(*) FROM %s", table)
-	if len(where) > 0 {
-		s += fmt.Sprintf(" WHERE %s", where)
-	}
+	s := fmt.Sprintf("SELECT COUNT(*) FROM %s %s", table, where)
+	fmt.Printf("QUERY = %s\n", s)
 	de := db.DB.Db.QueryRow(s).Scan(&count)
 	if de != nil {
 		err = fmt.Errorf("GetRowCount: query=\"%s\"    err = %s", s, de.Error())
@@ -184,7 +190,7 @@ func SvcPeopleStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	)
 	s := ""
 	if d.ID > 0 {
-		s = fmt.Sprintf("GID=%d AND ", d.ID)
+		s = fmt.Sprintf("WHERE GID=%d AND ", d.ID)
 	}
 	g.Record.Count, err = GetRowCount("People", s+"")
 	if err != nil {
@@ -192,13 +198,13 @@ func SvcPeopleStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		SvcGridErrorReturn(w, err)
 		return
 	}
-	g.Record.OptOut, err = GetRowCount("People", s+"Status=1")
+	g.Record.OptOut, err = GetRowCount("People", "Status=1")
 	if err != nil {
 		fmt.Printf("Error from GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
-	g.Record.Bounced, err = GetRowCount("People", s+"Status=2")
+	g.Record.Bounced, err = GetRowCount("People", "Status=2")
 	if err != nil {
 		fmt.Printf("Error from GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
