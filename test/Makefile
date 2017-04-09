@@ -1,6 +1,7 @@
 DIRS = ws
 
 db:
+	cd sendmail;make
 	@echo "*** MAKE completed in test ***"
 
 clean:

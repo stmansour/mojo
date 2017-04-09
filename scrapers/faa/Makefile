@@ -24,8 +24,6 @@ q:
 	@echo "Create a new db in quick mode..."
 	@${BINDIR}/mojonewdb
 	@./faa -q
-	@mysqldump --no-defaults mojo >smalldb.sql
-	@gzip -f smalldb.sql
-	@cp smalldb.sql.gz ../../test/testdb/
+	@mysqldump --no-defaults mojo >faa.sql
 
 all: clean faa package test

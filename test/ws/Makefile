@@ -2,12 +2,13 @@ all:
 	@echo "*** Completed in ws ***"
 
 clean:
-	rm -f *.log log llog *.g ./gold/*.g err.txt [a-z] [a-z][a-z1-9] qq? fail request
+	rm -f *.log log llog *.g ./gold/*.g err.txt [a-z] [a-z][a-z1-9] qq? fail request smalldb.sql
 	@echo "*** CLEAN completed in ws ***"
 
 test:
 	@touch fail
-	mysql --no-defaults mojo < restore.sql
+	if [ ! -f smalldb.sql ]; then pushd ../testdb;make smalldb;cp smalldb.sql ../ws/;popd; fi
+	mysql --no-defaults mojo < smalldb.sql
 	./functest.sh
 	@echo "*** TEST completed in ws ***"
 	@rm -f fail
@@ -15,8 +16,5 @@ test:
 package:
 	@echo "*** PACKAGE completed in ws ***"
 
-backupdb:
-	mysqldump --no-defaults mojo > restore.sql
-
-restoredb:
-	mysql --no-defaults mojo < restore.sql
+testdb:
+	cp ../testdb/smalldb.sql.gz .;gunzip -f smalldb.sql.gz;rm -f smalldb.sql.gz

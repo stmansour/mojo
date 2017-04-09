@@ -17,7 +17,6 @@ package:
 
 test: package
 	for dir in $(DIRS); do make -C $$dir test;done
-	cat test/testreport.txt
 
 all: clean mojo test stats
 
@@ -39,15 +38,13 @@ stats:
 #	b) make schemachange
 #	c) make test
 schemachange:
-	@echo "recreating databases used in testing..."
-	@echo "Getting people with last name Aa* from FAA"
+	@echo "Rebuilding test database..."
 	cd scrapers/faa;make q
-	@echo "Adding sendmail test info"
-	cd test/sendmail;./sendmail -n
-	@echo "Setting updated small testdb to db used in ./test/ws"
-	cd test/testdb;make snapshot;make test
+	cd test/testdb;make smalldb;make test
 	@echo "Completed."
 
 smalldb:
 	@echo "making smalldb..."
 	cd test/testdb;make smalldb
+
+testdb: smalldb

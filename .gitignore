@@ -1,0 +1,8 @@
+.DS_Store
+*/.DS_Store
+*/*/.DS_Store
+test/testdb/bigdb.sql.gz
+test/sendmail/perks.pdf
+mojosrv/html/fa
+mojosrv/html/images
+mojosrv/js
