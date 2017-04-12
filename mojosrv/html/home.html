@@ -42,6 +42,12 @@ var app = {
     stdfmt: 'font-family: "Open Sans","Roboto",sans-serif; font-size: 8pt; border: 1px solid #dfdfdf; border-spacing:0px; padding: 3px; color: #777777;',
 };
 
+function openInNewTab(url) {
+    "use strict";
+    var win = window.open(url, '_blank');
+    win.focus();
+}
+
 
 // The reason to load these elements in this way rather than storing them as part of a
 // 'config' variable then passing them into the widget generators is that we need to
@@ -119,6 +125,9 @@ function buildPageElements() {
             ]},
             { type: 'break', id: 'break2' },
             { type: 'button', id: 'msgButton', caption: 'News Flash', icon: 'fa fa-spinner fa-pulse fa-3x fa-fw'},
+            { type: 'menu',    id: 'menuButton', caption: 'Developer',    icon: 'fa fa-user-circle', items: [
+                { text: 'Webdocs', icon: 'fa fa-book' },
+            ]},
         ],
         onClick: function (event) {
             console.log('target = ' + event.target);
@@ -135,6 +144,7 @@ function buildPageElements() {
                     w2ui.newsLayout.load('main', '/html/news.html', 'flip-down');
                     w2ui.toptoolbar.set('msgButton', {icon: 'fa fa-newspaper-o'});
                     break;
+                case "menuButton:Webdocs": openInNewTab('/doc/docs.html'); break; 
             }
         },
     }));
