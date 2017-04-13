@@ -1,5 +1,6 @@
 TOP=../..
 THISDIR="mojonewdb"
+TOOL="mojonewdb"
 
 mojonewdb: *.sh
 
@@ -12,7 +13,7 @@ install: mojonewdb
 
 package: mojonewdb
 	touch fail
-	cp ${THISDIR} ${TOP}/tmp/mojo/
+	cp ${TOOL} ${TOP}/tmp/mojo/
 	@echo "*** Packaging completed in admin/${THISDIR} ***"
 	rm -f fail
 

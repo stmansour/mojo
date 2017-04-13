@@ -59,6 +59,7 @@ func readCommandLineArgs() {
 
 func main() {
 	readCommandLineArgs()
+	db.ReadConfig()
 
 	//==============================================
 	// Open the logfile and begin logging...
@@ -70,13 +71,23 @@ func main() {
 	log.SetOutput(App.LogFile)
 	util.Ulog("*** Accord MOJO ***\n")
 
-	// s := "<awsdbusername>:<password>@tcp(<rdsinstancename>:3306)/accord"
-	s := fmt.Sprintf("%s:@/%s?charset=utf8&parseTime=True", App.DBUser, App.DBName)
+	// Get the database...
+	s := db.GetSQLOpenString(App.DBName)
 	App.db, err = sql.Open("mysql", s)
 	if nil != err {
-		fmt.Printf("sql.Open for database=%s, dbuser=%s: Error = %v\n", App.DBName, App.DBUser, err)
+		fmt.Printf("sql.Open for database=%s, dbuser=%s: Error = %v\n", App.DBName, db.AppConfig.MojoDbuser, err)
+		os.Exit(1)
 	}
 	defer App.db.Close()
+
+	// s := "<awsdbusername>:<password>@tcp(<rdsinstancename>:3306)/accord"
+	// s := fmt.Sprintf("%s:@/%s?charset=utf8&parseTime=True", App.DBUser, App.DBName)
+	// App.db, err = sql.Open("mysql", s)
+	// if nil != err {
+	// 	fmt.Printf("sql.Open for database=%s, dbuser=%s: Error = %v\n", App.DBName, App.DBUser, err)
+	// }
+	// defer App.db.Close()
+
 	err = App.db.Ping()
 	if nil != err {
 		fmt.Printf("App.db.Ping for database=%s, dbuser=%s: Error = %v\n", App.DBName, App.DBUser, err)

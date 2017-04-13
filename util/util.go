@@ -41,6 +41,14 @@ func Ulog(format string, a ...interface{}) {
 	// debug.PrintStack()
 }
 
+// LogAndPrintError encapsulates logging and printing an error.
+// Note that the error is printed only if the environment is NOT production.
+func LogAndPrintError(funcname string, err error) {
+	errmsg := fmt.Sprintf("%s: err = %v\n", funcname, err)
+	Ulog(errmsg)
+	fmt.Println(errmsg)
+}
+
 // Tline returns a string of dashes that is the specified length
 func Tline(n int) string {
 	p := make([]byte, n)

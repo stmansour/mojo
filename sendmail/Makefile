@@ -1,5 +1,5 @@
 TOP=..
-RELDIR=${TOP}/tmp/mojo
+BINDIR=${TOP}/tmp/mojo
 THISDIR="sendmail"
 
 sendmail: *.go

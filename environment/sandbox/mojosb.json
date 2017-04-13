@@ -1,0 +1,32 @@
+{
+    "EnvName": "Mojo Email Service",
+    "Instances": [
+	{
+	    "InstName": "mojonode",
+	    "OS":       "Linux",
+	    "Count":    1,
+		"Resources": {
+			"MySql": true
+		},
+	    "Apps": [
+	    	{
+	    		"UID": "t01",
+	    		"Name": "tgo",
+	    		"Repo": "jenkins-snapshot/tgo/latest",
+	    		"UPort": 8102,
+	    		"IsTest": false
+	    	},
+	    	{
+	    		"UID": "mojo01",
+	    		"Name": "mojo",
+	    		"Repo": "jenkins-snapshot/mojo/latest",
+	    		"UPort": 8250,
+	    		"IsTest": false,
+				"AppRes": {
+					"Cmd": "./mojonewdb"
+				}
+	    	},
+	    ]
+	}
+	]
+} 

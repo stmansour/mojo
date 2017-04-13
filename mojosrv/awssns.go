@@ -1,5 +1,15 @@
 package main
 
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"mojo/util"
+	"net/http"
+	"strings"
+	"time"
+)
+
 // handles subscription messages from AWS SNS
 
 // The following HTTP POST request is an example of a subscription confirmation message.
@@ -26,3 +36,67 @@ package main
 //   "SigningCertURL" : "https://sns.us-west-2.amazonaws.com/SimpleNotificationService-f3ecfb7224c7233fe7bb5f59f96de52f.pem"
 // }
 //
+
+// AwsSubscriptionConfirmation is the struct of data sent by AWS
+// to confirm a subscription to a topic.
+type AwsSubscriptionConfirmation struct {
+	Type             string    `json:"Type"`
+	MessageID        string    `json:"MessageId"`
+	Token            string    `json:"Token"`
+	TopicArn         string    `json:"TopicArn"`
+	Message          string    `json:"Message"`
+	SubscribeURL     string    `json:"SubscribeURL"`
+	Timestamp        time.Time `json:"Timestamp"`
+	SignatureVersion string    `json:"SignatureVersion"`
+	Signature        string    `json:"Signature"`
+	SigningCertURL   string    `json:"SigningCertURL"`
+}
+
+// SvcHandlerAws is the handler for aws subscription confirmation messages
+func SvcHandlerAws(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+	funcname := "SvcHandlerAws"
+	fmt.Printf("Entered %s\n", funcname)
+
+	// the SubscriptionConfirmation struct has a field named "Type" all the other
+	// notifications have a field named "NotificationType".
+	i := strings.Index(d.data, "\"NotificationType\"")
+	if i >= 0 {
+		// handle notification
+		fmt.Printf("NotificationType not yet handled\n")
+		return
+	}
+
+	i = strings.Index(d.data, "\"Type\"")
+	if i >= 0 {
+		SvcHandlerAwsSubConf(w, r, d)
+		return
+	}
+}
+
+// SvcHandlerAwsSubConf is the handler for aws subscription confirmation messages
+func SvcHandlerAwsSubConf(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+	funcname := "SvcHandlerAwsSubConf"
+	var a AwsSubscriptionConfirmation
+	err := json.Unmarshal([]byte(d.data), &a)
+	if err != nil {
+		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
+		util.LogAndPrintError(funcname, e)
+		return
+	}
+
+	// the proper reply is simply to respond with an HTTP Get on the URL in SubscribeURL
+	fmt.Printf("HTTP GET to %s\n", a.SubscribeURL)
+	response, err := http.Get(a.SubscribeURL)
+	if err != nil {
+		util.LogAndPrintError(funcname, err)
+	} else {
+		defer response.Body.Close()
+		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			util.LogAndPrintError(funcname, err)
+		}
+		util.Ulog("Response from AWS to SubscribeURL: %s\n", string(body))
+		fmt.Printf("Response: %s\n", string(body))
+	}
+
+}

@@ -27,8 +27,9 @@ type SvcStatusResponse struct {
 
 // ServiceHandler describes the handler for all services
 type ServiceHandler struct {
-	Cmd     string
-	Handler func(http.ResponseWriter, *http.Request, *ServiceData)
+	Cmd       string
+	ExtOrigin bool // false if this comes from our UI, true if it comes from external services such as AWS
+	Handler   func(http.ResponseWriter, *http.Request, *ServiceData)
 }
 
 // GenSearch describes a search condition
@@ -114,17 +115,18 @@ type ServiceData struct { // position 0 is 'v1'
 
 // Svcs is the table of all service handlers
 var Svcs = []ServiceHandler{
-	{"group", SvcHandlerGroup},
-	{"groups", SvcSearchHandlerGroups},
-	{"groupcount", SvcGroupsCount},
-	{"people", SvcSearchHandlerPeople},
-	{"peoplecount", SvcPeopleCount},
-	{"peoplestats", SvcPeopleStats},
-	{"person", SvcHandlerPerson},
-	{"ping", SvcHandlerPing},
-	{"qrescount", SvcQueryResultsCount},
-	{"queries", SvcSearchHandlerQueries},
-	{"query", SvcHandlerQuery},
+	{"aws", true, SvcHandlerAwsSubConf},
+	{"group", false, SvcHandlerGroup},
+	{"groups", false, SvcSearchHandlerGroups},
+	{"groupcount", false, SvcGroupsCount},
+	{"people", false, SvcSearchHandlerPeople},
+	{"peoplecount", false, SvcPeopleCount},
+	{"peoplestats", false, SvcPeopleStats},
+	{"person", false, SvcHandlerPerson},
+	{"ping", false, SvcHandlerPing},
+	{"qrescount", false, SvcQueryResultsCount},
+	{"queries", false, SvcSearchHandlerQueries},
+	{"query", false, SvcHandlerQuery},
 }
 
 // SvcHandlerPing is the most basic test that you can run against the server
@@ -180,19 +182,7 @@ func V1ServiceHandler(w http.ResponseWriter, r *http.Request) {
 
 	svcDebugURL(r, &d)
 	showRequestHeaders(r)
-
-	switch r.Method {
-	case "POST":
-		if nil != getPOSTdata(w, r, &d) {
-			return
-		}
-	case "GET":
-		if nil != getGETdata(w, r, &d) {
-			return
-		}
-	}
-
-	showWebRequest(&d)
+	svcGetPayload(w, r, &d)
 
 	//-----------------------------------------------------------------------
 	//  Now call the appropriate handler to do the rest
@@ -213,6 +203,20 @@ func V1ServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	svcDebugTxnEnd()
+}
+
+func svcGetPayload(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+	switch r.Method {
+	case "POST":
+		if nil != getPOSTdata(w, r, d) {
+			return
+		}
+	case "GET":
+		if nil != getGETdata(w, r, d) {
+			return
+		}
+	}
+	showWebRequest(d)
 }
 
 // SvcGridErrorReturn formats an error return to the grid widget and sends it

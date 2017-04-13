@@ -2,10 +2,10 @@ TOP=..
 WEBDOCDIR=${TOP}/../webdoc
 WEBDOC=${WEBDOCDIR}/webdoc
 WEBCSS=${WEBDOCDIR}/doc.css
-RELDIR=${TOP}/tmp/mojo
+BINDIR=${TOP}/tmp/mojo
 THISDIR="mojosrv"
 
-mojosrv: *.go ver.go webdoc
+mojosrv: *.go ver.go webdoc conf.json
 	go vet
 	golint
 	go build
@@ -18,6 +18,9 @@ webdoc:
 	@cp ${WEBDOCDIR}/doc.css doc/
 	@cp ${WEBDOCDIR}/tester.html doc/
 
+conf.json:
+	cp confdev.json conf.json
+
 ver.go:
 	./mkver.sh
 
@@ -27,11 +30,18 @@ clean:
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package:
-	mkdir -p ${RELDIR}
-	cp mojosrv ${RELDIR}/mojosrv
+	mkdir -p ${BINDIR}
+	cp mojosrv ${BINDIR}/mojosrv
+	cp conf.json ${BINDIR}/
+	cp -r doc ${BINDIR}/
+	cp -r html ${BINDIR}/
 	@echo "*** ${THISDIR}: completed package ***"
 
 test:
 	@echo "*** ${THISDIR}: completed test ***"
 
 all: clean mojosrv package
+
+images:
+	tar cvf images.tar html/images
+	gzip mojoimages.tar
