@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"mojo/db"
 	"mojo/util"
+	"net/http"
 	"time"
 )
 
@@ -97,4 +100,24 @@ func HandleEmailBounce(s string) error {
 // update the associated person record with a status of COMPLAINT
 func HandleEmailComplaint(s string) error {
 	return ChangePersonStatus(s, db.COMPLAINT)
+}
+
+// SvcHandlerAwsBouncedEmail removes a bounced email address from the database
+func SvcHandlerAwsBouncedEmail(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+	funcname := "SvcHandlerAwsBouncedEmail"
+	fmt.Printf("Entered %s\n", funcname)
+	var a AwsBounceNotification
+	err := json.Unmarshal([]byte(d.data), &a)
+	if err != nil {
+		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
+		util.LogAndPrintError(funcname, e)
+		return
+	}
+
+	fmt.Printf("Received Bounced Email Message!\n")
+	fmt.Printf("%#v\n", a)
+
+	for i := 0; i < len(a.Mail.CommonHeaders.To); i++ {
+		fmt.Printf("Email address to remove: %s\n", a.Mail.CommonHeaders.To[i])
+	}
 }
