@@ -49,3 +49,7 @@ smalldb:
 	cd test/testdb;make smalldb
 
 testdb: smalldb
+
+publish: package
+	cd tmp;tar cvf mojo.tar mojo; gzip mojo.tar
+	cd tmp;/usr/local/accord/bin/deployfile.sh mojo.tar.gz jenkins-snapshot/mojo/latest
