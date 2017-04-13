@@ -35,11 +35,23 @@ import (
 //   "Signature" : "EXAMPLEpH+DcEwjAPg8O9mY8dReBSwksfg2S7WKQcikcNKWLQjwu6A4VbeS0QHVCkhRS7fUQvi2egU3N858fiTDN6bkkOxYDVrY0Ad8L10Hs3zH81mtnPk5uvvolIC1CXGu43obcgFxeL3khZl8IKvO61GWB6jI9b5+gLPoBc1Q=",
 //   "SigningCertURL" : "https://sns.us-west-2.amazonaws.com/SimpleNotificationService-f3ecfb7224c7233fe7bb5f59f96de52f.pem"
 // }
-//
 
-// AwsSubscriptionConfirmation is the struct of data sent by AWS
+// If the subscription succeeds we get a follow-up notification...
+// // {
+//   "Type" : "Notification",
+//   "MessageId" : "228f8a83-4c07-5514-b316-dbeae8bbdb3f",
+//   "TopicArn" : "arn:aws:sns:us-east-1:553053000801:accord_mojo_bounced_email",
+//   "Message" : "{\"notificationType\":\"AmazonSnsSubscriptionSucceeded\",\"message\":\"You have successfully subscribed your Amazon SNS topic 'arn:aws:sns:us-east-1:553053000801:accord_mojo_bounced_email' to receive 'Bounce' notifications from Amazon SES for identity 'sman@accordinterests.com'.\"}\n",
+//   "Timestamp" : "2017-04-13T16:08:28.706Z",
+//   "SignatureVersion" : "1",
+//   "Signature" : "dpA8h4FkzKCyKFIRNBvJMthI80NmYiN5jR8EzgQX88PZ7xjDT4PRHxb bUPHTCR0 GClXuNNhRUCUm XNod8zMgSura8cFw9mI7HAC8 rvV/6BZkfDcxI/ba1GSTXIGYC8dFjOp2IdIH0NBD7FjgT8VaBbp4rm9XJ3zTbkuC6 saybaY05I/Cv/xPrl/wFzlF urBhwmtEFLxq 8I5yjOpbmuZjLp9ejJRkQ6 5/tJ0hII16QVpY3OIpbLwRKSWOMJ2eZJll6XF1BdBUX3AWweh7KADHGpuQoNdZBJXrLKhsONilJZxHkV26nTboHC2yWAhl/46lHAJSjZ554UJbfQ==",
+//   "SigningCertURL" : "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-b95095beb82e8f6a046b3aafc7f4149a.pem",
+//   "UnsubscribeURL" : "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:553053000801:accord_mojo_bounced_email:4ed1756c-e31f-4809-a873-056c3026afb4"
+// }
+
+// AwsSubscribeConfirm is the struct of data sent by AWS
 // to confirm a subscription to a topic.
-type AwsSubscriptionConfirmation struct {
+type AwsSubscribeConfirm struct {
 	Type             string    `json:"Type"`
 	MessageID        string    `json:"MessageId"`
 	Token            string    `json:"Token"`
@@ -52,38 +64,79 @@ type AwsSubscriptionConfirmation struct {
 	SigningCertURL   string    `json:"SigningCertURL"`
 }
 
+// AwsNotificationEnvelope describes the fields surrounding individual messages.
+// We decode first into this struct to determin what type of message we received.
+type AwsNotificationEnvelope struct {
+	Type      string `json:"Type"`
+	MessageID string `json:"MessageId"`
+	TopicArn  string `json:"TopicArn"`
+	Message   struct {
+		NotificationType string `json:"notificationType"`
+	}
+	Timestamp        time.Time `json:"Timestamp"`
+	SignatureVersion string    `json:"SignatureVersion"`
+	Signature        string    `json:"Signature"`
+	SigningCertURL   string    `json:"SigningCertURL"`
+	UnsubscribeURL   string    `json:"UnsubscribeURL"`
+}
+
 // SvcHandlerAws is the handler for aws subscription confirmation messages
 func SvcHandlerAws(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcHandlerAws"
 	fmt.Printf("Entered %s\n", funcname)
 
-	// the SubscriptionConfirmation struct has a field named "Type" all the other
-	// notifications have a field named "NotificationType".
-	i := strings.Index(d.data, "\"NotificationType\"")
-	if i >= 0 {
-		// handle notification
-		SvcHandlerAwsBouncedEmail(w, r, d)
+	// First thing to do is to look at the x-amz-sns-mssage-type header
+	msgType := r.Header.Get("x-amz-sns-message-type")
+	if len(msgType) == 0 {
+		fmt.Printf("Could not find x-amz-sns-message-type header. Ignoring.\n")
 		return
 	}
 
-	i = strings.Index(d.data, "\"Type\"")
-	if i >= 0 {
+	switch strings.ToLower(msgType) {
+	case "subscriptionconfirmation":
 		SvcHandlerAwsSubConf(w, r, d)
-		return
+	case "notification":
+		SvcHandlerNotification(w, r, d)
+	default:
+		fmt.Printf("Unhandled AWS message.  x-amz-sns-message-type = %s\n", msgType)
 	}
 }
 
-// SvcHandlerAwsSubConf is the handler for aws subscription confirmation messages
-func SvcHandlerAwsSubConf(w http.ResponseWriter, r *http.Request, d *ServiceData) {
-	funcname := "SvcHandlerAwsSubConf"
-	var a AwsSubscriptionConfirmation
+// SvcHandlerNotification decodes and handles notifications from AWS
+func SvcHandlerNotification(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+	funcname := "SvcHandlerNotification"
+	var a AwsNotificationEnvelope
 	err := json.Unmarshal([]byte(d.data), &a)
 	if err != nil {
 		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
 		util.LogAndPrintError(funcname, e)
 		return
 	}
+	fmt.Printf("Found Notification Type: %s\n", a.Message.NotificationType)
+	switch a.Message.NotificationType {
+	case "AmazonSnsSubscriptionSucceeded":
+		util.Ulog("Notification Received: AmazonSnsSubscriptionSucceeded\n")
+		fmt.Printf("Notification Received and processd: AmazonSnsSubscriptionSucceeded\n")
+	case "Bounce":
+		SvcHandlerAwsBouncedEmail(w, r, d)
+	case "Complaint":
+		SvcHandlerAwsComplaintEmail(w, r, d)
+	default:
+		fmt.Printf("Unhandled Notification Type: %s\n", a.Message.NotificationType)
+	}
+}
 
+// SvcHandlerAwsSubConf is the handler for aws subscription confirmation messages
+func SvcHandlerAwsSubConf(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+	funcname := "SvcHandlerAwsSubConf"
+
+	var a AwsSubscribeConfirm
+	err := json.Unmarshal([]byte(d.data), &a)
+	if err != nil {
+		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
+		util.LogAndPrintError(funcname, e)
+		return
+	}
 	// the proper reply is simply to respond with an HTTP Get on the URL in SubscribeURL
 	fmt.Printf("HTTP GET to %s\n", a.SubscribeURL)
 	response, err := http.Get(a.SubscribeURL)

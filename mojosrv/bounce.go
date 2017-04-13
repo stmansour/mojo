@@ -41,38 +41,40 @@ type AwsMailNotification struct {
 
 // AwsBounceNotification is the data type for an AWS Bounced email message notification
 type AwsBounceNotification struct {
-	NotificationType string `json:"notificationType"`
-	Bounce           struct {
-		BounceType        string `json:"bounceType"`
-		ReportingMTA      string `json:"reportingMTA"`
-		BouncedRecipients []struct {
-			EmailAddress   string `json:"emailAddress"`
-			Status         string `json:"status"`
-			Action         string `json:"action"`
-			DiagnosticCode string `json:"diagnosticCode"`
-		} `json:"bouncedRecipients"`
-		BounceSubType string    `json:"bounceSubType"`
-		Timestamp     time.Time `json:"timestamp"`
-		FeedbackID    string    `json:"feedbackId"`
-		RemoteMtaIP   string    `json:"remoteMtaIp"`
-	} `json:"bounce"`
-	Mail AwsMailNotification `json:"mail"`
-}
-
-// AwsComplaintNotification is the data type for an AWS complaint email message notification
-type AwsComplaintNotification struct {
-	NotificationType string `json:"notificationType"`
-	Complaint        struct {
-		UserAgent            string `json:"userAgent"`
-		ComplainedRecipients []struct {
-			EmailAddress string `json:"emailAddress"`
-		} `json:"complainedRecipients"`
-		ComplaintFeedbackType string    `json:"complaintFeedbackType"`
-		ArrivalDate           time.Time `json:"arrivalDate"`
-		Timestamp             time.Time `json:"timestamp"`
-		FeedbackID            string    `json:"feedbackId"`
-	} `json:"complaint"`
-	Mail AwsMailNotification `json:"mail"`
+	Type      string `json:"Type"`
+	MessageID string `json:"MessageId"`
+	TopicArn  string `json:"TopicArn"`
+	Message   struct {
+		NotificationType string `json:"notificationType"`
+		Bounce           struct {
+			BounceType        string `json:"bounceType"`
+			BounceSubType     string `json:"bounceSubType"`
+			BouncedRecipients []struct {
+				EmailAddress   string `json:"emailAddress"`
+				Action         string `json:"action"`
+				Status         string `json:"status"`
+				DiagnosticCode string `json:"diagnosticCode"`
+			} `json:"bouncedRecipients"`
+			Timestamp    time.Time `json:"timestamp"`
+			FeedbackID   string    `json:"feedbackId"`
+			RemoteMtaIP  string    `json:"remoteMtaIp"`
+			ReportingMTA string    `json:"reportingMTA"`
+		} `json:"bounce"`
+		Mail struct {
+			Timestamp        time.Time `json:"timestamp"`
+			Source           string    `json:"source"`
+			SourceArn        string    `json:"sourceArn"`
+			SourceIP         string    `json:"sourceIp"`
+			SendingAccountID string    `json:"sendingAccountId"`
+			MessageID        string    `json:"messageId"`
+			Destination      []string  `json:"destination"`
+		} `json:"mail"`
+	} `json:"Message"`
+	Timestamp        time.Time `json:"Timestamp"`
+	SignatureVersion string    `json:"SignatureVersion"`
+	Signature        string    `json:"Signature"`
+	SigningCertURL   string    `json:"SigningCertURL"`
+	UnsubscribeURL   string    `json:"UnsubscribeURL"`
 }
 
 // ChangePersonStatus is called with the email address of the person
@@ -115,9 +117,9 @@ func SvcHandlerAwsBouncedEmail(w http.ResponseWriter, r *http.Request, d *Servic
 	}
 
 	fmt.Printf("Received Bounced Email Message!\n")
-	fmt.Printf("%#v\n", a)
+	// fmt.Printf("%#v\n", a)
 
-	for i := 0; i < len(a.Mail.CommonHeaders.To); i++ {
-		fmt.Printf("Email address to remove: %s\n", a.Mail.CommonHeaders.To[i])
+	for i := 0; i < len(a.Message.Bounce.BouncedRecipients); i++ {
+		fmt.Printf("Email address to remove: %s\n", a.Message.Bounce.BouncedRecipients[i].EmailAddress)
 	}
 }

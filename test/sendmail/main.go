@@ -10,6 +10,8 @@ import (
 	"os"
 	"time"
 
+	"gopkg.in/gomail.v2"
+
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -22,6 +24,26 @@ var App struct {
 	DBName     string
 	DBUser     string
 	SetupOnly  bool
+}
+
+// SendBouncedEmailTest is a routine to send an email message to a list of
+// email addresses identified by the query.
+func SendBouncedEmailTest() error {
+	addr := "bounce@simulator.amazonses.com"
+	m := gomail.NewMessage()
+	m.SetHeader("From", "sman@stevemansour.com")
+	m.SetHeader("Subject", "Force a bounce message")
+	m.SetBody("text/html", "<html><body><p>This should bounce!</p></body></html>")
+	m.SetHeader("To", addr)
+	fmt.Printf("Sending BOUNCE message to %s\n", addr)
+	d := gomail.NewDialer("email-smtp.us-east-1.amazonaws.com", 587, "AKIAJ3PENIYLS5U5ATJA", "AqIWufI4PwuxA61NihNQ4Yt+23n6w0CuQLuiUAdHP2E7")
+	err := d.DialAndSend(m)
+	if err != nil {
+		util.Ulog("Error on DialAndSend = %s\n", err.Error())
+		return err
+	}
+	fmt.Printf("Bount message successfully sent to %s\n", addr)
+	return nil
 }
 
 // AddPersonToGroup creates a PGroup record for the specified pid,gid pair
@@ -143,7 +165,12 @@ func readCommandLineArgs() {
 	aPtr := flag.String("a", "", "filename of attachment")
 	qPtr := flag.String("q", "MojoTest", "name of the query to send messages to")
 	soPtr := flag.Bool("n", false, "just run the setup, do not send email")
+	bPTR := flag.Bool("bounce", false, "just send a message to bounce@simulator.amazonses.com")
 	flag.Parse()
+	if *bPTR {
+		SendBouncedEmailTest()
+		os.Exit(0)
+	}
 	App.DBName = *dbnmPtr
 	App.DBUser = *dbuPtr
 	App.MsgFile = *mPtr

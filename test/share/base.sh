@@ -37,7 +37,7 @@ if [ "x${MOJOBIN}" = "x" ]; then
 else
 	echo "MOJOBIN was pre-set to:  \"${MOJOBIN}\""
 fi
-TREPORT="${MOJOBIN}/../../test/testreport.txt"
+TREPORT="${TOP}/test/testreport.txt"
 
 MOJO="${MOJOBIN}/mojosrv -A"
 CSVLOAD="${MOJOBIN}/rrloadcsv"
@@ -460,6 +460,77 @@ dojsonPOST () {
 }
 
 ########################################
+# dojsonAwsPOST()
+#   Simulate a POST command to the server and use
+#   the supplied file name as the json data
+#	Parameters:
+# 		$1 = url
+#       $2 = json file
+# 		$3 = base file name
+#		$4 = title
+#		$5 = AWS SNS message type
+########################################
+dojsonAwsPOST () {
+	TESTCOUNT=$((TESTCOUNT + 1))
+	printf "PHASE %2s  %3s  %s... " ${TESTCOUNT} $3 $4
+	CMD="curl -s -X POST ${1} -H \"X-Amz-Sns-Message-Type: ${5}\" -d @${2}"
+	HDR="X-Amz-Sns-Message-Type: ${5}"
+	curl -s -X POST ${1} -H "${HDR}" -d @${2} | python -m json.tool >${3} 2>>${LOGFILE}
+
+	if [ "${FORCEGOOD}" = "1" ]; then
+		cp ${3} ${GOLD}/${3}.gold
+		echo "DONE"
+	elif [ "${SKIPCOMPARE}" = "0" ]; then
+		if [ ! -f ${GOLD}/${3}.gold ]; then
+			echo "UNSET CONTENT" > ${GOLD}/${3}.gold
+			echo "Created a default ${GOLD}/$1.gold for you. Update this file with known-good output."
+		fi
+
+		#--------------------------------------------------------------------
+		# The actual data has timestamp information that changes every run.
+		# The timestamp can be filtered out for purposes of testing whether
+		# or not the web service could be called and can return the expected
+		# data.
+		#--------------------------------------------------------------------
+		declare -a out_filters=(
+			's/(^[ \t]+"LastModTime":).*/$1 TIMESTAMP/'
+		)
+		cp gold/${3}.gold qqx
+		cp ${3} qqy
+		for f in "${out_filters[@]}"
+		do
+			perl -pe "$f" qqx > qqx1; mv qqx1 qqx
+			perl -pe "$f" qqy > qqy1; mv qqy1 qqy
+		done
+
+		UDIFFS=$(diff qqx qqy | wc -l)
+		if [ ${UDIFFS} -eq 0 ]; then
+			if [ ${SHOWCOMMAND} -eq 1 ]; then
+				echo "PASSED	cmd: ${CMD}"
+			else
+				echo "PASSED"
+			fi
+		else
+			echo "FAILED..." >> ${ERRFILE}
+			echo "Differences in ${3} are as follows:" >> ${ERRFILE}
+			diff qqx qqy >> ${ERRFILE}
+			echo "If correct:  mv ${3} ${GOLD}/${3}.gold" >> ${ERRFILE}
+			echo "Command to reproduce:  ${CMD}" >> ${ERRFILE}
+			cat ${ERRFILE}
+			failmsg
+			if [ ${MANAGESERVER} -eq 1 ]; then
+				echo "STOPPING MOJO SERVER"
+				pkill mojosrv
+			fi
+			exit 1
+		fi
+	else
+		echo 
+	fi
+	rm -f qqx qqy
+}
+
+########################################
 # dojsonGET()
 #   Simulate a GET command to the server and use
 #   the supplied file name as the json data
@@ -561,7 +632,7 @@ while getopts "cfmornR:" o; do
 done
 shift $((OPTIND-1))
 
-
+if [ ! -f ${TREPORT} ]; then touch ${TREPORT}; fi
 rm -f ${ERRFILE}
 echo    "Test Name:    ${TESTNAME}" > ${LOGFILE}
 echo    "Test Purpose: ${TESTSUMMARY}" >> ${LOGFILE}
