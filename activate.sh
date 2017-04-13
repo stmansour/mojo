@@ -73,23 +73,15 @@ makeProdNode() {
 #  3. For PDF printing, install wkhtmltopdf
 #--------------------------------------------------------------
 setupAppNode() {
-	#---------------------
-	# database
-	#---------------------
 	./mojonewdb
 
-	#---------------------
-	# wkhtmltopdf
-	#---------------------
-	./pdfinstall.sh
-	
 	echo "Done."
 }
 
 start() {
 	# Create a database if this is a localhost instance  
 	if [ ${IAM} == "root" ]; then
-		x=$(grep RRDbhost conf.json | grep localhost | wc -l)
+		x=$(grep MojoDbhost conf.json | grep localhost | wc -l)
 		if (( x == 1 )); then
 			setupAppNode
 		fi
@@ -104,17 +96,22 @@ start() {
 		fi
 	fi
 
-	if [ ! -f "/usr/local/share/man/man1/rentroll.1" ]; then
-		./installman.sh >installman.log 2>&1
-		${GETFILE} jenkins-snapshot/rentroll/latest/rrimages.tar.gz
-		tar xzvf rrimages.tar.gz
-		${GETFILE} jenkins-snapshot/rentroll/latest/rrjs.tar.gz
-		tar xzvf rrjs.tar.gz
+	if [ ! -f "./html/js" ]; then
+		${GETFILE} jenkins-snapshot/rentroll/latest/js.tar.gz
+		tar xzvf js.tar.gz
+	fi
+	if [ ! -f "./html/images" ]; then
+		${GETFILE} jenkins-snapshot/mojo/latest/images.tar.gz
+		tar xzvf images.tar.gz
+	fi
+	if [ ! -f "./html/fa" ]; then
 		${GETFILE} jenkins-snapshot/rentroll/latest/fa.tar.gz
 		tar xzvf fa.tar.gz
 	fi
 
 	./${PROGNAME} >log.out 2>&1 &
+
+	# make sure it can survive a reboot...
 	if [ ${IAM} == "root" ]; then
 		if [ ! -d /var/run/${PROGNAME} ]; then
 			mkdir /var/run/${PROGNAME}
@@ -133,17 +130,17 @@ start() {
 
 stop() {
 	# stopwatchdog
-	killall -9 rentroll
+	killall -9 mojo
 	if [ ${IAM} == "root" ]; then
-		sleep 6
+		sleep 2
 		rm -f /var/run/${PROGNAME}/${PROGNAME}.pid /var/lock/${PROGNAME}
 	fi
 }
 
 status() {
-	ST=$(curl -s http://${HOST}:${PORT}/status/ | wc -c)
+	ST=$(curl -s http://${HOST}:${PORT}/v1/ping/ | wc -c)
 	case "${ST}" in
-	"2")
+	"33")
 		exit 0
 		;;
 	"0")
@@ -157,16 +154,17 @@ status() {
 		fi
 		exit 3
 		;;
+	"*") echo "Not sure what state it's in. Response had ${ST} characters, expected 33."
 	esac
 }
 
 reload() {
-	ST=$(curl -s http://${HOST}:${PORT}/status/)
+	ST=$(curl -s http://${HOST}:${PORT}/v1/ping)
 }
 
 restart() {
 	stop
-	sleep 10
+	sleep 3
 	start
 }
 
@@ -236,7 +234,7 @@ for arg do
 		exit 0
 		;;
 	"condrestart")
-		if [ -f /var/lock/phonebook ] ; then
+		if [ -f /var/lock/mojo ] ; then
 			restart
 		fi
 		;;

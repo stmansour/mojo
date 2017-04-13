@@ -35,6 +35,7 @@ package:
 	cp conf.json ${BINDIR}/
 	cp -r doc ${BINDIR}/
 	cp -r html ${BINDIR}/
+	if [ -d "./js" ]; then cp -r js ${BINDIR}/; fi
 	@echo "*** ${THISDIR}: completed package ***"
 
 test:
