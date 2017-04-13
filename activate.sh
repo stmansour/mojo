@@ -12,6 +12,7 @@ GETFILE="/usr/local/accord/bin/getfile.sh"
 RENTROLLHOME="/home/ec2-user/apps/${PROGNAME}"
 DATABASENAME="${PROGNAME}"
 DBUSER="ec2-user"
+SERVERNAME="mojosrv"
 IAM=$(whoami)
 
 
@@ -96,31 +97,31 @@ start() {
 		fi
 	fi
 
-	if [ ! -f "./html/js" ]; then
-		${GETFILE} jenkins-snapshot/rentroll/latest/js.tar.gz
+	if [ ! -d "./js" ]; then
+		${GETFILE} jenkins-snapshot/mojo/latest/js.tar.gz
 		tar xzvf js.tar.gz
 	fi
-	if [ ! -f "./html/images" ]; then
+	if [ ! -d "./html/images" ]; then
 		${GETFILE} jenkins-snapshot/mojo/latest/images.tar.gz
 		tar xzvf images.tar.gz
 	fi
-	if [ ! -f "./html/fa" ]; then
-		${GETFILE} jenkins-snapshot/rentroll/latest/fa.tar.gz
+	if [ ! -d "./html/fa" ]; then
+		${GETFILE} jenkins-snapshot/mojo/latest/fa.tar.gz
 		tar xzvf fa.tar.gz
 	fi
 
-	./${PROGNAME} >log.out 2>&1 &
+	./${SERVERNAME} >log.out 2>&1 &
 
 	# make sure it can survive a reboot...
 	if [ ${IAM} == "root" ]; then
-		if [ ! -d /var/run/${PROGNAME} ]; then
-			mkdir /var/run/${PROGNAME}
+		if [ ! -d /var/run/${SERVERNAME} ]; then
+			mkdir /var/run/${SERVERNAME}
 		fi
-		echo $! >/var/run/${PROGNAME}/${PROGNAME}.pid
-		touch /var/lock/${PROGNAME}
+		echo $! >/var/run/${SERVERNAME}/${SERVERNAME}.pid
+		touch /var/lock/${SERVERNAME}
 	fi
 
-	# give ${PROGNAME} a few seconds to start up before initiating the watchdog
+	# give ${SERVERNAME} a few seconds to start up before initiating the watchdog
 	# sleep 5
 	# if [ "${STARTPBONLY}" -ne "1" ]; then
 	# 	stopwatchdog
@@ -130,10 +131,10 @@ start() {
 
 stop() {
 	# stopwatchdog
-	killall -9 mojo
+	killall -9 ${SERVERNAME}
 	if [ ${IAM} == "root" ]; then
 		sleep 2
-		rm -f /var/run/${PROGNAME}/${PROGNAME}.pid /var/lock/${PROGNAME}
+		rm -f /var/run/${SERVERNAME}/${SERVERNAME}.pid /var/lock/${SERVERNAME}
 	fi
 }
 
@@ -144,12 +145,12 @@ status() {
 		exit 0
 		;;
 	"0")
-		# ${PROGNAME} is not responsive or not running.  Exit status as described in 
+		# ${SERVERNAME} is not responsive or not running.  Exit status as described in 
 		# http://refspecs.linuxbase.org/LSB_3.1.0/LSB-Core-generic/LSB-Core-generic/iniscrptact.html
-		if [ ${IAM} == "root" -a -f /var/run/${PROGNAME}/${PROGNAME}.pid ]; then
+		if [ ${IAM} == "root" -a -f /var/run/${SERVERNAME}/${SERVERNAME}.pid ]; then
 			exit 1
 		fi
-		if [ ${IAM} == "root" -a -f /var/lock/${PROGNAME} ]; then
+		if [ ${IAM} == "root" -a -f /var/lock/${SERVERNAME} ]; then
 			exit 2
 		fi
 		exit 3
@@ -234,7 +235,7 @@ for arg do
 		exit 0
 		;;
 	"condrestart")
-		if [ -f /var/lock/mojo ] ; then
+		if [ -f /var/lock/mojosrv ] ; then
 			restart
 		fi
 		;;
