@@ -62,7 +62,7 @@ func SvcHandlerAws(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	i := strings.Index(d.data, "\"NotificationType\"")
 	if i >= 0 {
 		// handle notification
-		fmt.Printf("NotificationType not yet handled\n")
+		SvcHandlerAwsBouncedEmail(w, r, d)
 		return
 	}
 
