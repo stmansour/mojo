@@ -20,7 +20,7 @@
 	    		"UID": "mojo01",
 	    		"Name": "mojo",
 	    		"Repo": "jenkins-snapshot/mojo/latest",
-	    		"UPort": 8250,
+	    		"UPort": 8275,
 	    		"IsTest": false,
 				"AppRes": {
 					"Cmd": "./mojonewdb"
