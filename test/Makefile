@@ -28,4 +28,5 @@ test:
 
 package:
 	for dir in $(DIRS); do make -C $$dir package;done
+	cd sendmail;make package
 	@echo "*** PACKAGE completed in test ***"

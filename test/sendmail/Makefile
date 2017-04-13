@@ -14,6 +14,7 @@ clean:
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package:
+	cp sendmail ${BINDIR}/mojomailtest
 	@echo "*** ${THISDIR}: completed package ***"
 
 test:
