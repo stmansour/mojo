@@ -80,6 +80,13 @@ func HandleEmailBounce(s string) error {
 	return ChangePersonStatus(s, db.BOUNCED)
 }
 
+// HandleEmailSuppression is called with the bounced email address due to
+// amazon's suppression list. It will update the associated person record
+// with a status of SUPPRESSED
+func HandleEmailSuppression(s string) error {
+	return ChangePersonStatus(s, db.SUPPRESSED)
+}
+
 // HandleEmailComplaint is called with the bounced email address. It will
 // update the associated person record with a status of COMPLAINT
 func HandleEmailComplaint(s string) error {
@@ -103,7 +110,12 @@ func SvcHandlerAwsBouncedEmail(w http.ResponseWriter, r *http.Request, d *Servic
 
 	for i := 0; i < len(b.Bounce.BouncedRecipients); i++ {
 		fmt.Printf("Email address to remove: %s\n", b.Bounce.BouncedRecipients[i].EmailAddress)
-		err = HandleEmailBounce(b.Bounce.BouncedRecipients[i].EmailAddress)
+		switch b.Bounce.BounceSubType {
+		case "Suppressed":
+			err = HandleEmailSuppression(b.Bounce.BouncedRecipients[i].EmailAddress)
+		default:
+			err = HandleEmailBounce(b.Bounce.BouncedRecipients[i].EmailAddress)
+		}
 		if err != nil {
 			util.Ulog("%s: Error handling bounce: %s\n", funcname, err.Error())
 		}

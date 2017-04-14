@@ -34,10 +34,11 @@ type Person struct {
 
 // Status values for Person
 const (
-	NORMAL    = int64(0)
-	OPTOUT    = int64(1)
-	BOUNCED   = int64(2)
-	COMPLAINT = int64(3)
+	NORMAL     = int64(0)
+	OPTOUT     = int64(1)
+	BOUNCED    = int64(2)
+	COMPLAINT  = int64(3)
+	SUPPRESSED = int64(4)
 )
 
 // EGroup is a structure of all attributes of a EGroup to which Persons can belong
