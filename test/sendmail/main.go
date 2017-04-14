@@ -26,10 +26,53 @@ var App struct {
 	SetupOnly  bool
 }
 
-// SendBouncedEmailTest is a routine to send an email message to a list of
-// email addresses identified by the query.
+// SendBouncedEmailTest sends an email message that bounces.  For testing.
+// The recipient's ISP rejects your email with an SMTP 550 5.1.1 response
+// code ("Unknown User"). Amazon SES generates a bounce notification and
+// sends it to you via email or by using an Amazon SNS notification,
+// depending on how you set up your system. This mailbox simulator email
+// address will not be placed on the Amazon SES suppression list as one
+// normally would when an email hard bounces. The bounce response that
+// you receive from the mailbox simulator is compliant with RFC 3464.
 func SendBouncedEmailTest() error {
-	addr := "bounce@simulator.amazonses.com"
+	return SendEmailTest("bounce@simulator.amazonses.com")
+}
+
+// SendComplaintEmailTest sends an email message that bounces.  For testing.
+// The recipient's ISP accepts your email and delivers it to the recipient’s
+// inbox. The recipient, however, does not want to receive your message and
+// clicks "Mark as Spam" within an email application that uses an ISP that
+// sends a complaint response to Amazon SES. Amazon SES then forwards the
+// complaint notification to you via email or by using an Amazon SNS
+// notification, depending on how you set up your system. The complaint
+// response that you receive from the mailbox simulator is compliant with
+// RFC 5965.
+func SendComplaintEmailTest() error {
+	return SendEmailTest("complaint@simulator.amazonses.com")
+}
+
+// SendOOOEmailTest sends a test email. The recipient's ISP accepts your
+// email and delivers it to the recipient’s inbox. The ISP sends an
+// out-of-the-office (OOTO) message to Amazon SES. Amazon SES then forwards
+// the OOTO message to you via email or by using an Amazon SNS notification,
+// depending on how you set up your system. The OOTO response that you receive
+// from the Mailbox Simulator is compliant with RFC 3834. For information
+// about how to set up your system to receive OOTO responses, follow the same
+// instructions for setting up how Amazon SES sends you notifications in
+// Monitoring Using Amazon SES Notifications.
+func SendOOOEmailTest() error {
+	return SendEmailTest("ooto@simulator.amazonses.com")
+}
+
+// SendSuppressionListEmailTest sends a test email. Amazon SES treats your
+// email as a hard bounce because the address you are sending to is on the
+// Amazon SES suppression list.
+func SendSuppressionListEmailTest() error {
+	return SendEmailTest("suppressionlist@simulator.amazonses.com")
+}
+
+// SendEmailTest is a routine to send an email message to the supplied address.
+func SendEmailTest(addr string) error {
 	m := gomail.NewMessage()
 	m.SetHeader("From", "sman@stevemansour.com")
 	m.SetHeader("Subject", "Force a bounce message")
@@ -166,9 +209,25 @@ func readCommandLineArgs() {
 	qPtr := flag.String("q", "MojoTest", "name of the query to send messages to")
 	soPtr := flag.Bool("n", false, "just run the setup, do not send email")
 	bPTR := flag.Bool("bounce", false, "just send a message to bounce@simulator.amazonses.com")
+	cPTR := flag.Bool("complaint", false, "just send a message to complaint@simulator.amazonses.com")
+	oPTR := flag.Bool("ooo", false, "just send a message to ooo@simulator.amazonses.com")
+	sPTR := flag.Bool("sl", false, "just send a message to suppressionlist@simulator.amazonses.com")
+
 	flag.Parse()
 	if *bPTR {
 		SendBouncedEmailTest()
+		os.Exit(0)
+	}
+	if *cPTR {
+		SendComplaintEmailTest()
+		os.Exit(0)
+	}
+	if *oPTR {
+		SendOOOEmailTest()
+		os.Exit(0)
+	}
+	if *sPTR {
+		SendSuppressionListEmailTest()
 		os.Exit(0)
 	}
 	App.DBName = *dbnmPtr

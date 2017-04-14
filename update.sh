@@ -56,7 +56,7 @@ echo -n "."; chown -R ec2-user:ec2-user ${PRODUCT}
 echo -n "."; cd ${PRODUCT}/
 echo -n "."; echo -n "starting..."
 echo -n "."; ./activate.sh start
-echo -n "."; sleep 2
+echo -n "."; sleep 1
 echo -n "."; status=$(./activate.sh ready)
 echo
 ./installman.sh >installman.log 2>&1

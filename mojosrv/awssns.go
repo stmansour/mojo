@@ -67,17 +67,21 @@ type AwsSubscribeConfirm struct {
 // AwsNotificationEnvelope describes the fields surrounding individual messages.
 // We decode first into this struct to determin what type of message we received.
 type AwsNotificationEnvelope struct {
-	Type      string `json:"Type"`
-	MessageID string `json:"MessageId"`
-	TopicArn  string `json:"TopicArn"`
-	Message   struct {
-		NotificationType string `json:"notificationType"`
-	}
+	Type             string    `json:"Type"`
+	MessageID        string    `json:"MessageId"`
+	TopicArn         string    `json:"TopicArn"`
+	Message          string    `json:"Message"`
 	Timestamp        time.Time `json:"Timestamp"`
 	SignatureVersion string    `json:"SignatureVersion"`
 	Signature        string    `json:"Signature"`
 	SigningCertURL   string    `json:"SigningCertURL"`
 	UnsubscribeURL   string    `json:"UnsubscribeURL"`
+}
+
+// AwsNotificationType is an interim struct used to figure out the
+// type of notification.
+type AwsNotificationType struct {
+	NotificationType string `json:"notificationType"`
 }
 
 // SvcHandlerAws is the handler for aws subscription confirmation messages
@@ -91,7 +95,7 @@ func SvcHandlerAws(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		fmt.Printf("Could not find x-amz-sns-message-type header. Ignoring.\n")
 		return
 	}
-
+	fmt.Printf("found message type: %s\n", msgType)
 	switch strings.ToLower(msgType) {
 	case "subscriptionconfirmation":
 		SvcHandlerAwsSubConf(w, r, d)
@@ -106,23 +110,38 @@ func SvcHandlerAws(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 func SvcHandlerNotification(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcHandlerNotification"
 	var a AwsNotificationEnvelope
-	err := json.Unmarshal([]byte(d.data), &a)
+	fmt.Printf("d.b just prior to json.Unmarshal:\n%s\n", d.data)
+	err := json.Unmarshal(d.b, &a)
 	if err != nil {
-		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
+		e := fmt.Errorf("%s:  POINT A1 -- Error with json.Unmarshal:  %s", funcname, err.Error())
 		util.LogAndPrintError(funcname, e)
 		return
 	}
-	fmt.Printf("Found Notification Type: %s\n", a.Message.NotificationType)
-	switch a.Message.NotificationType {
+
+	fmt.Printf("\n\nFIRST UNMARSHAL SUCCESS!\n")
+	fmt.Printf("a.Message = %s\n", a.Message)
+
+	var a1 AwsNotificationType
+	err = json.Unmarshal([]byte(a.Message), &a1)
+	if err != nil {
+		e := fmt.Errorf("%s:  POINT B2 -- Error with second json.Unmarshal:  %s", funcname, err.Error())
+		util.LogAndPrintError(funcname, e)
+		return
+	}
+
+	fmt.Printf("\n\nSECOND UNMARSHAL SUCCESS!\n")
+	fmt.Printf("a1.NotificationType = %s\n", a1.NotificationType)
+
+	switch a1.NotificationType {
 	case "AmazonSnsSubscriptionSucceeded":
 		util.Ulog("Notification Received: AmazonSnsSubscriptionSucceeded\n")
 		fmt.Printf("Notification Received and processd: AmazonSnsSubscriptionSucceeded\n")
 	case "Bounce":
-		SvcHandlerAwsBouncedEmail(w, r, d)
+		SvcHandlerAwsBouncedEmail(w, r, d, &a)
 	case "Complaint":
-		SvcHandlerAwsComplaintEmail(w, r, d)
+		SvcHandlerAwsComplaintEmail(w, r, d, &a)
 	default:
-		fmt.Printf("Unhandled Notification Type: %s\n", a.Message.NotificationType)
+		fmt.Printf("Unhandled Notification Type: %s\n", a1.NotificationType /*a.Message.NotificationType*/)
 	}
 }
 
@@ -131,7 +150,7 @@ func SvcHandlerAwsSubConf(w http.ResponseWriter, r *http.Request, d *ServiceData
 	funcname := "SvcHandlerAwsSubConf"
 
 	var a AwsSubscribeConfirm
-	err := json.Unmarshal([]byte(d.data), &a)
+	err := json.Unmarshal(d.b, &a)
 	if err != nil {
 		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
 		util.LogAndPrintError(funcname, e)

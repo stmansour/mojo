@@ -25,11 +25,11 @@ type AwsComplaintNotification struct {
 }
 
 // SvcHandlerAwsComplaintEmail removes a bounced email address from the database
-func SvcHandlerAwsComplaintEmail(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+func SvcHandlerAwsComplaintEmail(w http.ResponseWriter, r *http.Request, d *ServiceData, a *AwsNotificationEnvelope) {
 	funcname := "SvcHandlerAwsComplaintEmail"
 	fmt.Printf("Entered %s\n", funcname)
-	var a AwsComplaintNotification
-	err := json.Unmarshal([]byte(d.data), &a)
+	var b AwsComplaintNotification
+	err := json.Unmarshal([]byte(a.Message), &b)
 	if err != nil {
 		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
 		util.LogAndPrintError(funcname, e)
@@ -37,6 +37,6 @@ func SvcHandlerAwsComplaintEmail(w http.ResponseWriter, r *http.Request, d *Serv
 	}
 
 	fmt.Printf("Received Complaint Email Message!\n")
-	fmt.Printf("%#v\n", a)
+	fmt.Printf("%#v\n", b)
 
 }

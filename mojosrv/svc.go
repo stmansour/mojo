@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 // SvcGridError is the generalized error structure to return errors to the grid widget
@@ -109,7 +110,8 @@ type ServiceData struct { // position 0 is 'v1'
 	ID            int64                // the numeric id parsed from position 3
 	wsSearchReq   WebGridSearchRequest // what did the search requester ask for
 	wsTypeDownReq WebTypeDownRequest   // fast for typedown
-	data          string               // the raw unparsed data
+	data          string               // the raw unparsed data as string
+	b             []byte               // the raw unparsed bytes
 	GetParams     map[string]string    // parameters when HTTP GET is used
 }
 
@@ -272,30 +274,40 @@ func SvcExtractIDFromURI(uri, errmsg string, pos int, w http.ResponseWriter) (in
 func getPOSTdata(w http.ResponseWriter, r *http.Request, d *ServiceData) error {
 	funcname := "getPOSTdata"
 	var err error
-	htmlData, err := ioutil.ReadAll(r.Body)
+	d.b, err = ioutil.ReadAll(r.Body)
 	if err != nil {
 		e := fmt.Errorf("%s: Error reading message Body: %s", funcname, err.Error())
 		SvcGridErrorReturn(w, e)
 		return e
 	}
+
+	// THIS IS A DEBUG FEATURE, USUALLY TURNED OFF
+	if false {
+		fname := "./aws-" + time.Now().String()
+		err = ioutil.WriteFile(fname, d.b, 0644)
+		if err != nil {
+			fmt.Printf("Error with ioutil.WriteFile: %s\n", err.Error())
+		}
+	}
+
 	fmt.Printf("\t- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n")
-	fmt.Printf("\thtmlData = %s\n", htmlData)
-	if len(htmlData) == 0 {
+	fmt.Printf("\td.b = %s\n", d.b)
+	if len(d.b) == 0 {
 		d.wsSearchReq.Cmd = "?"
 		return nil
 	}
-	u, err := url.QueryUnescape(string(htmlData))
+	u, err := url.QueryUnescape(string(d.b))
 	if err != nil {
 		e := fmt.Errorf("%s: Error with QueryUnescape: %s", funcname, err.Error())
 		SvcGridErrorReturn(w, e)
 		return e
 	}
-	fmt.Printf("\tUnescaped htmlData = %s\n", u)
+	d.data = strings.TrimPrefix(u, "request=") // strip off "request=" if it is present
+	d.b = []byte(d.data)                       // keep the byte array around too
+	fmt.Printf("\tUnescaped d.b = %s\n", d.data)
 
-	u = strings.TrimPrefix(u, "request=") // strip off "request=" if it is present
-	d.data = u
 	var wjs WebGridSearchRequestJSON
-	err = json.Unmarshal([]byte(u), &wjs)
+	err = json.Unmarshal(d.b, &wjs)
 	if err != nil {
 		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
 		SvcGridErrorReturn(w, e)

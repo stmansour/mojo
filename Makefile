@@ -14,6 +14,7 @@ clean:
 package:
 	mkdir -p ./tmp/mojo
 	cp activate.sh ./tmp/mojo/
+	cp update.sh ./tmp/mojo/
 	for dir in $(DIRS); do make -C $$dir package;done
 
 test: package

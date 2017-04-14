@@ -41,40 +41,21 @@ type AwsMailNotification struct {
 
 // AwsBounceNotification is the data type for an AWS Bounced email message notification
 type AwsBounceNotification struct {
-	Type      string `json:"Type"`
-	MessageID string `json:"MessageId"`
-	TopicArn  string `json:"TopicArn"`
-	Message   struct {
-		NotificationType string `json:"notificationType"`
-		Bounce           struct {
-			BounceType        string `json:"bounceType"`
-			BounceSubType     string `json:"bounceSubType"`
-			BouncedRecipients []struct {
-				EmailAddress   string `json:"emailAddress"`
-				Action         string `json:"action"`
-				Status         string `json:"status"`
-				DiagnosticCode string `json:"diagnosticCode"`
-			} `json:"bouncedRecipients"`
-			Timestamp    time.Time `json:"timestamp"`
-			FeedbackID   string    `json:"feedbackId"`
-			RemoteMtaIP  string    `json:"remoteMtaIp"`
-			ReportingMTA string    `json:"reportingMTA"`
-		} `json:"bounce"`
-		Mail struct {
-			Timestamp        time.Time `json:"timestamp"`
-			Source           string    `json:"source"`
-			SourceArn        string    `json:"sourceArn"`
-			SourceIP         string    `json:"sourceIp"`
-			SendingAccountID string    `json:"sendingAccountId"`
-			MessageID        string    `json:"messageId"`
-			Destination      []string  `json:"destination"`
-		} `json:"mail"`
-	} `json:"Message"`
-	Timestamp        time.Time `json:"Timestamp"`
-	SignatureVersion string    `json:"SignatureVersion"`
-	Signature        string    `json:"Signature"`
-	SigningCertURL   string    `json:"SigningCertURL"`
-	UnsubscribeURL   string    `json:"UnsubscribeURL"`
+	NotificationType string `json:"notificationType"`
+	Bounce           struct {
+		BounceType        string `json:"bounceType"`
+		BounceSubType     string `json:"bounceSubType"`
+		BouncedRecipients []struct {
+			EmailAddress   string `json:"emailAddress"`
+			Action         string `json:"action"`
+			Status         string `json:"status"`
+			DiagnosticCode string `json:"diagnosticCode"`
+		} `json:"bouncedRecipients"`
+		Timestamp    time.Time `json:"timestamp"`
+		FeedbackID   string    `json:"feedbackId"`
+		RemoteMtaIP  string    `json:"remoteMtaIp"`
+		ReportingMTA string    `json:"reportingMTA"`
+	} `json:"bounce"`
 }
 
 // ChangePersonStatus is called with the email address of the person
@@ -105,21 +86,21 @@ func HandleEmailComplaint(s string) error {
 }
 
 // SvcHandlerAwsBouncedEmail removes a bounced email address from the database
-func SvcHandlerAwsBouncedEmail(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+func SvcHandlerAwsBouncedEmail(w http.ResponseWriter, r *http.Request, d *ServiceData, a *AwsNotificationEnvelope) {
 	funcname := "SvcHandlerAwsBouncedEmail"
 	fmt.Printf("Entered %s\n", funcname)
-	var a AwsBounceNotification
-	err := json.Unmarshal([]byte(d.data), &a)
+	var b AwsBounceNotification
+	err := json.Unmarshal([]byte(a.Message), &b)
 	if err != nil {
 		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
 		util.LogAndPrintError(funcname, e)
 		return
 	}
-
+	fmt.Printf("\n\nTHIRD UNMARSHAL SUCCESS!\n")
 	fmt.Printf("Received Bounced Email Message!\n")
-	// fmt.Printf("%#v\n", a)
+	// fmt.Printf("%#v\n", b)
 
-	for i := 0; i < len(a.Message.Bounce.BouncedRecipients); i++ {
-		fmt.Printf("Email address to remove: %s\n", a.Message.Bounce.BouncedRecipients[i].EmailAddress)
+	for i := 0; i < len(b.Bounce.BouncedRecipients); i++ {
+		fmt.Printf("Email address to remove: %s\n", b.Bounce.BouncedRecipients[i].EmailAddress)
 	}
 }

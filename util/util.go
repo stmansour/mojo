@@ -28,6 +28,29 @@ func Stripchars(str, chr string) string {
 	}, str)
 }
 
+// RemoveBackslash removes the backslash from in front of
+// the double quote mark in byte buffers in returns a new
+// byte buffer.  AWS SNS sends data this way and it breaks
+// in the JSON decoder.  This routine fixes things up.
+func RemoveBackslash(dat []byte) []byte {
+	l := len(dat)
+	b := make([]byte, l)
+	if l == 0 {
+		return b
+	}
+	lim := l - 1
+	j := 0
+	for i := 0; i < lim; i++ {
+		if dat[i] == '\\' && dat[i+1] == '"' {
+			continue // just skip the backslash
+		}
+		b[j] = dat[i]
+		j++
+	}
+	b[j] = dat[lim]
+	return b
+}
+
 // ScrubEmailAddr removes characters that are not allowed in an email address
 // from the provided string and returns the updated string.
 func ScrubEmailAddr(s string) string {
