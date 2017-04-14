@@ -1,4 +1,4 @@
-DIRS = ws
+DIRS = ws sendmail
 
 db:
 	cd sendmail;make

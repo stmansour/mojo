@@ -40,6 +40,7 @@ func initFAAMojo() {
 				fmt.Printf("Error inserting group: %s\n", err.Error())
 				os.Exit(1)
 			}
+			App.GID = g.GID
 			var p db.Person
 			p.FirstName = "Steve"
 			p.MiddleName = "F"
@@ -66,6 +67,7 @@ func initFAAMojo() {
 		// last modified date to reflect the fact that we're scraping now
 		fmt.Printf("FAA exists, updating timestamp\n")
 		g.DtStart = time.Now()
+		App.GID = g.GID
 		err = db.UpdateGroup(&g)
 		if err != nil {
 			fmt.Printf("Error updating group: %s\n", err.Error())
@@ -112,6 +114,10 @@ func main() {
 	db.InitDB(App.db)
 	db.BuildPreparedStatements()
 	initFAAMojo()
+	if App.GID == int64(0) {
+		fmt.Printf("App.GID == 0.  Something is wrong.\n")
+		os.Exit(1)
+	}
 	InitFAAScraper(App.GID, App.quick, App.workers)
 	ScrapeFAA()
 }

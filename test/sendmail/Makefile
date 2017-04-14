@@ -13,7 +13,9 @@ clean:
 	rm -f sendmail, ver.go, tmp *.log
 	@echo "*** ${THISDIR}: completed clean ***"
 
-package:
+package: sendmail
+	cp sendmail ${BINDIR}/mailtester
+	cp testmsg.html ${BINDIR}/
 	@echo "*** ${THISDIR}: completed package ***"
 
 test:

@@ -17,7 +17,7 @@ bigdb:
 smalldb:
 	if [ ! -f faa.sql ]; then cp ${TOP}/scrapers/faa/faa.sql .; fi
 	mysql --no-defaults mojo <faa.sql
-	cd ${TOP}/test/sendmail;./sendmail -n
+	cd ${TOP}/test/sendmail;./sendmail -setup
 	@mysqldump --no-defaults mojo >smalldb.sql
 
 # ws (web service) testing is done with the smalldb

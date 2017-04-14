@@ -270,6 +270,7 @@ func AddPersonToGroup(pid, gid int64) error {
 	_, err := db.GetPGroup(pid, gid)
 	if util.IsSQLNoResultsError(err) {
 		var a = db.PGroup{PID: pid, GID: gid}
+		// fmt.Printf("InsertPGroup:  pid = %d, gid = %d\n", pid, gid)
 		err = db.InsertPGroup(&a)
 		if err != nil {
 			util.Ulog("Error with InsertPGroup: %s\n", err.Error())

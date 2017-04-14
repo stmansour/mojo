@@ -115,19 +115,20 @@ func addPerson(p *db.Person, GID int64) error {
 		util.Ulog("db.InsertPerson returned: %s\n", err.Error())
 		return err
 	}
+	if GID == int64(0) {
+		return nil
+	}
 	return AddPersonToGroup(p.PID, GID)
 }
 
 func setupTestGroup() {
-	var g db.EGroup
-	var err error
-	g, err = db.GetGroupByName("MojoTest")
+	g, err := db.GetGroupByName("MojoTest")
 	if err != nil {
 		if util.IsSQLNoResultsError(err) {
 			g.GroupName = "MojoTest"
 			g.GroupDescription = "Steve's test group"
 			g.DtStart = time.Now()
-			err = db.InsertGroup(&g)
+			err := db.InsertGroup(&g)
 			if err != nil {
 				fmt.Printf("Error inserting group: %s\n", err.Error())
 				os.Exit(1)
@@ -136,35 +137,21 @@ func setupTestGroup() {
 			fmt.Printf("Error reading group \"MojoTest\": %s\n", err.Error())
 			os.Exit(1)
 		}
-		var p db.Person
-		p.FirstName = "Steve"
-		p.MiddleName = "F"
-		p.LastName = "Mansour"
-		p.PreferredName = "Steve"
-		p.JobTitle = "CTO, Accord Interests"
-		p.OfficePhone = "323-512-0111 X305"
-		p.OfficeFax = ""
-		p.Email1 = "sman@accordinterests.com"
-		p.MailAddress = "11719 Bee Cave Road"
-		p.MailAddress2 = "Suite 301"
-		p.MailCity = "Austin"
-		p.MailState = "TX"
-		p.MailPostalCode = "78738"
-		p.MailCountry = "USA"
-		p.RoomNumber = ""
-		p.MailStop = ""
-		p.Status = 1 // mark as opt out
-		addPerson(&p, g.GID)
-
-		p.JobTitle = "Recording Musician, Engineer, Producer"
-		p.Email1 = "sman@stevemansour.com"
-		p.MailAddress = "2215 Wellington Drive"
-		p.MailAddress2 = ""
-		p.MailCity = "Milpitas"
-		p.MailState = "CA"
-		p.MailPostalCode = "95035"
-		p.Status = 0 // normal
-		addPerson(&p, g.GID)
+		var pa = []db.Person{
+			{FirstName: "Steve", MiddleName: "F", LastName: "Mansour", JobTitle: "CTO, AccordI Interests", OfficePhone: "323-512-0111 X305", Email1: "sman@accordinterests.com", MailAddress: "11719 Bee Cave Road", MailAddress2: "Suite 301", MailCity: "Austin", MailState: "TX", MailPostalCode: "78738", MailCountry: "USA", Status: 1},
+			{FirstName: "Steve", MiddleName: "F", LastName: "Mansour", JobTitle: "Recording Musician, Engineer, Producer", OfficePhone: "323-512-0111 X305", Email1: "sman@stevemansour.com", MailAddress: "2215 Wellington Drive", MailAddress2: "", MailCity: "Milpitas", MailState: "CA", MailPostalCode: "95035", MailCountry: "USA", Status: 0},
+			{FirstName: "Bouncie", MiddleName: "", LastName: "McBounce", JobTitle: "Vagabond", OfficePhone: "123-456-7890", Email1: "bounce@simulator.amazonses.com", MailAddress: "123 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
+			{FirstName: "Wendy", MiddleName: "", LastName: "Whiner", JobTitle: "Complainer", OfficePhone: "123-321-7890", Email1: "complaint@simulator.amazonses.com", MailAddress: "321 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
+			{FirstName: "Stealthy", MiddleName: "", LastName: "McStealth", JobTitle: "Bad Guy", OfficePhone: "816-321-0123", Email1: "suppressionlist@simulator.amazonses.com", MailAddress: "700 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
+		}
+		for i := 0; i < len(pa); i++ {
+			gid := g.GID
+			if pa[i].FirstName != "Steve" {
+				gid = int64(0)
+			}
+			// fmt.Printf("Adding %s to group %d\n", pa[i].FirstName, gid)
+			addPerson(&pa[i], gid)
+		}
 	} else {
 		// if it's already in the database, we update the record to force the
 		// last modified date to reflect the fact that we're scraping now
@@ -204,10 +191,10 @@ func setupTestGroup() {
 func readCommandLineArgs() {
 	dbuPtr := flag.String("B", "ec2-user", "database user name")
 	dbnmPtr := flag.String("N", "mojo", "database name")
-	mPtr := flag.String("b", "msg.html", "filename containing the html message to send")
+	mPtr := flag.String("b", "testmsg.html", "filename containing the html message to send")
 	aPtr := flag.String("a", "", "filename of attachment")
 	qPtr := flag.String("q", "MojoTest", "name of the query to send messages to")
-	soPtr := flag.Bool("n", false, "just run the setup, do not send email")
+	soPtr := flag.Bool("setup", false, "just run the setup, do not send email")
 	bPTR := flag.Bool("bounce", false, "just send a message to bounce@simulator.amazonses.com")
 	cPTR := flag.Bool("complaint", false, "just send a message to complaint@simulator.amazonses.com")
 	oPTR := flag.Bool("ooo", false, "just send a message to ooo@simulator.amazonses.com")
