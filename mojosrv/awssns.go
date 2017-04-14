@@ -110,26 +110,25 @@ func SvcHandlerAws(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 func SvcHandlerNotification(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcHandlerNotification"
 	var a AwsNotificationEnvelope
-	fmt.Printf("d.b just prior to json.Unmarshal:\n%s\n", d.data)
 	err := json.Unmarshal(d.b, &a)
 	if err != nil {
-		e := fmt.Errorf("%s:  POINT A1 -- Error with json.Unmarshal:  %s", funcname, err.Error())
+		e := fmt.Errorf("%s: Error with first json.Unmarshal:  %s", funcname, err.Error())
 		util.LogAndPrintError(funcname, e)
 		return
 	}
 
-	fmt.Printf("\n\nFIRST UNMARSHAL SUCCESS!\n")
+	fmt.Printf("\nFIRST UNMARSHAL SUCCESS!\n")
 	fmt.Printf("a.Message = %s\n", a.Message)
 
 	var a1 AwsNotificationType
 	err = json.Unmarshal([]byte(a.Message), &a1)
 	if err != nil {
-		e := fmt.Errorf("%s:  POINT B2 -- Error with second json.Unmarshal:  %s", funcname, err.Error())
+		e := fmt.Errorf("%s: Error with second json.Unmarshal:  %s", funcname, err.Error())
 		util.LogAndPrintError(funcname, e)
 		return
 	}
 
-	fmt.Printf("\n\nSECOND UNMARSHAL SUCCESS!\n")
+	fmt.Printf("\nSECOND UNMARSHAL SUCCESS!\n")
 	fmt.Printf("a1.NotificationType = %s\n", a1.NotificationType)
 
 	switch a1.NotificationType {
@@ -141,7 +140,7 @@ func SvcHandlerNotification(w http.ResponseWriter, r *http.Request, d *ServiceDa
 	case "Complaint":
 		SvcHandlerAwsComplaintEmail(w, r, d, &a)
 	default:
-		fmt.Printf("Unhandled Notification Type: %s\n", a1.NotificationType /*a.Message.NotificationType*/)
+		fmt.Printf("Unhandled Notification Type: %s\n", a1.NotificationType)
 	}
 }
 

@@ -62,13 +62,14 @@ type AwsBounceNotification struct {
 // to be updated. If found, the person's status will be set to the
 // supplied value.
 func ChangePersonStatus(s string, status int64) error {
+	fmt.Printf("Entered ChangePersonStatus: looking for %s\n", s)
 	p, err := db.GetPersonByEmail(s)
 	if err != nil {
-		if !util.IsSQLNoResultsError(err) {
-			util.Ulog("ChangePersonStatus: error getting Person for %s")
-		}
+		fmt.Printf("Error with GetPersonByEmail(%s): %s\n", s, err.Error())
+		util.Ulog("ChangePersonStatus: error getting Person with Email = %s\n", s)
 		return err
 	}
+	fmt.Printf("Found %s, updating status to %d\n", p.Email1, status)
 	p.Status = status
 	return db.UpdatePerson(&p)
 }
@@ -96,11 +97,15 @@ func SvcHandlerAwsBouncedEmail(w http.ResponseWriter, r *http.Request, d *Servic
 		util.LogAndPrintError(funcname, e)
 		return
 	}
-	fmt.Printf("\n\nTHIRD UNMARSHAL SUCCESS!\n")
+	fmt.Printf("\nTHIRD UNMARSHAL SUCCESS!\n")
 	fmt.Printf("Received Bounced Email Message!\n")
 	// fmt.Printf("%#v\n", b)
 
 	for i := 0; i < len(b.Bounce.BouncedRecipients); i++ {
 		fmt.Printf("Email address to remove: %s\n", b.Bounce.BouncedRecipients[i].EmailAddress)
+		err = HandleEmailBounce(b.Bounce.BouncedRecipients[i].EmailAddress)
+		if err != nil {
+			util.Ulog("%s: Error handling bounce: %s\n", funcname, err.Error())
+		}
 	}
 }

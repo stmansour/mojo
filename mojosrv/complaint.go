@@ -35,8 +35,13 @@ func SvcHandlerAwsComplaintEmail(w http.ResponseWriter, r *http.Request, d *Serv
 		util.LogAndPrintError(funcname, e)
 		return
 	}
-
-	fmt.Printf("Received Complaint Email Message!\n")
-	fmt.Printf("%#v\n", b)
-
+	fmt.Printf("Complaint recipient email addresses:\n")
+	for i := 0; i < len(b.Complaint.ComplainedRecipients); i++ {
+		fmt.Printf("%d. %s\n", i, b.Complaint.ComplainedRecipients[i].EmailAddress)
+		err = HandleEmailComplaint(b.Complaint.ComplainedRecipients[i].EmailAddress)
+		if err != nil {
+			util.Ulog("%s: Error handling email address %s: %s\n",
+				funcname, b.Complaint.ComplainedRecipients[i].EmailAddress, err.Error())
+		}
+	}
 }
