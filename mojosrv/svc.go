@@ -26,13 +26,6 @@ type SvcStatusResponse struct {
 	Recid  int64  `json:"recid"`  // set to id of newly inserted record
 }
 
-// ServiceHandler describes the handler for all services
-type ServiceHandler struct {
-	Cmd       string
-	ExtOrigin bool // false if this comes from our UI, true if it comes from external services such as AWS
-	Handler   func(http.ResponseWriter, *http.Request, *ServiceData)
-}
-
 // GenSearch describes a search condition
 type GenSearch struct {
 	Field    string `json:"field"`
@@ -115,20 +108,29 @@ type ServiceData struct { // position 0 is 'v1'
 	GetParams     map[string]string    // parameters when HTTP GET is used
 }
 
+// ServiceHandler describes the handler for all services
+type ServiceHandler struct {
+	Cmd        string
+	ExtOrigin  bool // false if this comes from our UI, true if it comes from external services such as AWS
+	GetPayload bool // call service handler's get Payload before calling handler?
+	Handler    func(http.ResponseWriter, *http.Request, *ServiceData)
+}
+
 // Svcs is the table of all service handlers
 var Svcs = []ServiceHandler{
-	{"aws", true, SvcHandlerAws},
-	{"group", false, SvcHandlerGroup},
-	{"groups", false, SvcSearchHandlerGroups},
-	{"groupcount", false, SvcGroupsCount},
-	{"people", false, SvcSearchHandlerPeople},
-	{"peoplecount", false, SvcPeopleCount},
-	{"peoplestats", false, SvcPeopleStats},
-	{"person", false, SvcHandlerPerson},
-	{"ping", false, SvcHandlerPing},
-	{"qrescount", false, SvcQueryResultsCount},
-	{"queries", false, SvcSearchHandlerQueries},
-	{"query", false, SvcHandlerQuery},
+	{"aws", true, true, SvcHandlerAws},
+	{"group", false, true, SvcHandlerGroup},
+	{"groups", false, true, SvcSearchHandlerGroups},
+	{"groupcount", false, true, SvcGroupsCount},
+	{"optout", false, false, SvcOptOut},
+	{"people", false, true, SvcSearchHandlerPeople},
+	{"peoplecount", false, true, SvcPeopleCount},
+	{"peoplestats", false, true, SvcPeopleStats},
+	{"person", false, true, SvcHandlerPerson},
+	{"ping", false, true, SvcHandlerPing},
+	{"qrescount", false, true, SvcQueryResultsCount},
+	{"queries", false, true, SvcSearchHandlerQueries},
+	{"query", false, true, SvcHandlerQuery},
 }
 
 // SvcHandlerPing is the most basic test that you can run against the server
@@ -168,10 +170,24 @@ func V1ServiceHandler(w http.ResponseWriter, r *http.Request) {
 	ss := strings.Split(r.RequestURI[1:], "?") // it could be GET command
 	pathElements := strings.Split(ss[0], "/")
 	lpe := len(pathElements)
-	if lpe > 1 {
+	if lpe > 1 { // look for the requested service
 		d.Service = pathElements[1]
 	}
-	if lpe > 2 {
+	sid := -1 // index to the service requested. Initialize to "not found"
+	for i := 0; i < len(Svcs); i++ {
+		if Svcs[i].Cmd == d.Service {
+			sid = i
+			break
+		}
+	}
+	if sid < 0 {
+		fmt.Printf("**** YIPES! **** %s - Handler not found\n", r.RequestURI)
+		e := fmt.Errorf("Service not recognized: %s", d.Service)
+		fmt.Printf("***ERROR IN URL***  %s", e.Error())
+		SvcGridErrorReturn(w, e)
+		return
+	}
+	if lpe > 2 { // subservice, if any
 		var err error
 		d.ID, err = util.IntFromString(pathElements[2], "bad ID")
 		if err != nil {
@@ -184,26 +200,10 @@ func V1ServiceHandler(w http.ResponseWriter, r *http.Request) {
 
 	svcDebugURL(r, &d)
 	showRequestHeaders(r)
-	svcGetPayload(w, r, &d)
-
-	//-----------------------------------------------------------------------
-	//  Now call the appropriate handler to do the rest
-	//-----------------------------------------------------------------------
-	found := false
-	for i := 0; i < len(Svcs); i++ {
-		if Svcs[i].Cmd == d.Service {
-			Svcs[i].Handler(w, r, &d)
-			found = true
-			break
-		}
+	if Svcs[sid].GetPayload {
+		svcGetPayload(w, r, &d)
 	}
-	if !found {
-		fmt.Printf("**** YIPES! **** %s - Handler not found\n", r.RequestURI)
-		e := fmt.Errorf("Service not recognized: %s", d.Service)
-		fmt.Printf("***ERROR IN URL***  %s", e.Error())
-		SvcGridErrorReturn(w, e)
-		return
-	}
+	Svcs[sid].Handler(w, r, &d)
 	svcDebugTxnEnd()
 }
 

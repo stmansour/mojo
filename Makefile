@@ -22,7 +22,7 @@ test: package
 
 all: clean mojo test stats
 
-try: clean mojo package
+try: clean mojo package smalldb
 
 stats:
 	@echo "GO SOURCE CODE STATISTICS"
