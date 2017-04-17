@@ -2,7 +2,9 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"mojo/util"
+	"strings"
 	"time"
 )
 
@@ -95,6 +97,59 @@ var DB struct {
 func InitDB(db *sql.DB) {
 	DB.Db = db
 	DB.DBFields = map[string]string{}
+}
+
+// GetJoinSetCount returns the number of database rows in the supplied table with the supplied where clause
+func GetJoinSetCount(q string) (int64, error) {
+	var count int64
+	err := DB.Db.QueryRow(q).Scan(&count)
+	return count, err
+}
+
+// GetRowCount returns the number of database rows in the supplied table with the supplied where clause
+func GetRowCount(table, where string) (int64, error) {
+	if len(where) > 0 {
+		where = " WHERE " + where
+	}
+	return GetRowCountRaw(table, where)
+}
+
+// GetRowCountRaw returns the number of database rows in the supplied table with the supplied where clause.
+// The where clause can be empty.
+func GetRowCountRaw(table, where string) (int64, error) {
+	count := int64(0)
+	var err error
+	s := fmt.Sprintf("SELECT COUNT(*) FROM %s", table)
+	if len(where) > 0 {
+		s += " " + where
+	}
+	fmt.Printf("GetRowCountRaw: QUERY = %s\n", s)
+	de := DB.Db.QueryRow(s).Scan(&count)
+	if de != nil {
+		err = fmt.Errorf("GetRowCount: query=\"%s\"    err = %s", s, de.Error())
+	}
+	return count, err
+}
+
+// GetQueryRowCount returns the number of rows in the solution set for the supplied named query
+func GetQueryRowCount(qname string) (int64, error) {
+	fmt.Printf("entered GetQueryRowCount:  searching for %s\n", qname)
+	c := int64(0)
+	q, err := GetQueryByName(qname)
+	if err != nil {
+		return c, err
+	}
+	// THIS IS A HACK!!  Need to revamp when we get the real sql code in place
+	// here's what a query looks like now:
+	//		select People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=2 WHERE People.Status=0
+	fmt.Printf("Successfully read query: %s\n", q.QueryName)
+	i := strings.Index(q.QueryJSON, "FROM")
+	if i < 0 {
+		return c, fmt.Errorf("Could not find FROM in query")
+	}
+	s := "SELECT COUNT(People.PID) " + q.QueryJSON[i:]
+	err = DB.Db.QueryRow(s).Scan(&c)
+	return c, err
 }
 
 //=================================================

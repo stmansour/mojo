@@ -2,14 +2,32 @@
     "records": [
         {
             "LastModBy": 0,
-            "LastModTime": "2017-04-09T13:40:02Z",
+            "LastModTime": "2017-04-17T14:22:57Z",
+            "QID": 3,
+            "QueryDescr": "Steve + Amazon test + Accord accounts",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=4 WHERE People.Status=0",
+            "QueryName": "AccordTest",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-04-17T14:22:57Z",
+            "QID": 2,
+            "QueryDescr": "Steve + Amazon test accounts",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=3 WHERE People.Status=0",
+            "QueryName": "AmazonTest",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-04-17T14:22:57Z",
             "QID": 1,
-            "QueryDescr": "Steve's test query",
+            "QueryDescr": "Steve-only test group",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=2 WHERE People.Status=0",
             "QueryName": "MojoTest",
             "recid": 0
         }
     ],
     "status": "success",
-    "total": 1
+    "total": 3
 }

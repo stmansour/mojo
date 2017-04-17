@@ -21,17 +21,17 @@ p {
 </style>
 </head>
 <body>
-<p>Hello,</p>
-<p>This is a test message for Accord Mojo. Please ignore.</p>
+    <p>Hello {{.P.FirstName}},</p>
+    <p>This is a test message for {{.P.FirstName}} {{.P.LastName}} sent by Accord Mojo.</p>
 <p>Best Regards,</p>
 <p class="coord">Sendie McSend<br>
-Senior Spammer<br>
-<span class="contact">405.721.2194  x 2014 Office<br>
+Corporate Spammer<br>
+<span class="contact">123.456.7890  x 666 Office<br>
 123-839-0122 Fax<br>
 123-390-8823 Cell</span><br>
 <span class="online">
 <a href="http://www.example.com/">www.Example.com</a><br><br>
-<a href="http://example.com/unsubscribe/billy@xyz.com">Click here to opt out</a></span>
+<a href="{{.L}}">Click here to opt out</a></span>
 </p>
 </body>
 </html>

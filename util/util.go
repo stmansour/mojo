@@ -1,12 +1,19 @@
 package util
 
 import (
+	"crypto/md5"
 	"fmt"
 	"log"
 	"runtime/debug"
 	"strconv"
 	"strings"
 )
+
+// GenerateOptOutCode generates a reproducable code for the user. This code
+// can be used to validate an opt-out link.
+func GenerateOptOutCode(fn, ln, email string, pid int64) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s %d %s %s", fn, pid, email, ln))))
+}
 
 // ErrCheck - saves a bunch of typing, prints error if it exists
 //            and provides a traceback as well

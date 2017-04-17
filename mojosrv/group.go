@@ -44,9 +44,16 @@ type GroupGetResponse struct {
 
 // GroupStats is a structure some interesting statistics for the Group table
 type GroupStats struct {
-	MemberCount     int64
-	LastScrapeStart string
-	LastScrapeStop  string
+	GID              int64
+	GroupName        string
+	GroupDescription string
+	MemberCount      int64
+	MailToCount      int64
+	OptOutCount      int64
+	BouncedCount     int64
+	ComplaintCount   int64
+	LastScrapeStart  string
+	LastScrapeStop   string
 }
 
 // GroupStatResponse is the response to a Group stats request
@@ -109,9 +116,9 @@ func SvcGroupsCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		err error
 	)
 
-	g.Record.Count, err = GetRowCount("EGroup", "")
+	g.Record.Count, err = db.GetRowCount("EGroup", "")
 	if err != nil {
-		fmt.Printf("Error from GetRowCount: %s\n", err.Error())
+		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -161,9 +168,9 @@ func SvcSearchHandlerGroups(w http.ResponseWriter, r *http.Request, d *ServiceDa
 	q += fmt.Sprintf(" LIMIT %d OFFSET %d", d.wsSearchReq.Limit, d.wsSearchReq.Offset)
 	fmt.Printf("rowcount query conditions: %s\ndb query = %s\n", qw, q)
 
-	g.Total, err = GetRowCount("EGroup", qw)
+	g.Total, err = db.GetRowCount("EGroup", qw)
 	if err != nil {
-		fmt.Printf("Error from GetRowCount: %s\n", err.Error())
+		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -307,14 +314,67 @@ func GroupUpdate(s string, d *ServiceData) error {
 	return err
 }
 
+// GetGroupStats returns the requested assessment
+// wsdoc {
+//  @Title  Get Group Statistics
+//	@URL /v1/groupstats/GID
+//  @Method  GET
+//	@Synopsis Get information and stats on a Group
+//  @Description  Return all fields and solution set count for the supplied GID
+//	@Input WebGridSearchRequest
+//  @Response GroupGetResponse
+// wsdoc }
+func GetGroupStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+	const (
+		DATETIMEINPFMT = "2006-01-02 15:04:00 MST"
+	)
+	funcname := "GetGroupStat"
+	fmt.Printf("entered %s.  Group id = %d\n", funcname, d.ID)
+	var g GroupStatResponse
+	a, err := db.GetGroup(d.ID)
+	if err != nil {
+		SvcGridErrorReturn(w, err)
+		return
+	}
+	if a.GID > 0 {
+		var gg GroupStats
+		util.MigrateStructVals(&a, &gg)
+		gg.LastScrapeStart = a.DtStart.Format(DATETIMEINPFMT)
+		gg.LastScrapeStop = a.DtStop.Format(DATETIMEINPFMT)
+		g.Record = gg
+	}
+
+	var gstat = []struct {
+		q string
+		r *int64
+	}{
+		{q: "select count(People.PID) FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d", r: &g.Record.MemberCount},
+		{q: "select count(People.PID) FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0", r: &g.Record.MailToCount},
+		{q: "select count(People.PID) FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=1", r: &g.Record.OptOutCount},
+		{q: "select count(People.PID) FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=2", r: &g.Record.BouncedCount},
+		{q: "select count(People.PID) FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=3", r: &g.Record.ComplaintCount},
+	}
+
+	for i := 0; i < len(gstat); i++ {
+		q := fmt.Sprintf(gstat[i].q, d.ID)
+		(*gstat[i].r), err = db.GetJoinSetCount(q)
+		if err != nil {
+			SvcGridErrorReturn(w, err)
+			return
+		}
+	}
+	g.Status = "success"
+	SvcWriteResponse(&g, w)
+}
+
 // GetGroup returns the requested assessment
 // wsdoc {
 //  @Title  Get Group
-//	@URL /v1/dep/:BUI/:PID
+//	@URL /v1/getroup/GID
 //  @Method  GET
 //	@Synopsis Get information on a Group
-//  @Description  Return all fields for assessment :PID
-//	@Input WebGridSearchRequest
+//  @Description
+//	@Input
 //  @Response GroupGetResponse
 // wsdoc }
 func getGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {

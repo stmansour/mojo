@@ -7,14 +7,15 @@ clean:
 
 test:
 	@touch fail
-	if [ ! -f smalldb.sql ]; then pushd ../testdb;make smalldb;cp smalldb.sql ../ws/;popd; fi
-	mysql --no-defaults mojo < smalldb.sql
+	#if [ ! -f smalldb.sql ]; then pushd ../testdb;make smalldb;cp smalldb.sql ../ws/;popd; fi
+	pushd ../testdb;make smalldb;cp smalldb.sql ../ws/;popd
 	./functest.sh
 	@echo "*** TEST completed in ws ***"
 	@rm -f fail
 
+testdb:
+	cd ../testdb;make smalldb
+
 package:
 	@echo "*** PACKAGE completed in ws ***"
 
-testdb:
-	cp ../testdb/smalldb.sql.gz .;gunzip -f smalldb.sql.gz;rm -f smalldb.sql.gz

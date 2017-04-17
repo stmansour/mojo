@@ -20,10 +20,14 @@ var App struct {
 	MsgFile    string
 	AttachFile string
 	QueryName  string
+	MojoHost   string // domain and port for mojosrv:   http://example.domain.com:8275/
 	db         *sql.DB
 	DBName     string
 	DBUser     string
 	SetupOnly  bool
+	Subject    string // subject line of the email message
+	From       string // email from address
+	QueryCount bool   // if true, just print the solution set count for the query and exit
 }
 
 // SendBouncedEmailTest sends an email message that bounces.  For testing.
@@ -109,96 +113,143 @@ func AddPersonToGroup(pid, gid int64) error {
 	return err
 }
 
-func addPerson(p *db.Person, GID int64) error {
-	err := db.InsertPerson(p)
+func addPerson(pnew *db.Person, GID int64) error {
+	var pid int64
+	p1, err := db.GetPersonByName(pnew.FirstName, pnew.MiddleName, pnew.LastName)
 	if err != nil {
-		util.Ulog("db.InsertPerson returned: %s\n", err.Error())
+		util.Ulog("db.GetPersonByName returned: %s\n", err.Error())
 		return err
+	}
+	if len(p1) == 0 {
+		err := db.InsertPerson(pnew)
+		if err != nil {
+			util.Ulog("db.InsertPerson returned: %s\n", err.Error())
+			return err
+		}
+		pid = pnew.PID
+	} else {
+		pid = p1[0].PID
 	}
 	if GID == int64(0) {
 		return nil
 	}
-	return AddPersonToGroup(p.PID, GID)
+	return AddPersonToGroup(pid, GID)
 }
 
-func setupTestGroup() {
-	g, err := db.GetGroupByName("MojoTest")
-	if err != nil {
-		if util.IsSQLNoResultsError(err) {
-			g.GroupName = "MojoTest"
-			g.GroupDescription = "Steve's test group"
-			g.DtStart = time.Now()
-			err := db.InsertGroup(&g)
-			if err != nil {
-				fmt.Printf("Error inserting group: %s\n", err.Error())
-				os.Exit(1)
-			}
-		} else {
-			fmt.Printf("Error reading group \"MojoTest\": %s\n", err.Error())
-			os.Exit(1)
-		}
-		var pa = []db.Person{
-			{FirstName: "Steve", MiddleName: "F", LastName: "Mansour", JobTitle: "CTO, AccordI Interests", OfficePhone: "323-512-0111 X305", Email1: "sman@accordinterests.com", MailAddress: "11719 Bee Cave Road", MailAddress2: "Suite 301", MailCity: "Austin", MailState: "TX", MailPostalCode: "78738", MailCountry: "USA", Status: 1},
-			{FirstName: "Steve", MiddleName: "F", LastName: "Mansour", JobTitle: "Recording Musician, Engineer, Producer", OfficePhone: "323-512-0111 X305", Email1: "sman@stevemansour.com", MailAddress: "2215 Wellington Drive", MailAddress2: "", MailCity: "Milpitas", MailState: "CA", MailPostalCode: "95035", MailCountry: "USA", Status: 0},
-			{FirstName: "Bouncie", MiddleName: "", LastName: "McBounce", JobTitle: "Vagabond", OfficePhone: "123-456-7890", Email1: "bounce@simulator.amazonses.com", MailAddress: "123 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
-			{FirstName: "Wendy", MiddleName: "", LastName: "Whiner", JobTitle: "Complainer", OfficePhone: "123-321-7890", Email1: "complaint@simulator.amazonses.com", MailAddress: "321 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
-			{FirstName: "Stealthy", MiddleName: "", LastName: "McStealth", JobTitle: "Bad Guy", OfficePhone: "816-321-0123", Email1: "suppressionlist@simulator.amazonses.com", MailAddress: "700 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
-		}
-		for i := 0; i < len(pa); i++ {
-			gid := g.GID
-			if pa[i].FirstName != "Steve" {
-				gid = int64(0)
-			}
-			// fmt.Printf("Adding %s to group %d\n", pa[i].FirstName, gid)
-			addPerson(&pa[i], gid)
-		}
-	} else {
-		// if it's already in the database, we update the record to force the
-		// last modified date to reflect the fact that we're scraping now
-		fmt.Printf("MojoTest exists, updating timestamp\n")
+func createGroup(name, descr string, ppa *[]db.Person) {
+	var g db.EGroup
+
+	g, err := db.GetGroupByName(name)
+	if err == nil {
+		fmt.Printf("%s exists, updating timestamp\n", name)
 		g.DtStart = time.Now()
+		g.DtStop = time.Now()
 		err = db.UpdateGroup(&g)
 		if err != nil {
 			fmt.Printf("Error updating group: %s\n", err.Error())
 			os.Exit(1)
 		}
+		return
+	}
+	if err != nil {
+		if !util.IsSQLNoResultsError(err) {
+			fmt.Printf("Error reading group \"MojoTest\": %s\n", err.Error())
+			os.Exit(1)
+		}
 	}
 
-	var q db.Query
-	q, err = db.GetQueryByName("MojoTest")
+	// Create the group...
+	g.GroupName = name
+	g.GroupDescription = descr
+	g.DtStart = time.Now()
+	err = db.InsertGroup(&g)
+	if err != nil {
+		fmt.Printf("Error inserting group: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	// Add the list of people to it...
+	pa := *ppa
+	for i := 0; i < len(pa); i++ {
+		gid := g.GID
+		addPerson(&pa[i], gid)
+	}
+
+	// Mark that we're finished...
+	g.DtStop = time.Now()
+	err = db.UpdateGroup(&g)
+	if err != nil {
+		fmt.Printf("Error updating group: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	// create a default query
+	q := fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0", g.GID)
+	createQuery(name, descr, q)
+}
+
+func createQuery(name, descr, query string) {
+	q, err := db.GetQueryByName(name)
 	if err != nil {
 		if util.IsSQLNoResultsError(err) {
-			q.QueryName = "MojoTest"
-			q.QueryDescr = "Steve's test query"
-
-			// TBD: until we work out the generic sql query builder,
-			// I will just store the actual query for now.  This will be
-			// replaced when the query builder is completed
-			q.QueryJSON = "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=2 WHERE People.Status=0"
+			q.QueryName = name
+			q.QueryDescr = descr
+			q.QueryJSON = query
 			err = db.InsertQuery(&q)
 			if err != nil {
 				fmt.Printf("Error inserting query: %s\n", err.Error())
 				os.Exit(1)
 			}
 		} else {
-			fmt.Printf("Error reading query \"MojoTest\": %s\n", err.Error())
+			fmt.Printf("Error reading query %q: %s\n", name, err.Error())
 			os.Exit(1)
 		}
 	}
-	App.QueryName = q.QueryName
 }
 
+func setupTestGroups() {
+	var pa = []db.Person{
+		{FirstName: "Steven", MiddleName: "F", LastName: "Mansour", JobTitle: "CTO, Accord Interests", OfficePhone: "323-512-0111 X305", Email1: "sman@accordinterests.com", MailAddress: "11719 Bee Cave Road", MailAddress2: "Suite 301", MailCity: "Austin", MailState: "TX", MailPostalCode: "78738", MailCountry: "USA", Status: 0},
+		{FirstName: "Steve", MiddleName: "", LastName: "Mansour", JobTitle: "Recording Musician, Engineer, Producer", OfficePhone: "323-512-0111 X305", Email1: "sman@stevemansour.com", MailAddress: "2215 Wellington Drive", MailAddress2: "", MailCity: "Milpitas", MailState: "CA", MailPostalCode: "95035", MailCountry: "USA", Status: 0},
+	}
+	createGroup("MojoTest", "Steve-only test group", &pa)
+
+	var pa1 = []db.Person{
+		pa[0],
+		pa[1],
+		{FirstName: "Bouncie", MiddleName: "", LastName: "McBounce", JobTitle: "Vagabond", OfficePhone: "123-456-7890", Email1: "bounce@simulator.amazonses.com", MailAddress: "123 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
+		{FirstName: "Wendy", MiddleName: "", LastName: "Whiner", JobTitle: "Complainer", OfficePhone: "123-321-7890", Email1: "complaint@simulator.amazonses.com", MailAddress: "321 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
+		{FirstName: "Stealthy", MiddleName: "", LastName: "McStealth", JobTitle: "Bad Guy", OfficePhone: "816-321-0123", Email1: "suppressionlist@simulator.amazonses.com", MailAddress: "700 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
+	}
+	createGroup("AmazonTest", "Steve + Amazon test accounts", &pa1)
+
+	var pa2 = []db.Person{
+		pa1[0],
+		pa1[1],
+		pa1[2],
+		pa1[3],
+		pa1[4],
+		{FirstName: "Joe", MiddleName: "G", LastName: "Mansour", JobTitle: "Principal, Accord Interests", OfficePhone: "323-512-0111 X303", Email1: "jgm@accordinterests.com", MailAddress: "11719 Bee Cave Road", MailAddress2: "Suite 301", MailCity: "Austin", MailState: "TX", MailPostalCode: "78738", MailCountry: "USA", Status: 0},
+		{FirstName: "Melissa", MiddleName: "", LastName: "Wheeler", JobTitle: "General Manager, Isola Bella", OfficePhone: "405.721.2194 x205", Email1: "mwheeler1905@gmail.com", MailAddress: "8309 NW 140th St", MailAddress2: "", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73142", MailCountry: "USA", Status: 0},
+	}
+	createGroup("AccordTest", "Steve + Amazon test + Accord accounts", &pa2)
+
+}
 func readCommandLineArgs() {
 	dbuPtr := flag.String("B", "ec2-user", "database user name")
 	dbnmPtr := flag.String("N", "mojo", "database name")
 	mPtr := flag.String("b", "testmsg.html", "filename containing the html message to send")
 	aPtr := flag.String("a", "", "filename of attachment")
 	qPtr := flag.String("q", "MojoTest", "name of the query to send messages to")
+	hPtr := flag.String("h", "http://localhost:8275/", "name of host and port for mojosrv")
+	qcPtr := flag.Bool("count", false, "returns the count of target addresses in the query, then exits.")
 	soPtr := flag.Bool("setup", false, "just run the setup, do not send email")
 	bPTR := flag.Bool("bounce", false, "just send a message to bounce@simulator.amazonses.com")
 	cPTR := flag.Bool("complaint", false, "just send a message to complaint@simulator.amazonses.com")
 	oPTR := flag.Bool("ooo", false, "just send a message to ooo@simulator.amazonses.com")
 	sPTR := flag.Bool("sl", false, "just send a message to suppressionlist@simulator.amazonses.com")
+	subjPtr := flag.String("subject", "Test Message", "Email subject line.")
+	fromPtr := flag.String("from", "sman@accordinterests.com", "Message sender.")
 
 	flag.Parse()
 	if *bPTR {
@@ -217,12 +268,17 @@ func readCommandLineArgs() {
 		SendSuppressionListEmailTest()
 		os.Exit(0)
 	}
+
 	App.DBName = *dbnmPtr
 	App.DBUser = *dbuPtr
 	App.MsgFile = *mPtr
 	App.AttachFile = *aPtr
 	App.QueryName = *qPtr
 	App.SetupOnly = *soPtr
+	App.Subject = *subjPtr
+	App.From = *fromPtr
+	App.QueryCount = *qcPtr
+	App.MojoHost = *hPtr
 }
 
 func main() {
@@ -244,14 +300,26 @@ func main() {
 	db.InitDB(App.db)
 	db.BuildPreparedStatements()
 
+	if App.QueryCount {
+		fmt.Printf("Search for query: %s\n", App.QueryName)
+		x, err := db.GetQueryRowCount(App.QueryName)
+		if err != nil {
+			fmt.Printf("Error from GetQueryRowCount: %s\n", err.Error())
+			os.Exit(1)
+		}
+		fmt.Printf("Row count for query %s = %d\n", App.QueryName, x)
+		os.Exit(0)
+	}
+
 	si := sendmail.Info{
-		From:        "sman@accordinterests.com",
+		From:        App.From,
 		QName:       App.QueryName,
-		Subject:     "Perks Email",
+		Subject:     App.Subject,
 		MsgFName:    App.MsgFile,
 		AttachFName: App.AttachFile,
+		Hostname:    App.MojoHost,
 	}
-	setupTestGroup()
+	setupTestGroups()
 	if App.SetupOnly {
 		fmt.Printf("Setup completed\n")
 	} else {

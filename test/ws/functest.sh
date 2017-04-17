@@ -14,8 +14,8 @@ CREATENEWDB=0
 #---------------------------------------------------------------
 #  Use the testdb for these tests...
 #---------------------------------------------------------------
-# echo "Create new database..." 
-# mysql --no-defaults rentroll < restore.sql
+echo "Create new database..." 
+mysql --no-defaults mojo < smalldb.sql
 
 source ../share/base.sh
 

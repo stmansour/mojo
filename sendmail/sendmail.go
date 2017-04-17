@@ -1,11 +1,13 @@
 package sendmail
 
 import (
+	"bytes"
 	"fmt"
-	"io/ioutil"
+	"html/template"
 	"mojo/db"
 	"mojo/util"
 	"rentroll/rlib"
+	"strings"
 
 	"gopkg.in/gomail.v2"
 )
@@ -19,6 +21,7 @@ type Info struct {
 	MsgFName    string // message file
 	AttachFName string // name of attachment file
 	SentCount   int    // count of messges sent
+	Hostname    string // host and domain of mojo server:   http://ex.domain.com:8275/
 }
 
 // BuildQuery creates a sql query from the JSON data
@@ -35,18 +38,48 @@ func BuildQuery(queryname string) (string, error) {
 	return q.QueryJSON, nil // this is TEMPORARY
 }
 
+type pageData struct {
+	P *db.Person
+	L template.HTML // opt-out link
+}
+
+func generatePageHTML(fname, hostname string, p *db.Person) (template.HTML, error) {
+	funcname := "generatePageHTML"
+	t, err := template.New(fname).ParseFiles(fname)
+	if nil != err {
+		fmt.Printf("%s: error loading template: %v\n", funcname, err)
+		return template.HTML(""), err
+	}
+	hostname = strings.TrimSuffix(hostname, "/") // remove last char if it is a slash.  it makes the Sprintf statement below easier to read.
+	var pd pageData
+	pd.P = p
+	pd.L = template.HTML(fmt.Sprintf("%s/v1/optout?e=%s&c=%s", hostname, p.Email1, util.GenerateOptOutCode(p.FirstName, p.LastName, p.Email1, p.PID)))
+	var sb bytes.Buffer
+	err = t.Execute(&sb, &pd)
+	if nil != err {
+		util.LogAndPrintError(funcname, err)
+		//http.Error(w, err.Error(), http.StatusInternalServerError)
+		return template.HTML(""), err
+	}
+	//s := sb.String()
+	return template.HTML(sb.String()), nil
+}
+
 // Sendmail is a routine to send an email message to a list of
 // email addresses identified by the query.
 func Sendmail(si *Info) error {
+	util.Ulog("MojoSendmail: Calling %s to send message to List - query = %s, from = %s\n", si.Hostname, si.QName, si.From)
 	m := gomail.NewMessage()
 	m.SetHeader("From", si.From)
 	m.SetHeader("Subject", si.Subject)
-	fileBytes, err := ioutil.ReadFile(si.MsgFName)
-	if err != nil {
-		util.Ulog("Error reading %s: %s\n", si.MsgFName, err.Error())
-		return err
-	}
-	m.SetBody("text/html", string(fileBytes))
+
+	// fileBytes, err := ioutil.ReadFile(si.MsgFName)
+	// if err != nil {
+	// 	util.Ulog("Error reading %s: %s\n", si.MsgFName, err.Error())
+	// 	return err
+	// }
+	// m.SetBody("text/html", string(fileBytes))
+
 	if len(si.AttachFName) > 0 {
 		m.Attach(si.AttachFName)
 	}
@@ -71,6 +104,12 @@ func Sendmail(si *Info) error {
 			return err
 		}
 		m.SetHeader("To", p.Email1)
+		s, err := generatePageHTML(si.MsgFName, si.Hostname, &p)
+		if err != nil {
+			return err
+		}
+		m.SetBody("text/html", string(s))
+
 		// fmt.Printf("Sending to %s\n", p.Email1)
 		d := gomail.NewDialer("email-smtp.us-east-1.amazonaws.com", 587, "AKIAJ3PENIYLS5U5ATJA", "AqIWufI4PwuxA61NihNQ4Yt+23n6w0CuQLuiUAdHP2E7")
 		err = d.DialAndSend(m)

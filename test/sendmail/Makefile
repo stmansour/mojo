@@ -18,6 +18,10 @@ package: sendmail
 	cp testmsg.html ${BINDIR}/
 	@echo "*** ${THISDIR}: completed package ***"
 
+newdb:
+	${BINDIR}/mojonewdb
+	./sendmail -setup
+
 test:
 	@echo "*** ${THISDIR}: completed test ***"
 

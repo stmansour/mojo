@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/md5"
 	"fmt"
 	"io"
 	"mojo/db"
@@ -9,12 +8,6 @@ import (
 	"net/http"
 	"os"
 )
-
-// GenerateOptOutCode generates a reproducable code for the user. This code
-// can be used to validate an opt-out link.
-func GenerateOptOutCode(fn, ln, email string, pid int64) string {
-	return fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s %d %s %s", fn, pid, email, ln))))
-}
 
 // SendFileReply copies the supplied file to the output io.Writer w.
 func SendFileReply(w io.Writer, fname string) {
@@ -56,7 +49,7 @@ func SvcOptOut(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		return
 	}
 
-	s := GenerateOptOutCode(p.FirstName, p.LastName, p.Email1, p.PID)
+	s := util.GenerateOptOutCode(p.FirstName, p.LastName, p.Email1, p.PID)
 	if s == code {
 		fmt.Printf("Code confirmed, setting OptOut status\n")
 		p.Status = db.OPTOUT

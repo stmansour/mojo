@@ -139,9 +139,9 @@ func SvcQueryResultsCount(w http.ResponseWriter, r *http.Request, d *ServiceData
 	}
 	qw := s[i+1:] // this is the part of the query we need...
 
-	g.Record.Count, err = GetRowCountRaw("People", qw)
+	g.Record.Count, err = db.GetRowCountRaw("People", qw)
 	if err != nil {
-		fmt.Printf("Error from GetRowCount: %s\n", err.Error())
+		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -191,9 +191,9 @@ func SvcSearchHandlerQueries(w http.ResponseWriter, r *http.Request, d *ServiceD
 	q += fmt.Sprintf(" LIMIT %d OFFSET %d", d.wsSearchReq.Limit, d.wsSearchReq.Offset)
 	fmt.Printf("rowcount query conditions: %s\ndb query = %s\n", qw, q)
 
-	g.Total, err = GetRowCount("Query", qw)
+	g.Total, err = db.GetRowCount("Query", qw)
 	if err != nil {
-		fmt.Printf("Error from GetRowCount: %s\n", err.Error())
+		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
