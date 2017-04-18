@@ -26,7 +26,6 @@ function getPeopleCount() {
             return;
         }
         if (data.status == 'success') {
-            ;
             document.getElementById('mojoPeopleCount').innerHTML = '' + data.record.Count; 
             document.getElementById('mojoOptOut').innerHTML = '' + data.record.OptOut; 
             document.getElementById('mojoBouncedAddresses').innerHTML = '' + data.record.Bounced; 

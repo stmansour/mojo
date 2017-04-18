@@ -52,6 +52,7 @@ type GroupStats struct {
 	OptOutCount      int64
 	BouncedCount     int64
 	ComplaintCount   int64
+	SuppressedCount  int64
 	LastScrapeStart  string
 	LastScrapeStop   string
 }
@@ -191,6 +192,7 @@ func SvcSearchHandlerGroups(w http.ResponseWriter, r *http.Request, d *ServiceDa
 			fmt.Printf("%s.  Error reading Group: %s\n", funcname, err.Error())
 		}
 		util.MigrateStructVals(&p, &q)
+		q.Recid = q.GID
 		g.Records = append(g.Records, q)
 		count++ // update the count only after adding the record
 		if count >= d.wsSearchReq.Limit {
@@ -353,6 +355,7 @@ func GetGroupStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		{q: "select count(People.PID) FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=1", r: &g.Record.OptOutCount},
 		{q: "select count(People.PID) FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=2", r: &g.Record.BouncedCount},
 		{q: "select count(People.PID) FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=3", r: &g.Record.ComplaintCount},
+		{q: "select count(People.PID) FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=4", r: &g.Record.SuppressedCount},
 	}
 
 	for i := 0; i < len(gstat); i++ {

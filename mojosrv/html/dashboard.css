@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto');
-@import url('http://fonts.googleapis.com/css?family=Source+Code+Pro%7CSource+Sans+Pro:400,700');
+@import url('http://fonts.googleapis.com/css?family=Source+Code+Pro%7CSource+Sans+Pro:700');
 .title1 {
 	margin: 60px 60 20px 60;
 	color: #666;
@@ -17,8 +17,22 @@
 }
 .mojoStatValue {
 	color: #5A5;
-	font-size: 24px;
+	font-size: 18px;
 	font-weight: bold;
+	line-height: 1em;
+	font-family: "Source Sans Pro", sans-serif;
+}
+.mojoSmallStatLabel {
+	color: #555;
+	font-size: 14px;
+	font-weight: normal;
+	line-height: 1em;
+	font-family: "Source Sans Pro", sans-serif;
+}
+.mojoSmallStatValue {
+	color: #373;
+	font-size: 18px;
+	font-weight: normal;
 	line-height: 1em;
 	font-family: "Source Sans Pro", sans-serif;
 }

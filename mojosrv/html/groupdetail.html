@@ -2,37 +2,29 @@
 <html>
 <head>
     <link rel="stylesheet" href="/html/dashboard.css">
-
-<script>
-/*global
-    w2ui, console, plural, monthBack, monthFwd, dayBack, dayFwd, setToRAForm, setToForm,
-    w2uiDateControlString, w2popup, getCurrentBusiness, dateControlString, dateMonthFwd,
-    tcidPickerDropRender, tcidRAPayorPickerRender, tcidPickerCompare, dateMonthBack,
-    ridRentablePickerRender, ridRentableDropRender,ridRentableCompare, calcRarGridContractRent,
-    handleDateToolbarAction, setDateControlsInToolbar, genDateRangeNavigator, getPaymentTypeName,
-    getBUDfromBID, buildPaymentTypeOptions, getPaymentTypeID, buildPaymentTypeSelectList,
-    tcidReceiptPayorPickerRender
-*/
-
-/*globals $:false */
-"use strict";
 </script>
 
 </head>
 <body>
 
 <table cellspacing="4">
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">Group Name:</span></td><td><span class="mojoStatValue" id="mojoGroupName"></span></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Group Name:</span></td><td><span class="mojoSmallStatValue" id="mojoGroupName"></span></td></tr>
 <tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">Last Scrape:</span></td><td><span class="mojoStatValue" id="mojoLastScrape"></span></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Last Scrape Start:</span></td><td><span class="mojoSmallStatValue" id="mojoLastScrapeStart"></span></td></tr>
 <tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">People opted-out:</span></td><td><span class="mojoStatValue" id="mojoTotalCount"></span></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Last Scrape Stop:</span></td><td><span class="mojoSmallStatValue" id="mojoLastScrapeStop"></span></td></tr>
 <tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">People opted-out:</span></td><td><span class="mojoStatValue" id="mojoTotalCount"></span></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Total:</span></td><td><span class="mojoSmallStatValue" id="mojoMemberCount"></span></td></tr>
 <tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">Bounced email addresses:</span></td><td><span class="mojoStatValue" id="mojoBouncedAddresses"></span></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Mail to:</span></td><td><span class="mojoSmallStatValue" id="mojoMailToCount"></span></td></tr>
 <tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">Bounced email addresses:</span></td><td><span class="mojoStatValue" id="mojoComplaintAddresses"></span></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Opted Out:</span></td><td><span class="mojoSmallStatValue" id="mojoOptOutCount"></span></td></tr>
+<tr><td colspan=3 height="8"></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Bounced:</span></td><td><span class="mojoSmallStatValue" id="mojoBouncedCount"></span></td></tr>
+<tr><td colspan=3 height="8"></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Complaints:</span></td><td><span class="mojoSmallStatValue" id="mojoComplaintCount"></span></td></tr>
+<tr><td colspan=3 height="8"></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Suppressed:</span></td><td><span class="mojoSmallStatValue" id="mojoSuppressedCount"></span></td></tr>
 <tr><td colspan=3 height="8"></td></tr>
 </table>
 
