@@ -33,7 +33,7 @@ CREATE TABLE People (
     RoomNumber VARCHAR(50) DEFAULT '',
     MailStop VARCHAR(100) DEFAULT '',
     Status SMALLINT DEFAULT 0,      -- 0 = ok, 1 = they've opted out, 2 = address bounced, 3 = opt out via complaint
-    OptOutDate DATE NOT NULL DEFAULT '1970-01-01 00:00:00',     -- if State is 1, the date/time when the person opted out
+    OptOutDate DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',     -- if State is 1, the date/time when the person opted out
     LastModTime TIMESTAMP,
     LastModBy BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY (PID)     
