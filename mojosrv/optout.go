@@ -7,6 +7,7 @@ import (
 	"mojo/util"
 	"net/http"
 	"os"
+	"time"
 )
 
 // SendFileReply copies the supplied file to the output io.Writer w.
@@ -53,6 +54,7 @@ func SvcOptOut(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	if s == code {
 		fmt.Printf("Code confirmed, setting OptOut status\n")
 		p.Status = db.OPTOUT
+		p.OptOutDate = time.Now()
 		err = db.UpdatePerson(&p)
 		if err != nil {
 			fmt.Printf("EGetPersonByEmail %s returned:  %s", email, err.Error())

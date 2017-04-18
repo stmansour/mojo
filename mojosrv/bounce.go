@@ -71,6 +71,7 @@ func ChangePersonStatus(s string, status int64) error {
 	}
 	fmt.Printf("Found %s, updating status to %d\n", p.Email1, status)
 	p.Status = status
+	p.OptOutDate = time.Now()
 	return db.UpdatePerson(&p)
 }
 

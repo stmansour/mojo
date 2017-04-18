@@ -21,7 +21,9 @@ p {
 </style>
 </head>
 <body>
-<p>Greetings,</p>
+<a href="http://myisolabella.com/"><img src="http://ec2-54-152-108-202.compute-1.amazonaws.com:8275/iblogosm.png"></a>
+<p>Hello {{.P.FirstName}},</p>
+<p>This is a test message for {{.P.FirstName}} {{.P.LastName}} sent by Accord Mojo.</p>
 <p>Isola Bella is the largest FAA housing provider in Oklahoma City.  When scheduling your next short term class lodging in Oklahoma City, please consider this exciting new offer.  We're not a hotel, we're your home away from home!</p>
 <p>Best Regards,</p>
 <p class="coord">Michelle Falls<br>
@@ -32,7 +34,7 @@ FAA Services Coordinator<br>
 <span class="online">
 <a href="mailto:MFalls@MyIsolaBella.com">MFalls@MyIsolaBella.com</a><br>
 <a href="http://www.MyIsolaBella.com/">www.MyIsolaBella.com</a><br><br>
-<a href="http://example.com/unsubscribe/billy@xyz.com">Click here to opt out</a></span>
+<a href="{{.L}}">Click here to opt out</a></span>
 </p>
 </body>
 </html>
