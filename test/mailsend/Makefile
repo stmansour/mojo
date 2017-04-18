@@ -15,7 +15,7 @@ clean:
 
 package: mailsend
 	cp mailsend ${BINDIR}/mailtester
-	cp testmsg.html ${BINDIR}/
+	cp testmsg.html mscript.sh resetdb.sh ${BINDIR}/
 	@echo "*** ${THISDIR}: completed package ***"
 
 newdb:
