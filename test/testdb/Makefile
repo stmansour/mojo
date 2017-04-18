@@ -12,12 +12,12 @@ bigdb:
 
 # smalldb is made up of the portion of the FAA directory
 # where last names begin with 'aa', plus the information
-# added to the database by the sendmail client (run with
+# added to the database by the mailsend client (run with
 # -n to just update the db andavoid actually sending mail).
 smalldb:
 	if [ ! -f faa.sql ]; then cp ${TOP}/scrapers/faa/faa.sql .; fi
 	mysql --no-defaults mojo <faa.sql
-	cd ${TOP}/test/sendmail;./sendmail -setup
+	cd ${TOP}/test/mailsend;./mailsend -setup
 	@mysqldump --no-defaults mojo >smalldb.sql
 
 # ws (web service) testing is done with the smalldb

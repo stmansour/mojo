@@ -1,4 +1,4 @@
-package sendmail
+package mailsend
 
 import (
 	"bytes"
@@ -43,19 +43,14 @@ type pageData struct {
 	L template.HTML // opt-out link
 }
 
-func generatePageHTML(fname, hostname string, p *db.Person) (template.HTML, error) {
+func generatePageHTML(fname, hostname string, p *db.Person, t *template.Template) (template.HTML, error) {
 	funcname := "generatePageHTML"
-	t, err := template.New(fname).ParseFiles(fname)
-	if nil != err {
-		fmt.Printf("%s: error loading template: %v\n", funcname, err)
-		return template.HTML(""), err
-	}
 	hostname = strings.TrimSuffix(hostname, "/") // remove last char if it is a slash.  it makes the Sprintf statement below easier to read.
 	var pd pageData
 	pd.P = p
 	pd.L = template.HTML(fmt.Sprintf("%s/v1/optout?e=%s&c=%s", hostname, p.Email1, util.GenerateOptOutCode(p.FirstName, p.LastName, p.Email1, p.PID)))
 	var sb bytes.Buffer
-	err = t.Execute(&sb, &pd)
+	err := t.Execute(&sb, &pd)
 	if nil != err {
 		util.LogAndPrintError(funcname, err)
 		//http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -68,17 +63,20 @@ func generatePageHTML(fname, hostname string, p *db.Person) (template.HTML, erro
 // Sendmail is a routine to send an email message to a list of
 // email addresses identified by the query.
 func Sendmail(si *Info) error {
+	funcname := "Sendmail"
 	util.Ulog("MojoSendmail: Calling %s to send message to List - query = %s, from = %s\n", si.Hostname, si.QName, si.From)
+
+	// template for email
+	t, err := template.New(si.MsgFName).ParseFiles(si.MsgFName)
+	if nil != err {
+		fmt.Printf("%s: error loading template: %v\n", funcname, err)
+		return err
+	}
+
+	// static portions of the message
 	m := gomail.NewMessage()
 	m.SetHeader("From", si.From)
 	m.SetHeader("Subject", si.Subject)
-
-	// fileBytes, err := ioutil.ReadFile(si.MsgFName)
-	// if err != nil {
-	// 	util.Ulog("Error reading %s: %s\n", si.MsgFName, err.Error())
-	// 	return err
-	// }
-	// m.SetBody("text/html", string(fileBytes))
 
 	if len(si.AttachFName) > 0 {
 		m.Attach(si.AttachFName)
@@ -104,7 +102,7 @@ func Sendmail(si *Info) error {
 			return err
 		}
 		m.SetHeader("To", p.Email1)
-		s, err := generatePageHTML(si.MsgFName, si.Hostname, &p)
+		s, err := generatePageHTML(si.MsgFName, si.Hostname, &p, t)
 		if err != nil {
 			return err
 		}

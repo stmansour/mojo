@@ -1,8 +1,10 @@
 {
     "record": {
         "Bounced": 0,
+        "Complaint": 0,
         "Count": 16,
-        "OptOut": 0
+        "OptOut": 0,
+        "Suppressed": 0
     },
     "status": "success"
 }

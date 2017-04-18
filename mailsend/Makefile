@@ -1,28 +1,23 @@
-TOP=../..
+TOP=..
 BINDIR=${TOP}/tmp/mojo
-THISDIR="sendmail"
+THISDIR="mailsend"
 
-sendmail: *.go
+mailsend: *.go
 	go vet
 	golint
 	go build
+	go install
 	@echo "*** ${THISDIR}: completed ${THISDIR} ***"
 
 clean:
 	go clean
-	rm -f sendmail, ver.go, tmp *.log
+	rm -f mailsend, ver.go, tmp *.log
 	@echo "*** ${THISDIR}: completed clean ***"
 
-package: sendmail
-	cp sendmail ${BINDIR}/mailtester
-	cp testmsg.html ${BINDIR}/
+package:
 	@echo "*** ${THISDIR}: completed package ***"
-
-newdb:
-	${BINDIR}/mojonewdb
-	./sendmail -setup
 
 test:
 	@echo "*** ${THISDIR}: completed test ***"
 
-all: clean sendmail package
+all: clean mailsend package

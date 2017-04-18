@@ -67,9 +67,11 @@ type CountResponse struct {
 
 // PeopleStats is a structure some interesting statistics for the People table
 type PeopleStats struct {
-	Count   int64
-	OptOut  int64
-	Bounced int64
+	Count      int64
+	OptOut     int64
+	Bounced    int64
+	Complaint  int64
+	Suppressed int64
 }
 
 // PeopleStatResponse is the response to a PersonCount request
@@ -167,28 +169,32 @@ func SvcPeopleStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		g   PeopleStatResponse
 		err error
 	)
+
 	s := ""
 	if d.ID > 0 {
 		s = fmt.Sprintf("WHERE GID=%d AND ", d.ID)
 	}
-	g.Record.Count, err = db.GetRowCount("People", s+"")
-	if err != nil {
-		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
-		SvcGridErrorReturn(w, err)
-		return
+
+	var m = []struct {
+		Where string
+		Count *int64
+	}{
+		{s, &g.Record.Count},
+		{s + "Status=1", &g.Record.OptOut},
+		{s + "Status=2", &g.Record.Bounced},
+		{s + "Status=3", &g.Record.Complaint},
+		{s + "Status=4", &g.Record.Suppressed},
 	}
-	g.Record.OptOut, err = db.GetRowCount("People", "Status=1")
-	if err != nil {
-		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
-		SvcGridErrorReturn(w, err)
-		return
+
+	for i := 0; i < len(m); i++ {
+		*m[i].Count, err = db.GetRowCount("People", m[i].Where)
+		if err != nil {
+			fmt.Printf("Error from db.GetRowCount: i = %d, err: %s\n", i, err.Error())
+			SvcGridErrorReturn(w, err)
+			return
+		}
 	}
-	g.Record.Bounced, err = db.GetRowCount("People", "Status=2")
-	if err != nil {
-		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
-		SvcGridErrorReturn(w, err)
-		return
-	}
+
 	w.Header().Set("Content-Type", "application/json")
 	g.Status = "success"
 	SvcWriteResponse(&g, w)

@@ -13,6 +13,8 @@ test:
 	@echo "*** TEST completed in ws ***"
 	@rm -f fail
 
+smalldb: testdb
+
 testdb:
 	cd ../testdb;make smalldb
 

@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"mojo/db"
-	"mojo/sendmail"
+	"mojo/mailsend"
 	"mojo/util"
 	"os"
 	"time"
@@ -311,7 +311,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	si := sendmail.Info{
+	si := mailsend.Info{
 		From:        App.From,
 		QName:       App.QueryName,
 		Subject:     App.Subject,
@@ -323,7 +323,7 @@ func main() {
 	if App.SetupOnly {
 		fmt.Printf("Setup completed\n")
 	} else {
-		err = sendmail.Sendmail(&si)
+		err = mailsend.Sendmail(&si)
 		if err != nil {
 			fmt.Printf("error sending mail: %s\n", err.Error())
 			os.Exit(1)

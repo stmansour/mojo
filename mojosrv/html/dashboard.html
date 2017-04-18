@@ -30,6 +30,8 @@ function getPeopleCount() {
             document.getElementById('mojoPeopleCount').innerHTML = '' + data.record.Count; 
             document.getElementById('mojoOptOut').innerHTML = '' + data.record.OptOut; 
             document.getElementById('mojoBouncedAddresses').innerHTML = '' + data.record.Bounced; 
+            document.getElementById('mojoComplaintAddresses').innerHTML = '' + data.record.Complaint; 
+            document.getElementById('mojoSuppressedAddresses').innerHTML = '' + data.record.Suppressed; 
         } else {
             console.log('data.status = ' + data.status);
         }
@@ -76,6 +78,10 @@ $(function () {
 <tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">People opted-out:</span></td><td><span class="mojoStatValue" id="mojoOptOut"></span></td></tr>
 <tr><td colspan=3 height="8"></td></tr>
 <tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">Bounced email addresses:</span></td><td><span class="mojoStatValue" id="mojoBouncedAddresses"></span></td></tr>
+<tr><td colspan=3 height="8"></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">Complaint email addresses:</span></td><td><span class="mojoStatValue" id="mojoComplaintAddresses"></span></td></tr>
+<tr><td colspan=3 height="8"></td></tr>
+<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoStatLabel">Suppressed email addresses:</span></td><td><span class="mojoStatValue" id="mojoSuppressedAddresses"></span></td></tr>
 <tr><td colspan=3 height="8"></td></tr>
 <tr class="mojorow"><td></td><td align="baseline"><span class="mojoStatLabel">Group count:</span></td><td><span class="mojoStatValue" id="mojoGroupCount"></span></td></tr>
 </table>

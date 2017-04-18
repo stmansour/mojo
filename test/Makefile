@@ -1,14 +1,14 @@
-DIRS = ws sendmail
+DIRS = ws mailsend
 
 db:
-	cd sendmail;make
+	cd mailsend;make
 	@echo "*** MAKE completed in test ***"
 
 clean:
 	rm -f testreport.txt
 	for dir in $(DIRS); do make -C $$dir clean;done
 	cd ./testdb;make clean
-	cd ./sendmail;make clean
+	cd ./mailsend;make clean
 	@echo "*** CLEAN completed in test ***"
 
 test:
@@ -28,5 +28,5 @@ test:
 
 package:
 	for dir in $(DIRS); do make -C $$dir package;done
-	cd sendmail;make package
+	cd mailsend;make package
 	@echo "*** PACKAGE completed in test ***"

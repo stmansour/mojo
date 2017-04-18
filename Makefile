@@ -1,4 +1,4 @@
-DIRS = util db scrapers admin mojosrv test
+DIRS = util db scrapers mailsend admin mojosrv test
 RELDIR = ./tmp/mojo
 
 .PHONY:  test
