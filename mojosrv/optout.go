@@ -3,11 +3,14 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"mojo/db"
 	"mojo/util"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/kardianos/osext"
 )
 
 // SendFileReply copies the supplied file to the output io.Writer w.
@@ -36,6 +39,10 @@ func SendFileReply(w io.Writer, fname string) {
 func SvcOptOut(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcOptOut"
 	fmt.Printf("Entered %s\n", funcname)
+	folderPath, err := osext.ExecutableFolder()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	q := r.URL.Query()
 	email := q.Get("e")
@@ -62,10 +69,10 @@ func SvcOptOut(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 			return
 		}
 		fmt.Printf("OptOut succeeded - return page\n")
-		SendFileReply(w, "./html/optouts.html")
+		SendFileReply(w, folderPath+"/html/optouts.html")
 		return
 	}
 	fmt.Printf("Code for %s should be %s, return error page\n", email, s)
-	SendFileReply(w, "./html/optoutf.html")
+	SendFileReply(w, folderPath+"/html/optoutf.html")
 
 }

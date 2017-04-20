@@ -5,7 +5,7 @@ WEBCSS=${WEBDOCDIR}/doc.css
 BINDIR=${TOP}/tmp/mojo
 THISDIR="mojosrv"
 
-mojosrv: *.go ver.go webdoc conf.json
+mojosrv: *.go ver.go webdoc config.json
 	go vet
 	golint
 	go build
@@ -18,21 +18,22 @@ webdoc:
 	@cp ${WEBDOCDIR}/doc.css doc/
 	@cp ${WEBDOCDIR}/tester.html doc/
 
-conf.json:
-	cp confdev.json conf.json
+config.json:
+	/usr/local/accord/bin/getfile.sh accord/db/confdev.json
+	cp confdev.json config.json
 
 ver.go:
 	./mkver.sh
 
 clean:
 	go clean
-	rm -f mojosrv, ver.go, tmp *.log
+	rm -f mojosrv, ver.go, tmp *.log *.json
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package:
 	mkdir -p ${BINDIR}
 	cp mojosrv ${BINDIR}/mojosrv
-	cp conf.json ${BINDIR}/
+	cp config.json ${BINDIR}/
 	cp -r doc ${BINDIR}/
 	cp -r html ${BINDIR}/
 	if [ -d "./js" ]; then cp -r js ${BINDIR}/; fi

@@ -2,8 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"extres"
 	"flag"
 	"fmt"
+	"log"
 	"mojo/db"
 	"mojo/mailsend"
 	"mojo/util"
@@ -25,9 +27,11 @@ var App struct {
 	DBName     string
 	DBUser     string
 	SetupOnly  bool
-	Subject    string // subject line of the email message
-	From       string // email from address
-	QueryCount bool   // if true, just print the solution set count for the query and exit
+	Subject    string                   // subject line of the email message
+	From       string                   // email from address
+	QueryCount bool                     // if true, just print the solution set count for the query and exit
+	LogFile    *os.File                 // where to log messages
+	XR         extres.ExternalResources // dbs, smtp...
 }
 
 // SendBouncedEmailTest sends an email message that bounces.  For testing.
@@ -83,13 +87,15 @@ func SendEmailTest(addr string) error {
 	m.SetBody("text/html", "<html><body><p>This should bounce!</p></body></html>")
 	m.SetHeader("To", addr)
 	fmt.Printf("Sending BOUNCE message to %s\n", addr)
-	d := gomail.NewDialer("email-smtp.us-east-1.amazonaws.com", 587, "AKIAJ3PENIYLS5U5ATJA", "AqIWufI4PwuxA61NihNQ4Yt+23n6w0CuQLuiUAdHP2E7")
+	// d := gomail.NewDialer("email-smtp.us-east-1.amazonaws.com", 587, "AKIAJ3PENIYLS5U5ATJA", "AqIWufI4PwuxA61NihNQ4Yt+23n6w0CuQLuiUAdHP2E7")
+	d := gomail.NewDialer(db.MojoDBConfig.SMTPHost, db.MojoDBConfig.SMTPPort, db.MojoDBConfig.SMTPLogin, db.MojoDBConfig.SMTPPass)
+
 	err := d.DialAndSend(m)
 	if err != nil {
 		util.Ulog("Error on DialAndSend = %s\n", err.Error())
 		return err
 	}
-	fmt.Printf("Bount message successfully sent to %s\n", addr)
+	fmt.Printf("Bounce message successfully sent to %s\n", addr)
 	return nil
 }
 
@@ -146,14 +152,14 @@ func createGroup(name, descr string, ppa *[]db.Person) {
 		g.DtStop = time.Now()
 		err = db.UpdateGroup(&g)
 		if err != nil {
-			fmt.Printf("Error updating group: %s\n", err.Error())
+			util.UlogAndPrint("Error updating group: %s\n", err.Error())
 			os.Exit(1)
 		}
 		return
 	}
 	if err != nil {
 		if !util.IsSQLNoResultsError(err) {
-			fmt.Printf("Error reading group \"MojoTest\": %s\n", err.Error())
+			util.UlogAndPrint("Error reading group \"MojoTest\": %s\n", err.Error())
 			os.Exit(1)
 		}
 	}
@@ -164,7 +170,7 @@ func createGroup(name, descr string, ppa *[]db.Person) {
 	g.DtStart = time.Now()
 	err = db.InsertGroup(&g)
 	if err != nil {
-		fmt.Printf("Error inserting group: %s\n", err.Error())
+		util.UlogAndPrint("Error inserting group: %s\n", err.Error())
 		os.Exit(1)
 	}
 
@@ -179,7 +185,7 @@ func createGroup(name, descr string, ppa *[]db.Person) {
 	g.DtStop = time.Now()
 	err = db.UpdateGroup(&g)
 	if err != nil {
-		fmt.Printf("Error updating group: %s\n", err.Error())
+		util.UlogAndPrint("Error updating group: %s\n", err.Error())
 		os.Exit(1)
 	}
 
@@ -197,11 +203,11 @@ func createQuery(name, descr, query string) {
 			q.QueryJSON = query
 			err = db.InsertQuery(&q)
 			if err != nil {
-				fmt.Printf("Error inserting query: %s\n", err.Error())
+				util.UlogAndPrint("Error inserting query: %s\n", err.Error())
 				os.Exit(1)
 			}
 		} else {
-			fmt.Printf("Error reading query %q: %s\n", name, err.Error())
+			util.UlogAndPrint("Error reading query %q: %s\n", name, err.Error())
 			os.Exit(1)
 		}
 	}
@@ -283,18 +289,35 @@ func readCommandLineArgs() {
 
 func main() {
 	readCommandLineArgs()
-
 	var err error
-	// s := "<awsdbusername>:<password>@tcp(<rdsinstancename>:3306)/accord"
-	s := fmt.Sprintf("%s:@/%s?charset=utf8&parseTime=True", App.DBUser, App.DBName)
+	//----------------------------------------------
+	// Open the logfile and begin logging...
+	//----------------------------------------------
+	App.LogFile, err = os.OpenFile("mailsend.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		util.UlogAndPrint("main", err.Error())
+	}
+	defer App.LogFile.Close()
+	log.SetOutput(App.LogFile)
+	util.Ulog("*** Accord MAILSEND ***\n")
+
+	//----------------------------------------------
+	// Open the database...
+	//----------------------------------------------
+	err = db.ReadConfig()
+	if err != nil {
+		util.UlogAndPrint("Error in db.ReadConfig: %s\n", err.Error())
+		os.Exit(1)
+	}
+	s := extres.GetSQLOpenString(db.MojoDBConfig.MojoDbname, &db.MojoDBConfig)
 	App.db, err = sql.Open("mysql", s)
 	if nil != err {
-		fmt.Printf("sql.Open for database=%s, dbuser=%s: Error = %v\n", App.DBName, App.DBUser, err)
+		util.UlogAndPrint("sql.Open for database=%s, dbuser=%s: Error = %v\n", db.MojoDBConfig.MojoDbname, db.MojoDBConfig.MojoDbuser, err.Error())
 	}
 	defer App.db.Close()
 	err = App.db.Ping()
 	if nil != err {
-		fmt.Printf("App.db.Ping for database=%s, dbuser=%s: Error = %v\n", App.DBName, App.DBUser, err)
+		util.UlogAndPrint("App.db.Ping for database=%s, dbuser=%s: Error = %v\n", db.MojoDBConfig.MojoDbname, db.MojoDBConfig.MojoDbuser, err.Error())
 		os.Exit(1)
 	}
 	db.InitDB(App.db)
@@ -304,7 +327,7 @@ func main() {
 		fmt.Printf("Search for query: %s\n", App.QueryName)
 		x, err := db.GetQueryRowCount(App.QueryName)
 		if err != nil {
-			fmt.Printf("Error from GetQueryRowCount: %s\n", err.Error())
+			util.UlogAndPrint("Error from GetQueryRowCount: %s\n", err.Error())
 			os.Exit(1)
 		}
 		fmt.Printf("Row count for query %s = %d\n", App.QueryName, x)
@@ -318,6 +341,10 @@ func main() {
 		MsgFName:    App.MsgFile,
 		AttachFName: App.AttachFile,
 		Hostname:    App.MojoHost,
+		SMTPHost:    db.MojoDBConfig.SMTPHost,
+		SMTPLogin:   db.MojoDBConfig.SMTPLogin,
+		SMTPPass:    db.MojoDBConfig.SMTPPass,
+		SMTPPort:    db.MojoDBConfig.SMTPPort,
 	}
 	setupTestGroups()
 	if App.SetupOnly {
@@ -325,7 +352,7 @@ func main() {
 	} else {
 		err = mailsend.Sendmail(&si)
 		if err != nil {
-			fmt.Printf("error sending mail: %s\n", err.Error())
+			util.UlogAndPrint("error sending mail: %s\n", err)
 			os.Exit(1)
 		}
 		fmt.Printf("Successfully sent %d message(s)\n", si.SentCount)

@@ -22,6 +22,10 @@ type Info struct {
 	AttachFName string // name of attachment file
 	SentCount   int    // count of messges sent
 	Hostname    string // host and domain of mojo server:   http://ex.domain.com:8275/
+	SMTPHost    string // host of smtp server
+	SMTPLogin   string // login name on smtp server
+	SMTPPass    string // passwd for smtp login
+	SMTPPort    int    // port to contact on smtp server
 }
 
 // BuildQuery creates a sql query from the JSON data
@@ -95,12 +99,15 @@ func Sendmail(si *Info) error {
 	defer rows.Close()
 
 	si.SentCount = 0
+	//fmt.Printf("EMAIL:  host: %s, port: %d, login: %s, pass: %s\n", si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
+	d := gomail.NewDialer(si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
 	for rows.Next() {
 		p, err := db.ReadPersonFromRows(rows)
 		if err != nil {
 			util.Ulog("Error with ReadPersonFromRows: %s\n", err.Error())
 			return err
 		}
+		// fmt.Printf("Sending to %s\n", p.Email1)
 		m.SetHeader("To", p.Email1)
 		s, err := generatePageHTML(si.MsgFName, si.Hostname, &p, t)
 		if err != nil {
@@ -108,8 +115,6 @@ func Sendmail(si *Info) error {
 		}
 		m.SetBody("text/html", string(s))
 
-		// fmt.Printf("Sending to %s\n", p.Email1)
-		d := gomail.NewDialer("email-smtp.us-east-1.amazonaws.com", 587, "AKIAJ3PENIYLS5U5ATJA", "AqIWufI4PwuxA61NihNQ4Yt+23n6w0CuQLuiUAdHP2E7")
 		err = d.DialAndSend(m)
 		if err != nil {
 			util.Ulog("Error on DialAndSend = %s\n", err.Error())

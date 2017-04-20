@@ -3,6 +3,7 @@ package main
 
 import (
 	"database/sql"
+	"extres"
 	"flag"
 	"fmt"
 	"log"
@@ -48,23 +49,23 @@ func initHTTP() {
 }
 
 func readCommandLineArgs() {
-	dbuPtr := flag.String("B", "ec2-user", "database user name")
-	dbnmPtr := flag.String("N", "mojo", "database name")
 	portPtr := flag.Int("p", 8275, "port on which mojo server listens")
 	flag.Parse()
-	App.DBName = *dbnmPtr
-	App.DBUser = *dbuPtr
 	App.Port = *portPtr
 }
 
 func main() {
+	var err error
 	readCommandLineArgs()
-	db.ReadConfig()
+	err = db.ReadConfig()
+	if err != nil {
+		fmt.Printf("Error in db.ReadConfig: %s\n", err.Error())
+		os.Exit(1)
+	}
 
 	//==============================================
 	// Open the logfile and begin logging...
 	//==============================================
-	var err error
 	App.LogFile, err = os.OpenFile("mojo.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	lib.Errcheck(err)
 	defer App.LogFile.Close()
@@ -72,10 +73,10 @@ func main() {
 	util.Ulog("*** Accord MOJO ***\n")
 
 	// Get the database...
-	s := db.GetSQLOpenString(App.DBName)
+	s := extres.GetSQLOpenString(db.MojoDBConfig.MojoDbname, &db.MojoDBConfig)
 	App.db, err = sql.Open("mysql", s)
 	if nil != err {
-		fmt.Printf("sql.Open for database=%s, dbuser=%s: Error = %v\n", App.DBName, db.AppConfig.MojoDbuser, err)
+		fmt.Printf("sql.Open for database=%s, dbuser=%s: Error = %v\n", db.MojoDBConfig.MojoDbname, db.MojoDBConfig.MojoDbuser, err)
 		os.Exit(1)
 	}
 	defer App.db.Close()
@@ -90,7 +91,7 @@ func main() {
 
 	err = App.db.Ping()
 	if nil != err {
-		fmt.Printf("App.db.Ping for database=%s, dbuser=%s: Error = %v\n", App.DBName, App.DBUser, err)
+		fmt.Printf("App.db.Ping for database=%s, dbuser=%s: Error = %v\n", db.MojoDBConfig.MojoDbname, db.MojoDBConfig.MojoDbuser, err)
 		os.Exit(1)
 	}
 	db.InitDB(App.db)

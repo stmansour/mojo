@@ -71,6 +71,14 @@ func Ulog(format string, a ...interface{}) {
 	// debug.PrintStack()
 }
 
+// Ulog is the standard logger
+func UlogAndPrint(format string, a ...interface{}) {
+	p := fmt.Sprintf(format, a...)
+	log.Print(p)
+	fmt.Print(p)
+	// debug.PrintStack()
+}
+
 // LogAndPrintError encapsulates logging and printing an error.
 // Note that the error is printed only if the environment is NOT production.
 func LogAndPrintError(funcname string, err error) {
