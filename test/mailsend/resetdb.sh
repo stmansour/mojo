@@ -1,3 +1,8 @@
 #!/bin/bash
-./mojonewdb
-./mailtester -setup
+if [ -f ./mojonewdb ]; then
+    ./mojonewdb
+elif [ -f ../../tmp/mojo/mojonewdb ]; then
+    ../../tmp/mojo/mojonewdb
+fi
+
+./mailsend -setup

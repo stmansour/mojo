@@ -30,6 +30,10 @@ var App struct {
 	Subject    string                   // subject line of the email message
 	From       string                   // email from address
 	QueryCount bool                     // if true, just print the solution set count for the query and exit
+	Bounce     bool                     // if true, just print the solution set count for the query and exit
+	Complaint  bool                     // if true, just print the solution set count for the query and exit
+	OOO        bool                     // if true, just print the solution set count for the query and exit
+	Suppress   bool                     // if true, just print the solution set count for the query and exit
 	LogFile    *os.File                 // where to log messages
 	XR         extres.ExternalResources // dbs, smtp...
 }
@@ -258,23 +262,10 @@ func readCommandLineArgs() {
 	fromPtr := flag.String("from", "sman@accordinterests.com", "Message sender.")
 
 	flag.Parse()
-	if *bPTR {
-		SendBouncedEmailTest()
-		os.Exit(0)
-	}
-	if *cPTR {
-		SendComplaintEmailTest()
-		os.Exit(0)
-	}
-	if *oPTR {
-		SendOOOEmailTest()
-		os.Exit(0)
-	}
-	if *sPTR {
-		SendSuppressionListEmailTest()
-		os.Exit(0)
-	}
-
+	App.Bounce = *bPTR
+	App.Complaint = *cPTR
+	App.OOO = *oPTR
+	App.Suppress = *sPTR
 	App.DBName = *dbnmPtr
 	App.DBUser = *dbuPtr
 	App.MsgFile = *mPtr
@@ -288,6 +279,7 @@ func readCommandLineArgs() {
 }
 
 func main() {
+	fmt.Printf("MOJO Mailsend - begin\n")
 	readCommandLineArgs()
 	var err error
 	//----------------------------------------------
@@ -346,15 +338,32 @@ func main() {
 		SMTPPass:    db.MojoDBConfig.SMTPPass,
 		SMTPPort:    db.MojoDBConfig.SMTPPort,
 	}
+	fmt.Printf("SMTP Info: host:port = %s:%d, login = %s, pass = %s\n", si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
 	setupTestGroups()
 	if App.SetupOnly {
 		fmt.Printf("Setup completed\n")
-	} else {
-		err = mailsend.Sendmail(&si)
-		if err != nil {
-			util.UlogAndPrint("error sending mail: %s\n", err)
-			os.Exit(1)
-		}
-		fmt.Printf("Successfully sent %d message(s)\n", si.SentCount)
 	}
+	if App.Bounce {
+		SendBouncedEmailTest()
+		return
+	}
+	if App.Complaint {
+		SendComplaintEmailTest()
+		return
+	}
+	if App.OOO {
+		SendOOOEmailTest()
+		os.Exit(0)
+	}
+	if App.Suppress {
+		SendSuppressionListEmailTest()
+		os.Exit(0)
+	}
+
+	err = mailsend.Sendmail(&si)
+	if err != nil {
+		util.UlogAndPrint("error sending mail: %s\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("Successfully sent %d message(s)\n", si.SentCount)
 }
