@@ -338,7 +338,7 @@ func main() {
 		SMTPPass:    db.MojoDBConfig.SMTPPass,
 		SMTPPort:    db.MojoDBConfig.SMTPPort,
 	}
-	fmt.Printf("SMTP Info: host:port = %s:%d, login = %s, pass = %s\n", si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
+	// fmt.Printf("SMTP Info: host:port = %s:%d, login = %s, pass = %s\n", si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
 	if App.SetupOnly {
 		setupTestGroups()
 		fmt.Printf("Setup completed\n")
