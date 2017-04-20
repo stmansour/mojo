@@ -339,9 +339,10 @@ func main() {
 		SMTPPort:    db.MojoDBConfig.SMTPPort,
 	}
 	fmt.Printf("SMTP Info: host:port = %s:%d, login = %s, pass = %s\n", si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
-	setupTestGroups()
 	if App.SetupOnly {
+		setupTestGroups()
 		fmt.Printf("Setup completed\n")
+		return
 	}
 	if App.Bounce {
 		SendBouncedEmailTest()
