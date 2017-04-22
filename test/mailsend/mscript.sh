@@ -4,9 +4,9 @@
 #  Development:  Steve  +  Amazon Test Accounts
 #-----------------------------------------------
 #./mailsend -h "http://localhost:8275/" -q MojoTest -subject "Big Mojo Test" -a perks.pdf
-#./mailsend -h "http://localhost:8275/" -q MojoTest -subject "Perks Mojo Test" -a perks.pdf -b msg.html
+./mailsend -h "http://localhost:8275/" -q MojoTest -subject "Perks Mojo Test" -a perks.pdf -b msg.html
 
-./mailsend -h "http://ec2-54-152-108-202.compute-1.amazonaws.com:8275/" -q MojoTest -subject "Big Mojo Test" -a perks.pdf
+#./mailsend -h "http://ec2-54-152-108-202.compute-1.amazonaws.com:8275/" -q MojoTest -subject "Big Mojo Test" -a perks.pdf
 
 #./mailsend -h "http://ec2-54-152-108-202.compute-1.amazonaws.com:8275/" -q MojoTest -subject "Perks - Mojo Email Test" -a perks.pdf -b msg.html
 

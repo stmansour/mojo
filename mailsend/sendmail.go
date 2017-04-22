@@ -114,6 +114,7 @@ func Sendmail(si *Info) error {
 			return err
 		}
 		m.SetBody("text/html", string(s))
+		fmt.Printf("Message Body:\n\n%s\n", s)
 
 		err = d.DialAndSend(m)
 		if err != nil {
