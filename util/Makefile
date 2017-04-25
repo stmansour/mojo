@@ -1,11 +1,15 @@
 TOP=..
 THISDIR="util"
+COUNTOL=${TOP}/tools/bashtools/countol.sh
 
 util: *.go
-	go vet
-	golint
+	@find . -name "fail" -exec rm -r "{}" \;
+	@touch fail
+	@${COUNTOL} "go vet"
+	@${COUNTOL} golint
 	go build
 	go install
+	@rm -f fail
 	@echo "*** ${THISDIR}: completed util ***"
 
 clean:
@@ -16,6 +20,10 @@ test:
 	@echo "*** ${THISDIR}: completed test ***"
 
 package:
+	@find . -name "fail" -exec rm -r "{}" \;
+	@touch fail
+	#insert package commands here
+	@rm -f fail
 	@echo "*** util completed package ***"
 
 all: clean util

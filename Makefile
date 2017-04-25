@@ -1,10 +1,13 @@
 DIRS = util db scrapers mailsend admin mojosrv test
 RELDIR = ./tmp/mojo
+TOP=.
 
 .PHONY:  test
 
 mojo:
+	@find . -name "fail" -exec rm -r "{}" \;
 	for dir in $(DIRS); do make -C $$dir;done
+	@tools/bashtools/buildcheck.sh BUILD
 
 clean:
 	for dir in $(DIRS); do make -C $$dir clean;done
@@ -12,13 +15,17 @@ clean:
 	rm -rf mojo tmp
 
 package:
+	@find . -name "fail" -exec rm -r "{}" \;
 	mkdir -p ./tmp/mojo
 	cp activate.sh ./tmp/mojo/
 	cp update.sh ./tmp/mojo/
 	for dir in $(DIRS); do make -C $$dir package;done
+	@tools/bashtools/buildcheck.sh PACKAGE
 
 test: package
+	@find . -name "fail" -exec rm -r "{}" \;
 	for dir in $(DIRS); do make -C $$dir test;done
+	@tools/bashtools/buildcheck.sh TEST
 
 all: clean mojo test stats
 

@@ -103,7 +103,8 @@ func main() {
 	db.BuildPreparedStatements()
 	initHTTP()
 	util.Ulog("mojosrv initiating HTTP service on port %d\n", App.Port)
-	util.Ulog("Using database: %s , host = %s, port = %s\n", db.MojoDBConfig.MojoDbname, db.MojoDBConfig.MojoDbhost, db.MojoDBConfig.MojoDbport)
+	util.Ulog("Using database: %s , host = %s, port = %d\n", db.MojoDBConfig.MojoDbname, db.MojoDBConfig.MojoDbhost, db.MojoDBConfig.MojoDbport)
+	fmt.Printf("Using database: %s , host = %s, port = %d\n", db.MojoDBConfig.MojoDbname, db.MojoDBConfig.MojoDbhost, db.MojoDBConfig.MojoDbport)
 
 	//go http.ListenAndServeTLS(fmt.Sprintf(":%d", App.Port+1), App.CertFile, App.KeyFile, nil)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", App.Port), nil)

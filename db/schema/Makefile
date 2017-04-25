@@ -1,4 +1,5 @@
 TOP=../..
+COUNTOL=${TOP}/tools/bashtools/countol.sh
 
 # This makefile creates a new db each time make is called
 # for the build because if there are syntax errors in

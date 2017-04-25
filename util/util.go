@@ -71,7 +71,7 @@ func Ulog(format string, a ...interface{}) {
 	// debug.PrintStack()
 }
 
-// Ulog is the standard logger
+// UlogAndPrint logs and prints the message
 func UlogAndPrint(format string, a ...interface{}) {
 	p := fmt.Sprintf(format, a...)
 	log.Print(p)

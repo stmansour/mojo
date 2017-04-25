@@ -1,11 +1,15 @@
 TOP=../..
 THISDIR="faa"
 BINDIR=${TOP}/tmp/mojo
+COUNTOL=${TOP}/tools/bashtools/countol.sh
 
 faa: *.go
-	go vet
-	golint
+	@find . -name "fail" -exec rm -r "{}" \;
+	@touch fail
+	@${COUNTOL} "go vet"
+	@${COUNTOL} golint
 	go build
+	@rm -f fail
 	@echo "*** ${THISDIR}: completed faa ***"
 
 clean:
@@ -14,7 +18,10 @@ clean:
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package:
+	@find . -name "fail" -exec rm -r "{}" \;
+	@touch fail
 	cp faa ${TOP}/tmp/mojo/scrapefaa
+	@rm -f fail
 	@echo "*** ${THISDIR}: completed package ***"
 
 test:

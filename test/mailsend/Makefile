@@ -1,11 +1,15 @@
 TOP=../..
 BINDIR=${TOP}/tmp/mojo
 THISDIR="mailsend"
+COUNTOL=${TOP}/tools/bashtools/countol.sh
 
 mailsend: *.go config.json
-	go vet
-	golint
+	@find . -name "fail" -exec rm -r "{}" \;
+	@touch fail
+	@${COUNTOL} "go vet"
+	@${COUNTOL} golint
 	go build
+	@rm -f fail
 	@echo "*** ${THISDIR}: completed ${THISDIR} ***"
 
 config.json:
@@ -18,8 +22,11 @@ clean:
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package: mailsend
+	@find . -name "fail" -exec rm -r "{}" \;
+	@touch fail
 	cp mailsend ${BINDIR}/mailsend
 	cp testmsg.html mscript.sh resetdb.sh ${BINDIR}/
+	@rm -f fail
 	@echo "*** ${THISDIR}: completed package ***"
 
 newdb:

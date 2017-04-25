@@ -1,6 +1,7 @@
 TOP=../..
 THISDIR="mojonewdb"
 TOOL="mojonewdb"
+COUNTOL=${TOP}/tools/bashtools/countol.sh
 
 mojonewdb: *.sh
 

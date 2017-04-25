@@ -1,5 +1,6 @@
 TOP=../..
 BINDIR=../../tmp/mojo
+COUNTOL=${TOP}/tools/bashtools/countol.sh
 
 testdb:
 	@echo "**** build complete in testdb ***"
