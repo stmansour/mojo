@@ -5,7 +5,7 @@ WEBCSS=${WEBDOCDIR}/doc.css
 BINDIR=${TOP}/tmp/mojo
 THISDIR="mojosrv"
 
-mojosrv: *.go ver.go webdoc config.json
+mojosrv: ver.go *.go webdoc config.json
 	go vet
 	golint
 	go build
@@ -23,11 +23,15 @@ config.json:
 	cp confdev.json config.json
 
 ver.go:
+	echo -n "before mkver: "
+	cat buildno
 	./mkver.sh
+	echo -n "after mkver: "
+	cat buildno
 
 clean:
 	go clean
-	rm -f mojosrv, ver.go, tmp *.log *.json
+	rm -f mojosrv ver.go tmp *.log *.json
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package:

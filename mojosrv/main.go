@@ -50,7 +50,12 @@ func initHTTP() {
 
 func readCommandLineArgs() {
 	portPtr := flag.Int("p", 8275, "port on which mojo server listens")
+	vptr := flag.Bool("v", false, "Show version, then exit")
 	flag.Parse()
+	if *vptr {
+		fmt.Printf("Version:   %s\n", getVersionNo())
+		os.Exit(0)
+	}
 	App.Port = *portPtr
 }
 
