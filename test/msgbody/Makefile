@@ -24,7 +24,7 @@ clean:
 package: msgbody
 	@find . -name "fail" -exec rm -r "{}" \;
 	@touch fail
-	# put package steps here
+	cp msgbody ${BINDIR}/
 	@rm -f fail
 	@echo "*** ${THISDIR}: completed package ***"
 
