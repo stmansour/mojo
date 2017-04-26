@@ -35,7 +35,7 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 pushd ${DIR}
-PROD=$(grep '"Env"' config.json | grep 0 | wc -l)   # if this is production then PROD == 1, otherwise PROD == 0
+PROD=$(grep '"Env"' config.json | grep 1 | wc -l)   # if this is production then PROD == 1, otherwise PROD == 0
 if [ "${PROD}" = "1" ]; then
 	MakeProdDB
 else

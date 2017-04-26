@@ -6,7 +6,7 @@ COUNTOL=${TOP}/tools/bashtools/countol.sh
 mojonewdb: *.sh
 
 clean:
-	rm -f ${THISDIR} fail
+	rm -f ${THISDIR} fail conf*.json
 	@echo "*** Clean completed in admin/${THISDIR} ***"
 
 install: mojonewdb

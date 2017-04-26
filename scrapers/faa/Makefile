@@ -18,7 +18,7 @@ config.json:
 
 clean:
 	go clean
-	rm -f faa conf*.json
+	rm -f faa conf*.json *.log
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package:

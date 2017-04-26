@@ -63,7 +63,8 @@ stopwatchdog() {
 }
 
 makeProdNode() {
-	${GETFILE} accord/db/config.json
+	${GETFILE} accord/db/confprod.json
+	cp confprod.json config.json
 }
 
 #--------------------------------------------------------------
@@ -74,21 +75,22 @@ makeProdNode() {
 #  3. For PDF printing, install wkhtmltopdf
 #--------------------------------------------------------------
 setupAppNode() {
+	${GETFILE} accord/db/confdev.json
+	cp confdev.json config.json
 	./mojonewdb
-
 	echo "Done."
 }
 
 start() {
 	# Create a database if this is a localhost instance  
-	if [ ${IAM} == "root" ]; then
-		x=$(grep MojoDbhost config.json | grep localhost | wc -l)
-		if (( x == 1 )); then
-			setupAppNode
-		fi
+	if [ ! -f "config.json" ]; then
+		setupAppNode
 	fi
 
 	if [ ${IAM} == "root" ]; then
+		if [ ! -f "mojo.log" ]; then
+			touch mojo.log
+		fi
 		chown -R ec2-user *
 		# chmod u+s ${PROGNAME} pbwatchdog
 		if [ $(uname) == "Linux" -a ! -f "/etc/init.d/${PROGNAME}" ]; then
