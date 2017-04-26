@@ -47,8 +47,19 @@ type pageData struct {
 	L template.HTML // opt-out link
 }
 
-func generatePageHTML(fname, hostname string, p *db.Person, t *template.Template) (template.HTML, error) {
-	funcname := "generatePageHTML"
+// GeneratePageHTML returns template.HTML for the supplied message, template, and person
+//
+// @params
+//	fname    = name of the file with the base message html template
+//  hostname = http(s)://hostname.domain:port/ where the opt-out link should point
+//  p        = pointer to the db.Person record, the recipient of this message
+//  t        = the html template
+//
+// @return
+//	template.HTML = the body of the message
+//  error         = any error that occured; nil on success
+func GeneratePageHTML(fname, hostname string, p *db.Person, t *template.Template) (template.HTML, error) {
+	funcname := "GeneratePageHTML"
 	hostname = strings.TrimSuffix(hostname, "/") // remove last char if it is a slash.  it makes the Sprintf statement below easier to read.
 	var pd pageData
 	pd.P = p
@@ -57,10 +68,8 @@ func generatePageHTML(fname, hostname string, p *db.Person, t *template.Template
 	err := t.Execute(&sb, &pd)
 	if nil != err {
 		util.LogAndPrintError(funcname, err)
-		//http.Error(w, err.Error(), http.StatusInternalServerError)
 		return template.HTML(""), err
 	}
-	//s := sb.String()
 	return template.HTML(sb.String()), nil
 }
 
@@ -109,7 +118,7 @@ func Sendmail(si *Info) error {
 		}
 		// fmt.Printf("Sending to %s\n", p.Email1)
 		m.SetHeader("To", p.Email1)
-		s, err := generatePageHTML(si.MsgFName, si.Hostname, &p, t)
+		s, err := GeneratePageHTML(si.MsgFName, si.Hostname, &p, t)
 		if err != nil {
 			return err
 		}
