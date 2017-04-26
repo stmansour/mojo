@@ -91,7 +91,7 @@ start() {
 		if [ ! -f "mojo.log" ]; then
 			touch mojo.log
 		fi
-		chown -R ec2-user *
+		chown -R ec2-user:ec2-user *
 		# chmod u+s ${PROGNAME} pbwatchdog
 		if [ $(uname) == "Linux" -a ! -f "/etc/init.d/${PROGNAME}" ]; then
 			cp ./activate.sh /etc/init.d/${PROGNAME}
