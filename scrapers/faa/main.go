@@ -3,11 +3,14 @@ package main
 
 import (
 	"database/sql"
+	"extres"
 	"flag"
 	"fmt"
+	"log"
 	"mojo/db"
 	"mojo/util"
 	"os"
+	"phonebook/lib"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -16,6 +19,7 @@ import (
 // App is the global data structure for this app
 var App struct {
 	db        *sql.DB
+	LogFile   *os.File
 	DBName    string
 	DBUser    string
 	fname     string
@@ -96,11 +100,26 @@ func readCommandLineArgs() {
 }
 
 func main() {
-	readCommandLineArgs()
-
 	var err error
+	readCommandLineArgs()
+	err = db.ReadConfig()
+	if err != nil {
+		fmt.Printf("Error in db.ReadConfig: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	//==============================================
+	// Open the logfile and begin logging...
+	//==============================================
+	App.LogFile, err = os.OpenFile("scrapefaa.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	lib.Errcheck(err)
+	defer App.LogFile.Close()
+	log.SetOutput(App.LogFile)
+	util.Ulog("*** Accord MOJO FAA Scraper ***\n")
+
 	// s := "<awsdbusername>:<password>@tcp(<rdsinstancename>:3306)/accord"
-	s := fmt.Sprintf("%s:@/%s?charset=utf8&parseTime=True", App.DBUser, App.DBName)
+	// s := fmt.Sprintf("%s:@/%s?charset=utf8&parseTime=True", App.DBUser, App.DBName)
+	s := extres.GetSQLOpenString(db.MojoDBConfig.MojoDbname, &db.MojoDBConfig)
 	App.db, err = sql.Open("mysql", s)
 	if nil != err {
 		fmt.Printf("sql.Open for database=%s, dbuser=%s: Error = %v\n", App.DBName, App.DBUser, err)

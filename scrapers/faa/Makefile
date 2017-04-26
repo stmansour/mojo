@@ -3,7 +3,7 @@ THISDIR="faa"
 BINDIR=${TOP}/tmp/mojo
 COUNTOL=${TOP}/tools/bashtools/countol.sh
 
-faa: *.go
+faa: *.go config.json
 	@find . -name "fail" -exec rm -r "{}" \;
 	@touch fail
 	@${COUNTOL} "go vet"
@@ -12,9 +12,13 @@ faa: *.go
 	@rm -f fail
 	@echo "*** ${THISDIR}: completed faa ***"
 
+config.json:
+	/usr/local/accord/bin/getfile.sh accord/db/confdev.json
+	cp confdev.json config.json
+
 clean:
 	go clean
-	rm -f faa
+	rm -f faa conf*.json
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package:
