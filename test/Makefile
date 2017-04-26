@@ -1,4 +1,4 @@
-DIRS = ws mailsend
+DIRS = ws mailsend msgbody
 
 db:
 	cd mailsend;make
