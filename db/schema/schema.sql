@@ -34,7 +34,7 @@ CREATE TABLE People (
     MailStop VARCHAR(100) DEFAULT '',
     Status SMALLINT DEFAULT 0,      -- 0 = ok, 1 = they've opted out, 2 = address bounced, 3 = opt out via complaint
     OptOutDate DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',     -- if State is 1, the date/time when the person opted out
-    LastModTime TIMESTAMP,
+    LastModTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     LastModBy BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY (PID)     
 );      
@@ -45,7 +45,7 @@ CREATE TABLE EGroup (
     GroupDescription VARCHAR(1000) NOT NULL DEFAULT '',         -- Description of the group
     DtStart DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',    -- start time of last scrape
     DtStop DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',     -- stop time of last scrap
-    LastModTime TIMESTAMP,
+    LastModTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     LastModBy BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY (GID)     
 );
@@ -53,7 +53,7 @@ CREATE TABLE EGroup (
 CREATE TABLE PGroup (
     PID BIGINT NOT NULL DEFAULT 0,                              -- person id
     GID BIGINT NOT NULL DEFAULT 0,                              -- group
-    LastModTime TIMESTAMP,
+    LastModTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     LastModBy BIGINT NOT NULL DEFAULT 0
 );
 
@@ -62,7 +62,7 @@ CREATE TABLE DataUpdate (
     GID BIGINT NOT NULL DEFAULT 0,                              -- group
     DtStart DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',
     DtStop DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',
-    LastModTime TIMESTAMP,
+    LastModTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     LastModBy BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY(DUID)
 );
@@ -72,7 +72,7 @@ CREATE TABLE Query (
     QueryName VARCHAR(50) DEFAULT '',
     QueryDescr VARCHAR(1000) DEFAULT '',
     QueryJSON VARCHAR(3000) DEFAULT '',
-    LastModTime TIMESTAMP,
+    LastModTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     LastModBy BIGINT NOT NULL DEFAULT 0,
     PRIMARY KEY(QID)
 );

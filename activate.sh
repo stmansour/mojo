@@ -82,7 +82,7 @@ setupAppNode() {
 start() {
 	# Create a database if this is a localhost instance  
 	if [ ${IAM} == "root" ]; then
-		x=$(grep MojoDbhost conf.json | grep localhost | wc -l)
+		x=$(grep MojoDbhost config.json | grep localhost | wc -l)
 		if (( x == 1 )); then
 			setupAppNode
 		fi
