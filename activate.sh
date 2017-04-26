@@ -74,7 +74,7 @@ makeProdNode() {
 #  2. Install a database with some data for testing
 #  3. For PDF printing, install wkhtmltopdf
 #--------------------------------------------------------------
-setupAppNode() {
+makeDevNode() {
 	${GETFILE} accord/db/confdev.json
 	cp confdev.json config.json
 	./mojonewdb
@@ -84,7 +84,8 @@ setupAppNode() {
 start() {
 	# Create a database if this is a localhost instance  
 	if [ ! -f "config.json" ]; then
-		setupAppNode
+		echo "config.json not found, setting up as development node"
+		makeDevNode
 	fi
 
 	if [ ${IAM} == "root" ]; then
@@ -244,8 +245,8 @@ for arg do
 	"makeprod")
 		makeProdNode
 		;;
-	"updatedb")
-		setupAppNode
+	"makedev")
+		makeDevNode
 		;;
 	*)
 		echo "Unrecognized command: $arg"
