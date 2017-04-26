@@ -78,6 +78,7 @@ func main() {
 	util.Ulog("*** Accord MOJO ***\n")
 
 	// Get the database...
+	// s := "<awsdbusername>:<password>@tcp(<rdsinstancename>:3306)/accord"
 	s := extres.GetSQLOpenString(db.MojoDBConfig.MojoDbname, &db.MojoDBConfig)
 	App.db, err = sql.Open("mysql", s)
 	if nil != err {
@@ -85,14 +86,6 @@ func main() {
 		os.Exit(1)
 	}
 	defer App.db.Close()
-
-	// s := "<awsdbusername>:<password>@tcp(<rdsinstancename>:3306)/accord"
-	// s := fmt.Sprintf("%s:@/%s?charset=utf8&parseTime=True", App.DBUser, App.DBName)
-	// App.db, err = sql.Open("mysql", s)
-	// if nil != err {
-	// 	fmt.Printf("sql.Open for database=%s, dbuser=%s: Error = %v\n", App.DBName, App.DBUser, err)
-	// }
-	// defer App.db.Close()
 
 	err = App.db.Ping()
 	if nil != err {
