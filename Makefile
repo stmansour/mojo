@@ -59,5 +59,6 @@ smalldb:
 testdb: smalldb
 
 publish: package
+	rm -f tmp/mojo/config.json
 	cd tmp;tar cvf mojo.tar mojo; gzip mojo.tar
 	cd tmp;/usr/local/accord/bin/deployfile.sh mojo.tar.gz jenkins-snapshot/mojo/latest
