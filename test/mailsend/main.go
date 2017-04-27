@@ -217,6 +217,31 @@ func createQuery(name, descr, query string) {
 	}
 }
 
+func createFAAQueries() {
+	g, err := db.GetGroupByName("FAA")
+	if err != nil {
+		util.UlogAndPrint("Error getting group FAA: %s\n", err.Error())
+		os.Exit(1)
+	}
+	q := fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 50 OFFSET 0", g.GID) // 50
+	createQuery("FAA-1-First50", "The first 50 people in the FAA", q)
+
+	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 250 OFFSET 50", g.GID) // 300
+	createQuery("FAA-2-Next250", "After FAA-1-First50, the next 250 people in the FAA", q)
+
+	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 700 OFFSET 300", g.GID) // 1,000
+	createQuery("FAA-3-Next700", "After FAA-2-Next250, the next 700 people in the FAA", q)
+
+	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 5000 OFFSET 1000", g.GID) // 6,000
+	createQuery("FAA-4-Next5000", "After FAA-3-Next700, the next 700 people in the FAA", q)
+
+	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 20000 OFFSET 6000", g.GID) // 26,000
+	createQuery("FAA-5-Next20000", "After FAA-4-Next5000, the next 20000 people in the FAA", q)
+
+	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 20000 OFFSET 6000", g.GID) // up to 55,0000 people
+	createQuery("FAA-6-TheRest", "After FAA-5-Next20000, the remaining people in the FAA", q)
+}
+
 func setupTestGroups() {
 	var pa = []db.Person{
 		{FirstName: "Steven", MiddleName: "F", LastName: "Mansour", JobTitle: "CTO, Accord Interests", OfficePhone: "323-512-0111 X305", Email1: "sman@accordinterests.com", MailAddress: "11719 Bee Cave Road", MailAddress2: "Suite 301", MailCity: "Austin", MailState: "TX", MailPostalCode: "78738", MailCountry: "USA", Status: 0},
@@ -243,7 +268,7 @@ func setupTestGroups() {
 		{FirstName: "Melissa", MiddleName: "", LastName: "Wheeler", JobTitle: "General Manager, Isola Bella", OfficePhone: "405.721.2194 x205", Email1: "mwheeler@myisolabella.com", MailAddress: "8309 NW 140th St", MailAddress2: "", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73142", MailCountry: "USA", Status: 0},
 	}
 	createGroup("AccordTest", "Steve + Amazon test + Accord accounts", &pa2)
-
+	createFAAQueries()
 }
 func readCommandLineArgs() {
 	dbuPtr := flag.String("B", "ec2-user", "database user name")

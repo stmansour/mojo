@@ -77,7 +77,15 @@ func GeneratePageHTML(fname, hostname string, p *db.Person, t *template.Template
 // email addresses identified by the query.
 func Sendmail(si *Info) error {
 	funcname := "Sendmail"
-	util.Ulog("MojoSendmail: Calling %s to send message to List - query = %s, from = %s\n", si.Hostname, si.QName, si.From)
+	util.Ulog("MojoSendmail: Send message to %s\n", si.QName)
+	util.Ulog("\t QName       = %s\n", si.QName)
+	util.Ulog("\t From        = %s\n", si.From)
+	util.Ulog("\t Subject     = %s\n", si.Subject)
+	util.Ulog("\t MsgFName    = %s\n", si.MsgFName)
+	util.Ulog("\t AttachFName = %s\n", si.AttachFName)
+	util.Ulog("\t Hostname    = %s\n", si.Hostname)
+	util.Ulog("\t SMTPHost    = %s\n", si.SMTPHost)
+	util.Ulog("\t SMTPPort    = %d\n", si.SMTPPort)
 
 	// template for email
 	t, err := template.New(si.MsgFName).ParseFiles(si.MsgFName)
@@ -120,6 +128,7 @@ func Sendmail(si *Info) error {
 		m.SetHeader("To", p.Email1)
 		s, err := GeneratePageHTML(si.MsgFName, si.Hostname, &p, t)
 		if err != nil {
+			util.Ulog("Error on person with address: %s\n", p.Email1)
 			return err
 		}
 		m.SetBody("text/html", string(s))
@@ -127,9 +136,15 @@ func Sendmail(si *Info) error {
 		err = d.DialAndSend(m)
 		if err != nil {
 			util.Ulog("Error on DialAndSend = %s\n", err.Error())
+			util.Ulog("Error occurred while sending to address: %s\n", p.Email1)
 			return err
 		}
 		si.SentCount++ // update the si.SentCount only after adding the record
+
+		if si.SentCount%25 == 0 {
+			util.Ulog("Processing query %s, SentCount = %d\n", si.QName, si.SentCount)
+		}
 	}
+	util.Ulog("Finished query %s. Successfully sent %d messages\n", si.QName, si.SentCount)
 	return nil
 }
