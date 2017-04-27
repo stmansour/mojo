@@ -251,7 +251,7 @@ func readCommandLineArgs() {
 	mPtr := flag.String("b", "testmsg.html", "filename containing the html message to send")
 	aPtr := flag.String("a", "", "filename of attachment")
 	qPtr := flag.String("q", "MojoTest", "name of the query to send messages to")
-	hPtr := flag.String("h", "http://localhost:8275/", "name of host and port for mojosrv")
+	hPtr := flag.String("h", db.MojoDBConfig.MojoWebAddr, "name of host and port for mojosrv")
 	qcPtr := flag.Bool("count", false, "returns the count of target addresses in the query, then exits.")
 	soPtr := flag.Bool("setup", false, "just run the setup, do not send email")
 	bPTR := flag.Bool("bounce", false, "just send a message to bounce@simulator.amazonses.com")
@@ -279,9 +279,14 @@ func readCommandLineArgs() {
 }
 
 func main() {
-	fmt.Printf("MOJO Mailsend - begin\n")
-	readCommandLineArgs()
 	var err error
+	fmt.Printf("MOJO Mailsend - begin\n")
+	err = db.ReadConfig()
+	if err != nil {
+		util.UlogAndPrint("Error in db.ReadConfig: %s\n", err.Error())
+		os.Exit(1)
+	}
+	readCommandLineArgs()
 	//----------------------------------------------
 	// Open the logfile and begin logging...
 	//----------------------------------------------
@@ -296,11 +301,6 @@ func main() {
 	//----------------------------------------------
 	// Open the database...
 	//----------------------------------------------
-	err = db.ReadConfig()
-	if err != nil {
-		util.UlogAndPrint("Error in db.ReadConfig: %s\n", err.Error())
-		os.Exit(1)
-	}
 	s := extres.GetSQLOpenString(db.MojoDBConfig.MojoDbname, &db.MojoDBConfig)
 	App.db, err = sql.Open("mysql", s)
 	if nil != err {
