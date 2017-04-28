@@ -88,7 +88,13 @@ func Sendmail(si *Info) error {
 	util.Ulog("\t SMTPPort    = %d\n", si.SMTPPort)
 
 	// template for email
-	t, err := template.New(si.MsgFName).ParseFiles(si.MsgFName)
+	var tname string
+	sa := strings.Split(si.MsgFName, "/")
+	if len(sa) > 0 {
+		tname = sa[len(sa)-1]
+	}
+
+	t, err := template.New(tname).ParseFiles(si.MsgFName)
 	if nil != err {
 		fmt.Printf("%s: error loading template: %v\n", funcname, err)
 		return err
