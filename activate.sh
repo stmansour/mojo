@@ -3,7 +3,7 @@
 #
 # processname: mojo
 
-
+OS=$(uname)
 HOST=localhost
 PROGNAME="mojo"
 PORT=8275
@@ -134,7 +134,18 @@ stop() {
 	#---------------------------------------------------
 	W=$(ps -ef | grep "mojowatchdog" | grep "bash" | wc -l)
 	if [ ${W} == 1 ]; then
-		pid=$(ps -ef | grep mojowatchdog | grep "bash" | sed -e 's/[ \t]*[0-9][0-9]*[ \t][ \t]*\([0-9][0-9]*\)[ \t].*/\1/')
+		case "${OS}" in
+		"Darwin")
+			pid=$(ps -ef | grep mojowatchdog | grep "bash" | sed -e 's/[ \t]*[0-9][0-9]*[ \t][ \t]*\([0-9][0-9]*\)[ \t].*/\1/')
+			;;
+		"Linux")
+			pid=$(ps -ef | grep mojowatchdog | grep "bash" | sed -e 's/[^ \t]*[ \t][ \t]*\([0-9][0-9]*\)[ \t].*/\1/')
+			;;
+		"*")
+			echo "Unsupported Operating System"
+			exit 1
+			;;
+		esac
 		kill ${pid}
 	fi
 
