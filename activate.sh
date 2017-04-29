@@ -50,18 +50,6 @@ will be "OK" if it is ready, or something else if there are problems:
 ZZEOF
 }
 
-stopwatchdog() {
-	# make sure we can find it
-    pidline=$(ps -ef | grep pbwatchdog | grep -v grep)
-    if [ "${pidline}" != "" ]; then
-        lines=$(echo "${pidline}" | wc -l)
-        if [ $lines -gt "0" ]; then
-            pid=$(echo "${pidline}" | awk '{print $2}')
-            $(kill $pid)
-        fi          
-    fi      
-}
-
 makeProdNode() {
 	${GETFILE} accord/db/confprod.json
 	cp confprod.json config.json
@@ -113,7 +101,10 @@ start() {
 		tar xzvf fa.tar.gz
 	fi
 
-	./${SERVERNAME} >log.out 2>&1 &
+	x=$(pgrep "${SERVERNAME}")
+	if [ "${X}x" == "x" ]; then
+		./${SERVERNAME} >log.out 2>&1 &
+	fi
 
 	# make sure it can survive a reboot...
 	if [ ${IAM} == "root" ]; then
@@ -125,18 +116,42 @@ start() {
 	fi
 
 	# give ${SERVERNAME} a few seconds to start up before initiating the watchdog
-	# sleep 5
-	# if [ "${STARTPBONLY}" -ne "1" ]; then
-	# 	stopwatchdog
-	# 	./pbwatchdog ${WATCHDOGOPTS} >pbwatchdogstartup.out 2>&1 &
-	# fi
+	sleep 1
+
+	#---------------------------------------------------
+	# If the watchdog is NOT running, then start it...
+	#---------------------------------------------------
+	echo "checking for mojowatchdog"
+	W=$(ps -ef | grep "mojowatchdog" | grep "bash" | wc -l)
+	echo "W = ${W}"
+	if [ ${W} == 0 ]; then
+		echo "No watchdog found. Starting"
+		./mojowatchdog &
+	fi
 }
 
 stop() {
+	#---------------------------------------------------
 	# stopwatchdog
-	killall -9 ${SERVERNAME}
+	#---------------------------------------------------
+	W=$(ps -ef | grep "mojowatchdog" | grep "bash" | wc -l)
+	echo "W = ${W}"
+	if [ ${W} == 1 ]; then
+		pid=$(ps -ef | grep mojowatchdog | grep "bash" | sed -e 's/[ \t]*[0-9][0-9]*[ \t][ \t]*\([0-9][0-9]*\)[ \t].*/\1/')
+		echo "watchdog pid = ${pid}.  kill it"
+		kill ${pid}
+		echo "killed"
+	fi
+
+	pkill ${SERVERNAME}
+	sleep 1
+	X=$(pgrep ${SERVERNAME})
+	if [ "x${X}" != "x" ]; then
+		killall -9 ${SERVERNAME}
+	fi
+
 	if [ ${IAM} == "root" ]; then
-		sleep 2
+		sleep 1
 		rm -f /var/run/${SERVERNAME}/${SERVERNAME}.pid /var/lock/${SERVERNAME}
 	fi
 }

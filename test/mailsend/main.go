@@ -365,24 +365,33 @@ func main() {
 	}
 	// fmt.Printf("SMTP Info: host:port = %s:%d, login = %s, pass = %s\n", si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
 	if App.SetupOnly {
+		util.UlogAndPrint("Setup\n")
 		setupTestGroups()
-		fmt.Printf("Setup completed\n")
+		util.UlogAndPrint("Setup completed\n")
 		return
 	}
 	if App.Bounce {
+		util.UlogAndPrint("Bounce Email\n")
 		SendBouncedEmailTest()
+		util.UlogAndPrint("Bounce Email Complete\n")
 		return
 	}
 	if App.Complaint {
+		util.UlogAndPrint("Complain Email\n")
 		SendComplaintEmailTest()
+		util.UlogAndPrint("Complain Email Complete\n")
 		return
 	}
 	if App.OOO {
+		util.UlogAndPrint("Out-of-Office Email\n")
 		SendOOOEmailTest()
+		util.UlogAndPrint("Out-of-Office Email Complete\n")
 		os.Exit(0)
 	}
 	if App.Suppress {
+		util.UlogAndPrint("Suppression List Email\n")
 		SendSuppressionListEmailTest()
+		util.UlogAndPrint("Suppression List Email Complete\n")
 		os.Exit(0)
 	}
 
