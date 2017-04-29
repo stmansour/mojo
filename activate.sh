@@ -121,11 +121,8 @@ start() {
 	#---------------------------------------------------
 	# If the watchdog is NOT running, then start it...
 	#---------------------------------------------------
-	echo "checking for mojowatchdog"
 	W=$(ps -ef | grep "mojowatchdog" | grep "bash" | wc -l)
-	echo "W = ${W}"
 	if [ ${W} == 0 ]; then
-		echo "No watchdog found. Starting"
 		./mojowatchdog &
 	fi
 }
@@ -135,12 +132,9 @@ stop() {
 	# stopwatchdog
 	#---------------------------------------------------
 	W=$(ps -ef | grep "mojowatchdog" | grep "bash" | wc -l)
-	echo "W = ${W}"
 	if [ ${W} == 1 ]; then
 		pid=$(ps -ef | grep mojowatchdog | grep "bash" | sed -e 's/[ \t]*[0-9][0-9]*[ \t][ \t]*\([0-9][0-9]*\)[ \t].*/\1/')
-		echo "watchdog pid = ${pid}.  kill it"
 		kill ${pid}
-		echo "killed"
 	fi
 
 	pkill ${SERVERNAME}
@@ -220,10 +214,6 @@ for arg do
 	# echo '--> '"\`$arg'"
 	cmd=$(echo ${arg}|tr "[:upper:]" "[:lower:]")
     case "$cmd" in
-  #   "images")
-		# updateImages
-		# echo "Images updated"
-		# ;;
 	"start")
 		start
 		echo "OK"
@@ -235,14 +225,14 @@ for arg do
 		exit 0
 		;;
 	"ready")
-		# ST=$(curl -s http://${HOST}:${PORT}/status/)
-		# echo "${ST}"
-		echo "OK"
+		R=$(curl -s http://localhost:${PORT}/v1/ping | grep "Accord Mojo" | wc -l)
+		if [ 1 = ${R} ]; then
+			echo "OK"
+		else
+			echo "No response to ping"
+		fi
 		exit 0
 		;;
-	# "status")
-	# 	status
-	# 	;;
 	"restart")
 		restart
 		echo "OK"
