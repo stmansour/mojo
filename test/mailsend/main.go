@@ -146,6 +146,22 @@ func addPerson(pnew *db.Person, GID int64) error {
 	return AddPersonToGroup(pid, GID)
 }
 
+func resetUserStatus(ppa *[]db.Person) {
+	pa := *ppa
+	for i := 0; i < len(pa); i++ {
+		p, err := db.GetPersonByEmail(pa[i].Email1)
+		if err != nil {
+			util.UlogAndPrint("Error from db.GetPersonByEmail( %s ):  %s \n", pa[i].Email1, err.Error())
+			os.Exit(1)
+		}
+		p.Status = db.NORMAL
+		if err = db.UpdatePerson(&p); err != nil {
+			util.UlogAndPrint("Error from db.GetPersonByEmail( %s ):  %s \n", pa[i].Email1, err.Error())
+			os.Exit(1)
+		}
+	}
+}
+
 func createGroup(name, descr string, ppa *[]db.Person) {
 	var g db.EGroup
 
@@ -159,6 +175,7 @@ func createGroup(name, descr string, ppa *[]db.Person) {
 			util.UlogAndPrint("Error updating group: %s\n", err.Error())
 			os.Exit(1)
 		}
+		resetUserStatus(ppa)
 		return
 	}
 	if err != nil {

@@ -29,6 +29,13 @@ package: mailsend
 	@rm -f fail
 	@echo "*** ${THISDIR}: completed package ***"
 
+pubpromo:
+	tar cvfz campaigns.tar campaigns
+	scp -i ~/.ssh/smanAWS1.pem campaigns.tar dir3:~/apps/mojo
+	ssh ec2-user@dir3 'cd apps/mojo;tar xzvf campaigns.tar'
+	scp -i ~/.ssh/smanAWS1.pem campaigns.tar dir4:~/apps/mojo
+	ssh ec2-user@dir4 'cd apps/mojo;tar xzvf campaigns.tar'
+
 newdb:
 	${BINDIR}/mojonewdb
 	./mailsend -setup
