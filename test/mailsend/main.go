@@ -146,19 +146,16 @@ func addPerson(pnew *db.Person, GID int64) error {
 	return AddPersonToGroup(pid, GID)
 }
 
-func resetUserStatus(ppa *[]db.Person) {
-	pa := *ppa
-	for i := 0; i < len(pa); i++ {
-		p, err := db.GetPersonByEmail(pa[i].Email1)
-		if err != nil {
-			util.UlogAndPrint("Error from db.GetPersonByEmail( %s ):  %s \n", pa[i].Email1, err.Error())
-			os.Exit(1)
-		}
-		p.Status = db.NORMAL
-		if err = db.UpdatePerson(&p); err != nil {
-			util.UlogAndPrint("Error from db.GetPersonByEmail( %s ):  %s \n", pa[i].Email1, err.Error())
-			os.Exit(1)
-		}
+func resetUserStatus(p1 *db.Person) {
+	p, err := db.GetPersonByEmail(p1.Email1)
+	if err != nil {
+		util.UlogAndPrint("Error from db.GetPersonByEmail( %s ):  %s \n", p1.Email1, err.Error())
+		os.Exit(1)
+	}
+	p.Status = db.NORMAL
+	if err = db.UpdatePerson(&p); err != nil {
+		util.UlogAndPrint("Error from db.UpdatePerson( %s ):  %s \n", p.Email1, err.Error())
+		os.Exit(1)
 	}
 }
 
@@ -175,8 +172,6 @@ func createGroup(name, descr string, ppa *[]db.Person) {
 			util.UlogAndPrint("Error updating group: %s\n", err.Error())
 			os.Exit(1)
 		}
-		resetUserStatus(ppa)
-		return
 	}
 	if err != nil {
 		if !util.IsSQLNoResultsError(err) {
@@ -197,9 +192,10 @@ func createGroup(name, descr string, ppa *[]db.Person) {
 
 	// Add the list of people to it...
 	pa := *ppa
+	gid := g.GID
 	for i := 0; i < len(pa); i++ {
-		gid := g.GID
-		addPerson(&pa[i], gid)
+		addPerson(&pa[i], gid)  // if person is not in db, add them, then add them to group gid
+		resetUserStatus(&pa[i]) // reset their status
 	}
 
 	// Mark that we're finished...
@@ -235,7 +231,13 @@ func createQuery(name, descr, query string) {
 }
 
 func createFAAQueries() {
-	g, err := db.GetGroupByName("FAA")
+	var g db.EGroup
+	var err error
+	g, err = db.GetGroupByName("FAA")
+	if err != nil && util.IsSQLNoResultsError(err) {
+		fmt.Printf("Group FAA does not exist... no FAA queries added\n")
+		return
+	}
 	if err != nil {
 		util.UlogAndPrint("Error getting group FAA: %s\n", err.Error())
 		os.Exit(1)
@@ -283,6 +285,7 @@ func setupTestGroups() {
 		pa1[4],
 		{FirstName: "Joe", MiddleName: "G", LastName: "Mansour", JobTitle: "Principal, Accord Interests", OfficePhone: "323-512-0111 X303", Email1: "jgm@accordinterests.com", MailAddress: "11719 Bee Cave Road", MailAddress2: "Suite 301", MailCity: "Austin", MailState: "TX", MailPostalCode: "78738", MailCountry: "USA", Status: 0},
 		{FirstName: "Melissa", MiddleName: "", LastName: "Wheeler", JobTitle: "General Manager, Isola Bella", OfficePhone: "405.721.2194 x205", Email1: "mwheeler@myisolabella.com", MailAddress: "8309 NW 140th St", MailAddress2: "", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73142", MailCountry: "USA", Status: 0},
+		{FirstName: "Michelle", MiddleName: "", LastName: "Falls", JobTitle: "Concierge", OfficePhone: "405.721.2194 x2014", Email1: "mfalls@myisolabella.com", MailAddress: "8309 NW 140th St", MailAddress2: "", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73142", MailCountry: "USA", Status: 0},
 	}
 	createGroup("AccordTest", "Steve + Amazon test + Accord accounts", &pa2)
 	createFAAQueries()
