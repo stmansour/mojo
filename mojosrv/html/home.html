@@ -269,7 +269,7 @@ function buildPageElements() {
         onClick: function(event) {
             // var sel = this.getSelection(true);
             event.onComplete = function() {
-                var sel = w2ui.groupsGrid.getSelection(true);
+                var sel = w2ui.groupsGrid.getSelection();
                 if (sel.length > 0) {
                     var ob = w2ui.groupsGrid.get(sel[0]);
                     if (ob === null ) { return; }

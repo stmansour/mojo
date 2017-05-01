@@ -9,7 +9,7 @@ clean:
 	rm -f ${TOOL} fail conf*.json
 	@echo "*** Clean completed in admin/${THISDIR} ***"
 
-install: ${TOOL}
+install: mojowatchdog
 	@echo "*** install completed in admin/${THISDIR} ***"
 
 package: mojowatchdog

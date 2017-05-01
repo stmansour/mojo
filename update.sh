@@ -59,7 +59,7 @@ echo -n "."; ./activate.sh start
 echo -n "."; sleep 1
 echo -n "."; status=$(./activate.sh ready)
 echo
-./installman.sh >installman.log 2>&1
+#  ./installman.sh >installman.log 2>&1
 if [ "${status}" = "OK" ]; then
     echo "Activation successful"
 else
