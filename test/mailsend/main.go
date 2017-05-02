@@ -181,13 +181,15 @@ func createGroup(name, descr string, ppa *[]db.Person) {
 	}
 
 	// Create the group...
-	g.GroupName = name
-	g.GroupDescription = descr
-	g.DtStart = time.Now()
-	err = db.InsertGroup(&g)
-	if err != nil {
-		util.UlogAndPrint("Error inserting group: %s\n", err.Error())
-		os.Exit(1)
+	if g.GID == 0 {
+		g.GroupName = name
+		g.GroupDescription = descr
+		g.DtStart = time.Now()
+		err = db.InsertGroup(&g)
+		if err != nil {
+			util.UlogAndPrint("Error inserting group: %s\n", err.Error())
+			os.Exit(1)
+		}
 	}
 
 	// Add the list of people to it...
