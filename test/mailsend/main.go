@@ -34,6 +34,7 @@ var App struct {
 	Complaint  bool                     // if true, just print the solution set count for the query and exit
 	OOO        bool                     // if true, just print the solution set count for the query and exit
 	Suppress   bool                     // if true, just print the solution set count for the query and exit
+	Fix        bool                     // if true, just scan the database for errors, fix the ones we can, then exit
 	LogFile    *os.File                 // where to log messages
 	XR         extres.ExternalResources // dbs, smtp...
 }
@@ -319,6 +320,7 @@ func readCommandLineArgs() {
 	sPTR := flag.Bool("sl", false, "just send a message to suppressionlist@simulator.amazonses.com")
 	subjPtr := flag.String("subject", "Test Message", "Email subject line.")
 	fromPtr := flag.String("from", "sman@accordinterests.com", "Message sender.")
+	fixPtr := flag.Bool("fix", false, "Scan db for known errors, fix them wherever possible, then exit.")
 
 	flag.Parse()
 	App.Bounce = *bPTR
@@ -335,6 +337,7 @@ func readCommandLineArgs() {
 	App.From = *fromPtr
 	App.QueryCount = *qcPtr
 	App.MojoHost = *hPtr
+	App.Fix = *fixPtr
 }
 
 func main() {
@@ -404,6 +407,12 @@ func main() {
 		util.UlogAndPrint("Setup completed\n")
 		return
 	}
+
+	if App.Fix {
+		fixDoubleDotEmail()
+		return
+	}
+
 	if App.Bounce {
 		util.UlogAndPrint("Bounce Email\n")
 		SendBouncedEmailTest()
