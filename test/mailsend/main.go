@@ -269,6 +269,9 @@ func createFAAQueries() {
 	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 5000 OFFSET 1000", g.GID) // 6,000
 	createQuery("FAA-4-Next5000", "After FAA-3-Next700, the next 700 people in the FAA", q)
 
+	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 4983 OFFSET 1017", g.GID) // 6,000
+	createQuery("FAA-fix-2-at-1046", "Fix to finish 5000 which broke due to Tommy.J.VernonJr.@faa.gov", q)
+
 	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 20000 OFFSET 6000", g.GID) // 26,000
 	createQuery("FAA-5-Next20000", "After FAA-4-Next5000, the next 20000 people in the FAA", q)
 
@@ -410,6 +413,7 @@ func main() {
 
 	if App.Fix {
 		fixDoubleDotEmail()
+		fixDotAtEmail()
 		return
 	}
 
