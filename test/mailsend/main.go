@@ -229,6 +229,15 @@ func createQuery(name, descr, query string) {
 			util.UlogAndPrint("Error reading query %q: %s\n", name, err.Error())
 			os.Exit(1)
 		}
+	} else {
+		if query != q.QueryJSON {
+			q.QueryJSON = query
+			err = db.UpdateQuery(&q)
+			if err != nil {
+				util.UlogAndPrint("Error updating query: %s\n", err.Error())
+				os.Exit(1)
+			}
+		}
 	}
 }
 
@@ -252,6 +261,9 @@ func createFAAQueries() {
 
 	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 700 OFFSET 300", g.GID) // 1,000
 	createQuery("FAA-3-Next700", "After FAA-2-Next250, the next 700 people in the FAA", q)
+
+	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 61 OFFSET 939", g.GID) // 1,000
+	createQuery("FAA-fix-1-at-962", "Fix to finish 700 which broke due to Peter.C..Cyr@faa.gov", q)
 
 	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 5000 OFFSET 1000", g.GID) // 6,000
 	createQuery("FAA-4-Next5000", "After FAA-3-Next700, the next 700 people in the FAA", q)
