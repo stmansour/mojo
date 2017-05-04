@@ -7,7 +7,7 @@ LOGFILE=loadtime.csv
 
 while [ 1=1 ];
 do
-	T=$(date "+%Y-%m-%d,%H:%M:%S")
+	T=$(date "+%Y-%m-%d %H:%M:%S")
 	TIME=$(curl https://faatoday.com/ -o /dev/null -s -w %{time_total})
 	TOTAL_TIME=$(echo "scale=5; ${TOTAL_TIME} + ${TIME}" |bc)
 	COUNT=$((COUNT+1))
