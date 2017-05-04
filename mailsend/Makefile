@@ -15,7 +15,7 @@ mailsend: *.go
 
 clean:
 	go clean
-	rm -f mailsend, ver.go, tmp *.log
+	rm -f mailsend, ver.go, tmp *.log conf*.json
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package:

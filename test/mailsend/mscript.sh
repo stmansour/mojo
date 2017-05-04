@@ -33,6 +33,12 @@
 # Sent 03-MAY-2017 10:31am  -  fixes emails with ".."
 # ./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-fix-1-at-962"
 
+# Sent 03-MAY-2017 12:02pm  -  failed on .@ addresses:   Richard.D.AndersonJr.@faa.gov
+# ./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-4-Next5000"
+
+# Sent 03-MAY-2017 12:32pm  - fixes emails with ".@"
+#./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-fix-2-at-1046"
+
 # ./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-4-Next5000"
 # ./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-5-Next20000"
 # ./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-6-TheRest"

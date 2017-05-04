@@ -60,8 +60,31 @@ func RemoveBackslash(dat []byte) []byte {
 
 // ScrubEmailAddr removes characters that are not allowed in an email address
 // from the provided string and returns the updated string.
-func ScrubEmailAddr(s string) string {
-	return Stripchars(s, " ,\"():;<>")
+// It also removes some of the illegal character combinations I have encountered
+// when doing large email blasts with Mojo
+func ScrubEmailAddr(ss string) string {
+	s1 := Stripchars(ss, " ,\"():;<>")
+
+	// Fix addresses of the form: Dennis.E..Echelberry@faa.gov
+	j := strings.Index(s1, "..")
+	if j >= 0 {
+		s := s1[:j+1]
+		if len(s1) > j+2 {
+			s += s1[j+2:]
+		}
+		s1 = s
+	}
+
+	// Fix addresses of the form: Richard.D.AndersonJr.@faa.gov
+	if j = strings.Index(s1, ".@"); j >= 0 {
+		s := s1[:j]
+		if len(s1) > j+1 {
+			s += s1[j+1:]
+		}
+		s1 = s
+	}
+
+	return s1
 }
 
 // Ulog is the standard logger

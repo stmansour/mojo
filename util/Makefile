@@ -9,6 +9,7 @@ util: *.go
 	@${COUNTOL} golint
 	go build
 	go install
+	go test
 	@rm -f fail
 	@echo "*** ${THISDIR}: completed util ***"
 
