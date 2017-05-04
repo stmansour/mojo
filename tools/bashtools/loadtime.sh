@@ -1,5 +1,5 @@
 #!/bin/bash
-CHECKINGPERIOD=900
+CHECKINGPERIOD=30
 TOTAL_TIME=0
 COUNT=0
 AVERAGE=0
@@ -12,7 +12,7 @@ do
 	TOTAL_TIME=$(echo "scale=5; ${TOTAL_TIME} + ${TIME}" |bc)
 	COUNT=$((COUNT+1))
 	AVERAGE=$(echo "scale=5; ${TOTAL_TIME} / ${COUNT}" |bc)
-	DAT="$T,${COUNT},${TIME},${TOTAL_TIME},${AVERAGE}"
+	DAT="$T,${COUNT},${TIME},${AVERAGE},${TOTAL_TIME}"
 
     #---------------------------------------------------------------------------
     # Touch the logfile, so we know that this process is active.
