@@ -277,6 +277,15 @@ func createFAAQueries() {
 
 	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 50000 OFFSET 26000", g.GID) // up to 56,0000 people
 	createQuery("FAA-6-TheRest", "After FAA-5-Next20000, the remaining people in the FAA", q)
+
+	limit := 1500
+	offset := 26000
+	for i := 0; i < 20; i++ {
+		q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT %d OFFSET %d", g.GID, limit, offset) // 26,000
+		s := fmt.Sprintf("FAA-%02d", 7+i)
+		createQuery(s, "1500 each day until we are done", q)
+		offset += limit
+	}
 }
 
 func setupTestGroups() {

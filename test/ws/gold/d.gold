@@ -2,7 +2,7 @@
     "records": [
         {
             "LastModBy": 0,
-            "LastModTime": "2017-05-03T12:26:30Z",
+            "LastModTime": "2017-05-07T22:31:48Z",
             "QID": 3,
             "QueryDescr": "Steve + Amazon test + Accord accounts",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=4 WHERE People.Status=0",
@@ -11,7 +11,7 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-05-03T12:26:30Z",
+            "LastModTime": "2017-05-07T22:31:48Z",
             "QID": 2,
             "QueryDescr": "Steve + Amazon test accounts",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=3 WHERE People.Status=0",
@@ -20,7 +20,34 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-05-03T12:26:30Z",
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 12,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 26000",
+            "QueryName": "FAA-07",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 13,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 27500",
+            "QueryName": "FAA-08",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 14,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 29000",
+            "QueryName": "FAA-09",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
             "QID": 4,
             "QueryDescr": "The first 50 people in the FAA",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 50 OFFSET 0",
@@ -29,7 +56,97 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-05-03T12:26:30Z",
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 15,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 30500",
+            "QueryName": "FAA-10",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 16,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 32000",
+            "QueryName": "FAA-11",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 17,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 33500",
+            "QueryName": "FAA-12",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 18,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 35000",
+            "QueryName": "FAA-13",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 19,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 36500",
+            "QueryName": "FAA-14",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 20,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 38000",
+            "QueryName": "FAA-15",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 21,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 39500",
+            "QueryName": "FAA-16",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 22,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 41000",
+            "QueryName": "FAA-17",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 23,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 42500",
+            "QueryName": "FAA-18",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 24,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 44000",
+            "QueryName": "FAA-19",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
             "QID": 5,
             "QueryDescr": "After FAA-1-First50, the next 250 people in the FAA",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 250 OFFSET 50",
@@ -38,7 +155,70 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-05-03T12:26:30Z",
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 25,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 45500",
+            "QueryName": "FAA-20",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 26,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 47000",
+            "QueryName": "FAA-21",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 27,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 48500",
+            "QueryName": "FAA-22",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 28,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 50000",
+            "QueryName": "FAA-23",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 29,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 51500",
+            "QueryName": "FAA-24",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 30,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 53000",
+            "QueryName": "FAA-25",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
+            "QID": 31,
+            "QueryDescr": "1500 each day until we are done",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 1500 OFFSET 54500",
+            "QueryName": "FAA-26",
+            "recid": 0
+        },
+        {
+            "LastModBy": 0,
+            "LastModTime": "2017-05-07T22:31:48Z",
             "QID": 6,
             "QueryDescr": "After FAA-2-Next250, the next 700 people in the FAA",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 700 OFFSET 300",
@@ -47,7 +227,7 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-05-03T12:26:30Z",
+            "LastModTime": "2017-05-07T22:31:48Z",
             "QID": 8,
             "QueryDescr": "After FAA-3-Next700, the next 700 people in the FAA",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 5000 OFFSET 1000",
@@ -56,7 +236,7 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-05-03T12:26:30Z",
+            "LastModTime": "2017-05-07T22:31:48Z",
             "QID": 10,
             "QueryDescr": "After FAA-4-Next5000, the next 20000 people in the FAA",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 20000 OFFSET 6000",
@@ -65,7 +245,7 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-05-03T12:26:30Z",
+            "LastModTime": "2017-05-07T22:31:48Z",
             "QID": 11,
             "QueryDescr": "After FAA-5-Next20000, the remaining people in the FAA",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 50000 OFFSET 26000",
@@ -74,7 +254,7 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-05-03T12:26:30Z",
+            "LastModTime": "2017-05-07T22:31:48Z",
             "QID": 7,
             "QueryDescr": "Fix to finish 700 which broke due to Peter.C..Cyr@faa.gov",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 61 OFFSET 939",
@@ -83,7 +263,7 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-05-03T12:26:30Z",
+            "LastModTime": "2017-05-07T22:31:48Z",
             "QID": 9,
             "QueryDescr": "Fix to finish 5000 which broke due to Tommy.J.VernonJr.@faa.gov",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 4983 OFFSET 1017",
@@ -92,7 +272,7 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-05-03T12:26:30Z",
+            "LastModTime": "2017-05-07T22:31:48Z",
             "QID": 1,
             "QueryDescr": "Steve-only test group",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=2 WHERE People.Status=0",
@@ -101,5 +281,5 @@
         }
     ],
     "status": "success",
-    "total": 11
+    "total": 31
 }

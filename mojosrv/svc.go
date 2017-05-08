@@ -101,6 +101,7 @@ type ServiceData struct { // position 0 is 'v1'
 	Service       string               // the service requested (position 1)
 	GID           int64                // which group (position 2)
 	ID            int64                // the numeric id parsed from position 3
+	DetVal        string               // the string for the 4th param if provided
 	wsSearchReq   WebGridSearchRequest // what did the search requester ask for
 	wsTypeDownReq WebTypeDownRequest   // fast for typedown
 	data          string               // the raw unparsed data as string
