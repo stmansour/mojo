@@ -14,6 +14,7 @@ func TestEmailScrub(t *testing.T) {
 		{"Dennis.E..Echelberry@faa.gov", "Dennis.E.Echelberry@faa.gov"},
 		{"Richard.D.AndersonJr.@faa.gov", "Richard.D.AndersonJr@faa.gov"},
 		{"Billy.(Bob).Thorton@xyz.com", "Billy.Bob.Thorton@xyz.com"},
+		{"I@mw@lkingw1th477@ng3ls.M.McDonald@faa.gov", "Imwlkingw1th477ng3ls.M.McDonald@faa.gov"},
 	}
 
 	for i := 0; i < len(m); i++ {

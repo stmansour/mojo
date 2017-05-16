@@ -84,6 +84,15 @@ func ScrubEmailAddr(ss string) string {
 		s1 = s
 	}
 
+	// Fix addresses of the form: I@mw@lkingw1th477@ng3ls.M.McDonald@faa.gov
+	// save the rightmost @, just remove all other @ characters
+	if strings.Count(s1, "@") > 1 {
+		i := strings.LastIndex(s1, "@")
+		sa := Stripchars(s1[:i], "@")
+		sb := s1[i:]
+		s1 = sa + sb
+	}
+
 	return s1
 }
 
