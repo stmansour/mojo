@@ -131,6 +131,9 @@ func Sendmail(si *Info) error {
 			return err
 		}
 		// fmt.Printf("Sending to %s\n", p.Email1)
+		if len(p.Email1) == 0 {
+			continue
+		}
 		m.SetHeader("To", p.Email1)
 		s, err := GeneratePageHTML(si.MsgFName, si.Hostname, &p, t)
 		if err != nil {

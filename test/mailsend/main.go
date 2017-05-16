@@ -286,6 +286,15 @@ func createFAAQueries() {
 		createQuery(s, "1500 each day until we are done", q)
 		offset += limit
 	}
+
+	// Fix for this guy:
+	// +-------+-------------------------+------------+----------+--------------------------------------------+
+	// | PID   | FirstName               | MiddleName | LastName | Email1                                     |
+	// +-------+-------------------------+------------+----------+--------------------------------------------+
+	// | 34385 | I@mw@lkingw1th477@ng3ls | M          | McDonald | I@mw@lkingw1th477@ng3ls.M.McDonald@faa.gov |
+	// +-------+-------------------------+------------+----------+--------------------------------------------+
+	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 925 OFFSET 34084", g.GID) // up to 56,0000 people
+	createQuery("FAA-12-fix", "fix for I@mw@lkingw1th477@ng3ls.M.McDonald@faa.gov", q)
 }
 
 func setupTestGroups() {

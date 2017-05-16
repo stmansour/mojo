@@ -18,7 +18,7 @@
 #------------------------------------------------------
 #  FAA: All of FAA
 #------------------------------------------------------
-#./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q MojoTest
+# ./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q MojoTest
 #./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q AccordTest
 
 # Sent 03-MAY-2017 7:45am
@@ -40,5 +40,21 @@
 #./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-fix-2-at-1046"
 
 # ./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-4-Next5000"
+
+# Sent 04-MAY-2017  8:22am - 9:47am
 # ./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-5-Next20000"
+
+
+# Sent 08-MAY-2017 8:48am  - 
+# ./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-07"
+
+# Sent 09-MAY-2017 11:34  - 
+# ./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-08"
+# Sent 10-MAY-2017 8:43am
+# ./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-09"
+# Sent 11-MAY-2017 1:43pm
+#./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-10"
+# Sent 12-MAY-2017 10:36am
+#./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-11"
+
 # ./mailsend -from "Editor-in-chief@FAAToday.com" -b campaigns/faatoday/c2017-04-26/ftmsg.html -subject "FAA Today" -q "FAA-6-TheRest"

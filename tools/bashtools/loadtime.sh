@@ -12,7 +12,7 @@ do
 	TOTAL_TIME=$(echo "scale=5; ${TOTAL_TIME} + ${TIME}" |bc)
 	COUNT=$((COUNT+1))
 	AVERAGE=$(echo "scale=5; ${TOTAL_TIME} / ${COUNT}" |bc)
-	DAT="$T,${COUNT},${TIME},${AVERAGE},${TOTAL_TIME}"
+	DAT="$T,${TIME},${AVERAGE},${TOTAL_TIME}"
 
     #---------------------------------------------------------------------------
     # Touch the logfile, so we know that this process is active.
