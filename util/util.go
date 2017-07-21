@@ -2,8 +2,10 @@ package util
 
 import (
 	"crypto/md5"
+	"encoding/csv"
 	"fmt"
 	"log"
+	"os"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -94,6 +96,27 @@ func ScrubEmailAddr(ss string) string {
 	}
 
 	return s1
+}
+
+// LoadCSV loads a comma-separated-value file into an array of strings and returns the array of strings
+func LoadCSV(fname string) [][]string {
+	t := [][]string{}
+	f, err := os.Open(fname)
+	if nil == err {
+		defer f.Close()
+		reader := csv.NewReader(f)
+		reader.FieldsPerRecord = -1
+		reader.LazyQuotes = true
+		rawCSVdata, err := reader.ReadAll()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		t = append(t, rawCSVdata...)
+	} else {
+		Ulog("LoadCSV: could not open CSV file. err = %v\n", err)
+	}
+	return t
 }
 
 // Ulog is the standard logger

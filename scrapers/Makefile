@@ -1,4 +1,4 @@
-DIRS=faa
+DIRS=faa csv
 
 scrapers:
 	for dir in $(DIRS); do make -C $$dir;done

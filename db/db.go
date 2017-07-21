@@ -317,7 +317,7 @@ func InsertPGroup(a *PGroup) error {
 	_, err := DB.Prepstmt.InsertPGroup.Exec(a.PID, a.GID, a.LastModBy)
 	if nil != err {
 		util.Ulog("InsertGroup: error inserting EGroup:  %v\n", err)
-		util.Ulog("EGroup = %#v\n", *a)
+		util.Ulog("PGroup = %#v\n", *a)
 	}
 	return err
 }

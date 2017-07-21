@@ -130,7 +130,7 @@ start() {
 
 stop() {
 	#---------------------------------------------------
-	# stopwatchdog
+	# stop watchdog first
 	#---------------------------------------------------
 	W=$(ps -ef | grep "mojowatchdog" | grep "bash" | wc -l)
 	if [ ${W} == 1 ]; then
@@ -149,6 +149,9 @@ stop() {
 		kill ${pid}
 	fi
 
+	#---------------------------------------------------
+	# now stop the server
+	#---------------------------------------------------
 	pkill ${SERVERNAME}
 	sleep 1
 	X=$(pgrep ${SERVERNAME})
