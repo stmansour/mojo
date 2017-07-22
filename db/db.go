@@ -91,12 +91,19 @@ var DB struct {
 	Prepstmt PrepSQL
 	Db       *sql.DB
 	DBFields map[string]string
+	Zone     *time.Location // what timezone should the server use?
 }
 
 // InitDB is the call to initialize database context set elsewhere
 func InitDB(db *sql.DB) {
+	var err error
 	DB.Db = db
 	DB.DBFields = map[string]string{}
+	DB.Zone, err = time.LoadLocation(MojoDBConfig.Timezone)
+	if err != nil {
+		fmt.Printf("Error loading timezone %s : %s\n", MojoDBConfig.Timezone, err.Error())
+		util.Ulog("Error loading timezone %s : %s", MojoDBConfig.Timezone, err.Error())
+	}
 }
 
 // GetJoinSetCount returns the number of database rows in the supplied table with the supplied where clause

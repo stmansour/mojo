@@ -74,8 +74,6 @@ func main() {
 	log.SetOutput(App.LogFile)
 	util.Ulog("*** Accord MOJO FAA Scraper ***\n")
 
-	// s := "<awsdbusername>:<password>@tcp(<rdsinstancename>:3306)/accord"
-	// s := fmt.Sprintf("%s:@/%s?charset=utf8&parseTime=True", App.DBUser, App.DBName)
 	s := extres.GetSQLOpenString(db.MojoDBConfig.MojoDbname, &db.MojoDBConfig)
 	App.db, err = sql.Open("mysql", s)
 	if nil != err {
@@ -127,6 +125,7 @@ func main() {
 		os.Exit(1)
 	}
 	MapAndImport(App.fname)
+
 }
 
 func readCommandLineArgs() {
@@ -161,6 +160,7 @@ func readCommandLineArgs() {
 // After working out the mapping, it will process lines 3+ and add them to the database
 //--------------------------------------------------------------------------------------------------------
 func MapAndImport(fname string) {
+	var err error
 	//-------------------------------------------------------------
 	//  First thing to do is establish the mapping between the
 	//  columns and mojo's people definition
@@ -191,7 +191,20 @@ func MapAndImport(fname string) {
 	// }
 
 	//-------------------------------------------------------------
-	// Now that we know the mapping, go through the data anc
+	// Mark Start time of group update
+	//-------------------------------------------------------------
+	App.Group, err = db.GetGroupByName(App.GroupName)
+	if nil != err {
+		log.Fatalf("MapAndImport: error getting group: %s\n", App.GroupName)
+	}
+	App.Group.DtStart = time.Now()
+	err = db.UpdateGroup(&App.Group)
+	if nil != err {
+		log.Fatalf("MapAndImport: error updating group: %s\n", App.GroupName)
+	}
+
+	//-------------------------------------------------------------
+	// Now that we know the mapping, go through the data and
 	// load the people.
 	//-------------------------------------------------------------
 	flt := float64(len(t))
@@ -203,37 +216,37 @@ func MapAndImport(fname string) {
 			}
 			p := &t[i][j]
 			switch fldmap[j] {
-			case 0: // FirstName
+			case 0:
 				a.FirstName = *p
-			case 1: // MiddleName
+			case 1:
 				a.MiddleName = *p
-			case 2: // LastName
+			case 2:
 				a.LastName = *p
-			case 3: // PreferredName
+			case 3:
 				a.PreferredName = *p
-			case 4: // JobTitle
+			case 4:
 				a.JobTitle = *p
-			case 5: // OfficePhone
+			case 5:
 				a.OfficePhone = *p
-			case 6: // OfficeFax
+			case 6:
 				a.OfficeFax = *p
-			case 7: // Email1
+			case 7:
 				a.Email1 = *p
-			case 8: // MailAddress
+			case 8:
 				a.MailAddress = *p
-			case 9: // MailAddress2
+			case 9:
 				a.MailAddress2 = *p
-			case 10: // MailCity
+			case 10:
 				a.MailCity = *p
-			case 11: // MailState
+			case 11:
 				a.MailState = *p
-			case 12: // MailPostalCode
+			case 12:
 				a.MailPostalCode = *p
-			case 13: // MailCountry
+			case 13:
 				a.MailCountry = *p
-			case 14: // RoomNumber
+			case 14:
 				a.RoomNumber = *p
-			case 15: // MailStop
+			case 15:
 				a.MailStop = *p
 			default:
 				fmt.Printf("unexpected fldmap index: %d\n", fldmap[j])
@@ -243,39 +256,90 @@ func MapAndImport(fname string) {
 
 		// fmt.Printf("Adding person:  %s %s (%s)\n", a.FirstName, a.LastName, a.Email1)
 
+		//---------------------------------------------
 		// Do we already have this person?
+		//---------------------------------------------
 		GID := App.Group.GID
 		var PID int64
 		var dup db.Person
 		var err error
+		createdPerson := false
 		dup, err = db.GetPersonByEmail(a.Email1)
 		if err != nil {
 			if !util.IsSQLNoResultsError(err) {
-				fmt.Printf("Error searching for person with email address %s: %s\n", a.Email1, err.Error())
-				os.Exit(1)
+				log.Fatalf("Error searching for person with email address %s: %s\n", a.Email1, err.Error())
 			}
 		}
-		if dup.PID == 0 { // did we find the person...
+
+		//----------------------------------------------------------
+		// Add this person if he/she was not found in the database
+		//----------------------------------------------------------
+		if dup.PID == 0 {
 			if err = db.InsertPerson(&a); err != nil { // no: insert the person
-				fmt.Printf("Error inserting Person: %s\n", err.Error())
-				os.Exit(1)
+				log.Fatalf("Error inserting Person: %s\n", err.Error())
 			}
-			PID = a.PID // now add this person to the group
+			PID = a.PID          // now add this person to the group
+			createdPerson = true //mark that it
 		} else {
 			PID = dup.PID // yes: just add the person to this group
 		}
-		var pg = db.PGroup{
-			PID: PID,
-			GID: GID,
-		}
-		if err = db.InsertPGroup(&pg); err != nil {
-			fmt.Printf("Error inserting Person into group: %s\n", err.Error())
-			os.Exit(1)
+
+		//----------------------------------------------------------
+		// Does this person already exist in the group
+		//----------------------------------------------------------
+		addToGroup := true  // assume we need to add this person to the group
+		if !createdPerson { // only need to look if we didn't create the person
+			_, err := db.GetPGroup(PID, GID)
+			if err != nil {
+				if !util.IsSQLNoResultsError(err) {
+					log.Fatalf("Error getting person group: %s\n", err.Error())
+				}
+			} else {
+				addToGroup = false // this person is already a member of the group
+			}
 		}
 
+		//----------------------------------------------------------
+		// Add the person to this group if necessary
+		//----------------------------------------------------------
+		if addToGroup {
+			var pg = db.PGroup{
+				PID: PID,
+				GID: GID,
+			}
+			if err = db.InsertPGroup(&pg); err != nil {
+				fmt.Printf("Error inserting Person into group: %s\n", err.Error())
+				os.Exit(1)
+			}
+		}
+
+		//----------------------------------------------------------
+		// update on-screen progress
+		//----------------------------------------------------------
 		if i%100 == 0 {
 			fmt.Printf("\r%8d  -->  %3.1f%%", i, float64(100*i)/flt)
 		}
-
 	}
+
+	//-------------------------------------------------------------
+	// Mark Stop time of group update
+	//-------------------------------------------------------------
+	App.Group, err = db.GetGroupByName(App.GroupName)
+	if nil != err {
+		log.Fatalf("MapAndImport: error getting group: %s\n", App.GroupName)
+	}
+	App.Group.DtStop = time.Now()
+	err = db.UpdateGroup(&App.Group)
+	if nil != err {
+		log.Fatalf("MapAndImport: error updating group: %s\n", App.GroupName)
+	}
+
+	//-------------------------------------------------------------
+	// Print out the stats...
+	//-------------------------------------------------------------
+	fmt.Printf("Import Complete\n")
+	fmt.Printf("Start time:   %s\n", App.Group.DtStart.In(db.DB.Zone).Format(util.DATETIMEINPFMT))
+	fmt.Printf("Stop time:    %s\n", App.Group.DtStop.In(db.DB.Zone).Format(util.DATETIMEINPFMT))
+	fmt.Printf("Elapsed time: %s\n", App.Group.DtStop.Sub(App.Group.DtStart))
+
 }

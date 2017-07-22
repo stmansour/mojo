@@ -10,7 +10,7 @@ csv: *.go config.json
 	@${COUNTOL} golint
 	go build
 	@rm -f fail
-	@echo "*** ${THISDIR}: completed faa ***"
+	@echo "*** ${THISDIR}: completed ***"
 
 config.json:
 	/usr/local/accord/bin/getfile.sh accord/db/confdev.json

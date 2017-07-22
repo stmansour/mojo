@@ -66,7 +66,7 @@ func BuildPreparedStatements() {
 	util.ErrCheck(err)
 
 	//--------------------------------------------
-	//    EGROUPS
+	//    EGROUPS - defines a group
 	//--------------------------------------------
 	flds = "GID,GroupName,GroupDescription,DtStart,DtStop,LastModTime,LastModBy"
 	DB.DBFields["EGroup"] = flds
@@ -82,9 +82,9 @@ func BuildPreparedStatements() {
 	DB.Prepstmt.DeleteGroup, err = DB.Db.Prepare("DELETE FROM EGroup WHERE GID=?")
 	util.ErrCheck(err)
 
-	//--------------------------------------------
-	//    PGROUPS
-	//--------------------------------------------
+	//--------------------------------------------------------------
+	//    PGROUPS - defines the groups to which a person belongs
+	//--------------------------------------------------------------
 	flds = "PID,GID,LastModTime,LastModBy"
 	DB.DBFields["PGroup"] = flds
 	DB.Prepstmt.GetPGroup, err = DB.Db.Prepare("SELECT " + flds + " FROM PGroup WHERE PID=? AND GID=?")

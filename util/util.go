@@ -11,6 +11,19 @@ import (
 	"strings"
 )
 
+// DATEFMT et al., are commonly used date formats
+const (
+	DATEFMT        = "01/02/06"
+	DATEFMT2       = "1/2/06"
+	DATEFMT3       = "1/2/2006"
+	DATEFMT4       = "01/02/2006"
+	DATEINPFMT     = "2006-01-02"
+	DATEFMTSQL     = DATEINPFMT
+	DATETIMEINPFMT = "2006-01-02 15:04:00 MST"
+	DATETIMEFMT    = "2006-01-02T15:04:00Z"
+	DATEREPORTFMT  = "Jan 2, 2006"
+)
+
 // GenerateOptOutCode generates a reproducable code for the user. This code
 // can be used to validate an opt-out link.
 func GenerateOptOutCode(fn, ln, email string, pid int64) string {
