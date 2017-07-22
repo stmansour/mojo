@@ -30,6 +30,8 @@ var App struct {
 	GID       int64 // GID of the FAA group
 }
 
+// I'll probably get rid of this function at some point, but it's pretty
+// useful
 func initFAAMojo() {
 	var g db.EGroup
 	var err error
@@ -107,6 +109,8 @@ func main() {
 		fmt.Printf("Error in db.ReadConfig: %s\n", err.Error())
 		os.Exit(1)
 	}
+
+	util.EnableConsole() // turn it on for now by defaults
 
 	//==============================================
 	// Open the logfile and begin logging...

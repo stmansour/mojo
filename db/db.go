@@ -101,7 +101,7 @@ func InitDB(db *sql.DB) {
 	DB.DBFields = map[string]string{}
 	DB.Zone, err = time.LoadLocation(MojoDBConfig.Timezone)
 	if err != nil {
-		fmt.Printf("Error loading timezone %s : %s\n", MojoDBConfig.Timezone, err.Error())
+		util.Console("Error loading timezone %s : %s\n", MojoDBConfig.Timezone, err.Error())
 		util.Ulog("Error loading timezone %s : %s", MojoDBConfig.Timezone, err.Error())
 	}
 }
@@ -130,7 +130,7 @@ func GetRowCountRaw(table, where string) (int64, error) {
 	if len(where) > 0 {
 		s += " " + where
 	}
-	fmt.Printf("GetRowCountRaw: QUERY = %s\n", s)
+	util.Console("GetRowCountRaw: QUERY = %s\n", s)
 	de := DB.Db.QueryRow(s).Scan(&count)
 	if de != nil {
 		err = fmt.Errorf("GetRowCount: query=\"%s\"    err = %s", s, de.Error())
@@ -140,7 +140,7 @@ func GetRowCountRaw(table, where string) (int64, error) {
 
 // GetQueryRowCount returns the number of rows in the solution set for the supplied named query
 func GetQueryRowCount(qname string) (int64, error) {
-	fmt.Printf("entered GetQueryRowCount:  searching for %s\n", qname)
+	util.Console("entered GetQueryRowCount:  searching for %s\n", qname)
 	c := int64(0)
 	q, err := GetQueryByName(qname)
 	if err != nil {
@@ -149,7 +149,7 @@ func GetQueryRowCount(qname string) (int64, error) {
 	// THIS IS A HACK!!  Need to revamp when we get the real sql code in place
 	// here's what a query looks like now:
 	//		select People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=2 WHERE People.Status=0
-	fmt.Printf("Successfully read query: %s\n", q.QueryName)
+	util.Console("Successfully read query: %s\n", q.QueryName)
 	i := strings.Index(q.QueryJSON, "FROM")
 	if i < 0 {
 		return c, fmt.Errorf("Could not find FROM in query")

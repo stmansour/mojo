@@ -95,7 +95,7 @@ type PersonGetResponse struct {
 //      delete
 //-----------------------------------------------------------------------------------
 func SvcHandlerPerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
-	fmt.Printf("Entered SvcHandlerPerson\n")
+	util.Console("Entered SvcHandlerPerson\n")
 
 	switch d.wsSearchReq.Cmd {
 	case "get":
@@ -134,7 +134,7 @@ func SvcHandlerPerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 // wsdoc }
 func SvcPeopleCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcPeopleCount"
-	fmt.Printf("Entered %s\n", funcname)
+	util.Console("Entered %s\n", funcname)
 	var (
 		g   CountResponse
 		err error
@@ -142,7 +142,7 @@ func SvcPeopleCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 
 	g.Record.Count, err = db.GetRowCount("People", "")
 	if err != nil {
-		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
+		util.Console("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -164,7 +164,7 @@ func SvcPeopleCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 // wsdoc }
 func SvcPeopleStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcPeopleStats"
-	fmt.Printf("Entered %s\n", funcname)
+	util.Console("Entered %s\n", funcname)
 	var (
 		g   PeopleStatResponse
 		err error
@@ -189,7 +189,7 @@ func SvcPeopleStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	for i := 0; i < len(m); i++ {
 		*m[i].Count, err = db.GetRowCount("People", m[i].Where)
 		if err != nil {
-			fmt.Printf("Error from db.GetRowCount: i = %d, err: %s\n", i, err.Error())
+			util.Console("Error from db.GetRowCount: i = %d, err: %s\n", i, err.Error())
 			SvcGridErrorReturn(w, err)
 			return
 		}
@@ -213,7 +213,7 @@ func SvcPeopleStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 // wsdoc }
 func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcSearchHandlerPeople"
-	fmt.Printf("Entered %s\n", funcname)
+	util.Console("Entered %s\n", funcname)
 	var (
 		g   PersonSearchResponse
 		err error
@@ -239,17 +239,17 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 
 	// now set up the offset and limit
 	q += fmt.Sprintf(" LIMIT %d OFFSET %d", d.wsSearchReq.Limit, d.wsSearchReq.Offset)
-	fmt.Printf("rowcount query conditions: %s\ndb query = %s\n", qw, q)
+	util.Console("rowcount query conditions: %s\ndb query = %s\n", qw, q)
 
 	g.Total, err = db.GetRowCount("People", qw)
 	if err != nil {
-		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
+		util.Console("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
 	rows, err := db.DB.Db.Query(q)
 	if err != nil {
-		fmt.Printf("Error from DB Query: %s\n", err.Error())
+		util.Console("Error from DB Query: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -261,7 +261,7 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 		var q PersonGrid
 		p, err := db.ReadPersonFromRows(rows)
 		if err != nil {
-			fmt.Printf("%s.  Error reading Person: %s\n", funcname, err.Error())
+			util.Console("%s.  Error reading Person: %s\n", funcname, err.Error())
 		}
 		util.MigrateStructVals(&p, &q)
 		g.Records = append(g.Records, q)
@@ -271,7 +271,7 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 		}
 		i++
 	}
-	fmt.Printf("g.Total = %d\n", g.Total)
+	util.Console("g.Total = %d\n", g.Total)
 	util.ErrCheck(rows.Err())
 	w.Header().Set("Content-Type", "application/json")
 	g.Status = "success"
@@ -291,8 +291,8 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 // wsdoc }
 func deletePerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "deletePerson"
-	fmt.Printf("Entered %s\n", funcname)
-	fmt.Printf("record data = %s\n", d.data)
+	util.Console("Entered %s\n", funcname)
+	util.Console("record data = %s\n", d.data)
 	var del WebGridDelete
 	if err := json.Unmarshal([]byte(d.data), &del); err != nil {
 		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
@@ -321,8 +321,8 @@ func deletePerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 // wsdoc }
 func savePerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "savePerson"
-	fmt.Printf("Entered %s\n", funcname)
-	fmt.Printf("record data = %s\n", d.data)
+	util.Console("Entered %s\n", funcname)
+	util.Console("record data = %s\n", d.data)
 
 	var foo PersonGridSave
 	data := []byte(d.data)
@@ -337,8 +337,8 @@ func savePerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	if len(foo.Changes) == 0 { // This is a new record
 		var a db.Person
 		util.MigrateStructVals(&foo.Record, &a) // the variables that don't need special handling
-		fmt.Printf("a = %#v\n", a)
-		fmt.Printf(">>>> NEW PAYMENT TYPE IS BEING ADDED\n")
+		util.Console("a = %#v\n", a)
+		util.Console(">>>> NEW PAYMENT TYPE IS BEING ADDED\n")
 		err = db.InsertPerson(&a)
 		if err != nil {
 			e := fmt.Errorf("%s: Error saving Person: %s", funcname, err.Error())
@@ -346,7 +346,7 @@ func savePerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 			return
 		}
 	} else { // update existing or add new record(s)
-		fmt.Printf("Uh oh - we have not yet implemented this!!!\n")
+		util.Console("Uh oh - we have not yet implemented this!!!\n")
 		fmt.Fprintf(w, "Have not implemented this function")
 		// if err = JSONchangeParseUtil(d.data, PersonUpdate, d); err != nil {
 		// 	SvcGridErrorReturn(w, err)
@@ -381,8 +381,8 @@ func PersonUpdate(s string, d *ServiceData) error {
 	if err := json.Unmarshal(b, &a); err != nil { // merge in the changes...
 		return err
 	}
-	fmt.Printf("a = %#v\n", a)
-	fmt.Printf(">>>> NEW Person IS BEING ADDED\n")
+	util.Console("a = %#v\n", a)
+	util.Console(">>>> NEW Person IS BEING ADDED\n")
 	err = db.InsertPerson(&a)
 	return err
 }
@@ -399,7 +399,7 @@ func PersonUpdate(s string, d *ServiceData) error {
 // wsdoc }
 func getPerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "getPerson"
-	fmt.Printf("entered %s\n", funcname)
+	util.Console("entered %s\n", funcname)
 	var g PersonGetResponse
 	a, err := db.GetPerson(d.ID)
 	if err != nil {

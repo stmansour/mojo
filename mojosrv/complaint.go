@@ -27,7 +27,7 @@ type AwsComplaintNotification struct {
 // SvcHandlerAwsComplaintEmail removes a bounced email address from the database
 func SvcHandlerAwsComplaintEmail(w http.ResponseWriter, r *http.Request, d *ServiceData, a *AwsNotificationEnvelope) {
 	funcname := "SvcHandlerAwsComplaintEmail"
-	fmt.Printf("Entered %s\n", funcname)
+	util.Console("Entered %s\n", funcname)
 	var b AwsComplaintNotification
 	err := json.Unmarshal([]byte(a.Message), &b)
 	if err != nil {
@@ -35,9 +35,9 @@ func SvcHandlerAwsComplaintEmail(w http.ResponseWriter, r *http.Request, d *Serv
 		util.LogAndPrintError(funcname, e)
 		return
 	}
-	fmt.Printf("Complaint recipient email addresses:\n")
+	util.Console("Complaint recipient email addresses:\n")
 	for i := 0; i < len(b.Complaint.ComplainedRecipients); i++ {
-		fmt.Printf("%d. %s\n", i, b.Complaint.ComplainedRecipients[i].EmailAddress)
+		util.Console("%d. %s\n", i, b.Complaint.ComplainedRecipients[i].EmailAddress)
 		err = HandleEmailComplaint(b.Complaint.ComplainedRecipients[i].EmailAddress)
 		if err != nil {
 			util.Ulog("%s: Error handling email address %s: %s\n",

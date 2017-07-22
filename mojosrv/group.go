@@ -72,7 +72,7 @@ type GroupStatResponse struct {
 //      delete
 //-----------------------------------------------------------------------------------
 func SvcHandlerGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
-	fmt.Printf("Entered SvcHandlerGroup\n")
+	util.Console("Entered SvcHandlerGroup\n")
 
 	switch d.wsSearchReq.Cmd {
 	case "get":
@@ -111,7 +111,7 @@ func SvcHandlerGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 // wsdoc }
 func SvcGroupsCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcSearchHandlerGroups"
-	fmt.Printf("Entered %s\n", funcname)
+	util.Console("Entered %s\n", funcname)
 	var (
 		g   CountResponse
 		err error
@@ -119,7 +119,7 @@ func SvcGroupsCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 
 	g.Record.Count, err = db.GetRowCount("EGroup", "")
 	if err != nil {
-		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
+		util.Console("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -141,7 +141,7 @@ func SvcGroupsCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 // wsdoc }
 func SvcSearchHandlerGroups(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcSearchHandlerGroups"
-	fmt.Printf("Entered %s\n", funcname)
+	util.Console("Entered %s\n", funcname)
 	var (
 		g   GroupSearchResponse
 		err error
@@ -167,17 +167,17 @@ func SvcSearchHandlerGroups(w http.ResponseWriter, r *http.Request, d *ServiceDa
 
 	// now set up the offset and limit
 	q += fmt.Sprintf(" LIMIT %d OFFSET %d", d.wsSearchReq.Limit, d.wsSearchReq.Offset)
-	fmt.Printf("rowcount query conditions: %s\ndb query = %s\n", qw, q)
+	util.Console("rowcount query conditions: %s\ndb query = %s\n", qw, q)
 
 	g.Total, err = db.GetRowCount("EGroup", qw)
 	if err != nil {
-		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
+		util.Console("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
 	rows, err := db.DB.Db.Query(q)
 	if err != nil {
-		fmt.Printf("Error from DB Query: %s\n", err.Error())
+		util.Console("Error from DB Query: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -189,7 +189,7 @@ func SvcSearchHandlerGroups(w http.ResponseWriter, r *http.Request, d *ServiceDa
 		var q GroupGrid
 		p, err := db.ReadGroups(rows)
 		if err != nil {
-			fmt.Printf("%s.  Error reading Group: %s\n", funcname, err.Error())
+			util.Console("%s.  Error reading Group: %s\n", funcname, err.Error())
 		}
 		util.MigrateStructVals(&p, &q)
 		q.Recid = q.GID
@@ -200,7 +200,7 @@ func SvcSearchHandlerGroups(w http.ResponseWriter, r *http.Request, d *ServiceDa
 		}
 		i++
 	}
-	fmt.Printf("g.Total = %d\n", g.Total)
+	util.Console("g.Total = %d\n", g.Total)
 	util.ErrCheck(rows.Err())
 	w.Header().Set("Content-Type", "application/json")
 	g.Status = "success"
@@ -220,8 +220,8 @@ func SvcSearchHandlerGroups(w http.ResponseWriter, r *http.Request, d *ServiceDa
 // wsdoc }
 func deleteGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "deleteGroup"
-	fmt.Printf("Entered %s\n", funcname)
-	fmt.Printf("record data = %s\n", d.data)
+	util.Console("Entered %s\n", funcname)
+	util.Console("record data = %s\n", d.data)
 	var del WebGridDelete
 	if err := json.Unmarshal([]byte(d.data), &del); err != nil {
 		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
@@ -250,8 +250,8 @@ func deleteGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 // wsdoc }
 func saveGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "saveGroup"
-	fmt.Printf("Entered %s\n", funcname)
-	fmt.Printf("record data = %s\n", d.data)
+	util.Console("Entered %s\n", funcname)
+	util.Console("record data = %s\n", d.data)
 
 	var foo GroupGridSave
 	data := []byte(d.data)
@@ -266,8 +266,8 @@ func saveGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	if len(foo.Changes) == 0 { // This is a new record
 		var a db.EGroup
 		util.MigrateStructVals(&foo.Record, &a) // the variables that don't need special handling
-		fmt.Printf("a = %#v\n", a)
-		fmt.Printf(">>>> NEW PAYMENT TYPE IS BEING ADDED\n")
+		util.Console("a = %#v\n", a)
+		util.Console(">>>> NEW PAYMENT TYPE IS BEING ADDED\n")
 		err = db.InsertGroup(&a)
 		if err != nil {
 			e := fmt.Errorf("%s: Error saving Group: %s", funcname, err.Error())
@@ -275,7 +275,7 @@ func saveGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 			return
 		}
 	} else { // update existing or add new record(s)
-		fmt.Printf("Uh oh - we have not yet implemented this!!!\n")
+		util.Console("Uh oh - we have not yet implemented this!!!\n")
 		fmt.Fprintf(w, "Have not implemented this function")
 		// if err = JSONchangeParseUtil(d.data, GroupUpdate, d); err != nil {
 		// 	SvcGridErrorReturn(w, err)
@@ -310,8 +310,8 @@ func GroupUpdate(s string, d *ServiceData) error {
 	if err := json.Unmarshal(b, &a); err != nil { // merge in the changes...
 		return err
 	}
-	fmt.Printf("a = %#v\n", a)
-	fmt.Printf(">>>> NEW Group IS BEING ADDED\n")
+	util.Console("a = %#v\n", a)
+	util.Console(">>>> NEW Group IS BEING ADDED\n")
 	err = db.InsertGroup(&a)
 	return err
 }
@@ -331,7 +331,7 @@ func GetGroupStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		DATETIMEINPFMT = "2006-01-02 15:04:00 MST"
 	)
 	funcname := "GetGroupStat"
-	fmt.Printf("entered %s.  Group id = %d\n", funcname, d.ID)
+	util.Console("entered %s.  Group id = %d\n", funcname, d.ID)
 	var g GroupStatResponse
 	a, err := db.GetGroup(d.ID)
 	if err != nil {
@@ -382,7 +382,7 @@ func GetGroupStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 // wsdoc }
 func getGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "getGroup"
-	fmt.Printf("entered %s\n", funcname)
+	util.Console("entered %s\n", funcname)
 	var g GroupGetResponse
 	a, err := db.GetGroup(d.ID)
 	if err != nil {

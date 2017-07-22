@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"mojo/db"
@@ -38,7 +37,7 @@ func SendFileReply(w io.Writer, fname string) {
 // wsdoc }
 func SvcOptOut(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcOptOut"
-	fmt.Printf("Entered %s\n", funcname)
+	util.Console("Entered %s\n", funcname)
 	folderPath, err := osext.ExecutableFolder()
 	if err != nil {
 		log.Fatal(err)
@@ -48,31 +47,31 @@ func SvcOptOut(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	email := q.Get("e")
 	code := q.Get("c")
 
-	fmt.Printf("Found email = %s, code = %s\n", email, code)
+	util.Console("Found email = %s, code = %s\n", email, code)
 
 	p, err := db.GetPersonByEmail(email)
 	if err != nil {
-		fmt.Printf("EGetPersonByEmail %s returned:  %s", email, err.Error())
+		util.Console("EGetPersonByEmail %s returned:  %s", email, err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
 
 	s := util.GenerateOptOutCode(p.FirstName, p.LastName, p.Email1, p.PID)
 	if s == code {
-		fmt.Printf("Code confirmed, setting OptOut status\n")
+		util.Console("Code confirmed, setting OptOut status\n")
 		p.Status = db.OPTOUT
 		p.OptOutDate = time.Now()
 		err = db.UpdatePerson(&p)
 		if err != nil {
-			fmt.Printf("EGetPersonByEmail %s returned:  %s", email, err.Error())
+			util.Console("EGetPersonByEmail %s returned:  %s", email, err.Error())
 			SvcGridErrorReturn(w, err)
 			return
 		}
-		fmt.Printf("OptOut succeeded - return page\n")
+		util.Console("OptOut succeeded - return page\n")
 		SendFileReply(w, folderPath+"/html/optouts.html")
 		return
 	}
-	fmt.Printf("Code for %s should be %s, return error page\n", email, s)
+	util.Console("Code for %s should be %s, return error page\n", email, s)
 	SendFileReply(w, folderPath+"/html/optoutf.html")
 
 }

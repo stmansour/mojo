@@ -66,7 +66,7 @@ type QueryStatResponse struct {
 //      delete
 //-----------------------------------------------------------------------------------
 func SvcHandlerQuery(w http.ResponseWriter, r *http.Request, d *ServiceData) {
-	fmt.Printf("Entered SvcHandlerQuery\n")
+	util.Console("Entered SvcHandlerQuery\n")
 
 	switch d.wsSearchReq.Cmd {
 	case "get":
@@ -105,7 +105,7 @@ func SvcHandlerQuery(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 // wsdoc }
 func SvcQueryResultsCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcQueryResultsCount"
-	fmt.Printf("Entered %s\n", funcname)
+	util.Console("Entered %s\n", funcname)
 	var (
 		g   CountResponse
 		err error
@@ -141,7 +141,7 @@ func SvcQueryResultsCount(w http.ResponseWriter, r *http.Request, d *ServiceData
 
 	g.Record.Count, err = db.GetRowCountRaw("People", qw)
 	if err != nil {
-		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
+		util.Console("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -163,7 +163,7 @@ func SvcQueryResultsCount(w http.ResponseWriter, r *http.Request, d *ServiceData
 // wsdoc }
 func SvcSearchHandlerQueries(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcSearchHandlerQueries"
-	fmt.Printf("Entered %s\n", funcname)
+	util.Console("Entered %s\n", funcname)
 	var (
 		g   QuerySearchResponse
 		err error
@@ -189,17 +189,17 @@ func SvcSearchHandlerQueries(w http.ResponseWriter, r *http.Request, d *ServiceD
 
 	// now set up the offset and limit
 	q += fmt.Sprintf(" LIMIT %d OFFSET %d", d.wsSearchReq.Limit, d.wsSearchReq.Offset)
-	fmt.Printf("rowcount query conditions: %s\ndb query = %s\n", qw, q)
+	util.Console("rowcount query conditions: %s\ndb query = %s\n", qw, q)
 
 	g.Total, err = db.GetRowCount("Query", qw)
 	if err != nil {
-		fmt.Printf("Error from db.GetRowCount: %s\n", err.Error())
+		util.Console("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
 	rows, err := db.DB.Db.Query(q)
 	if err != nil {
-		fmt.Printf("Error from DB Query: %s\n", err.Error())
+		util.Console("Error from DB Query: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -211,7 +211,7 @@ func SvcSearchHandlerQueries(w http.ResponseWriter, r *http.Request, d *ServiceD
 		var q QueryGrid
 		p, err := db.ReadQueries(rows)
 		if err != nil {
-			fmt.Printf("%s.  Error reading Query: %s\n", funcname, err.Error())
+			util.Console("%s.  Error reading Query: %s\n", funcname, err.Error())
 		}
 		util.MigrateStructVals(&p, &q)
 		g.Records = append(g.Records, q)
@@ -221,7 +221,7 @@ func SvcSearchHandlerQueries(w http.ResponseWriter, r *http.Request, d *ServiceD
 		}
 		i++
 	}
-	fmt.Printf("g.Total = %d\n", g.Total)
+	util.Console("g.Total = %d\n", g.Total)
 	util.ErrCheck(rows.Err())
 	w.Header().Set("Content-Type", "application/json")
 	g.Status = "success"
@@ -241,8 +241,8 @@ func SvcSearchHandlerQueries(w http.ResponseWriter, r *http.Request, d *ServiceD
 // wsdoc }
 func deleteQuery(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "deleteQuery"
-	fmt.Printf("Entered %s\n", funcname)
-	fmt.Printf("record data = %s\n", d.data)
+	util.Console("Entered %s\n", funcname)
+	util.Console("record data = %s\n", d.data)
 	var del WebGridDelete
 	if err := json.Unmarshal([]byte(d.data), &del); err != nil {
 		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
@@ -271,8 +271,8 @@ func deleteQuery(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 // wsdoc }
 func saveQuery(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "saveQuery"
-	fmt.Printf("Entered %s\n", funcname)
-	fmt.Printf("record data = %s\n", d.data)
+	util.Console("Entered %s\n", funcname)
+	util.Console("record data = %s\n", d.data)
 
 	var foo QueryGridSave
 	data := []byte(d.data)
@@ -287,8 +287,8 @@ func saveQuery(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	if len(foo.Changes) == 0 { // This is a new record
 		var a db.Query
 		util.MigrateStructVals(&foo.Record, &a) // the variables that don't need special handling
-		fmt.Printf("a = %#v\n", a)
-		fmt.Printf(">>>> NEW PAYMENT TYPE IS BEING ADDED\n")
+		util.Console("a = %#v\n", a)
+		util.Console(">>>> NEW PAYMENT TYPE IS BEING ADDED\n")
 		err = db.InsertQuery(&a)
 		if err != nil {
 			e := fmt.Errorf("%s: Error saving Query: %s", funcname, err.Error())
@@ -296,7 +296,7 @@ func saveQuery(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 			return
 		}
 	} else { // update existing or add new record(s)
-		fmt.Printf("Uh oh - we have not yet implemented this!!!\n")
+		util.Console("Uh oh - we have not yet implemented this!!!\n")
 		fmt.Fprintf(w, "Have not implemented this function")
 		// if err = JSONchangeParseUtil(d.data, QueryUpdate, d); err != nil {
 		// 	SvcGridErrorReturn(w, err)
@@ -331,8 +331,8 @@ func QueryUpdate(s string, d *ServiceData) error {
 	if err := json.Unmarshal(b, &a); err != nil { // merge in the changes...
 		return err
 	}
-	fmt.Printf("a = %#v\n", a)
-	fmt.Printf(">>>> NEW Query IS BEING ADDED\n")
+	util.Console("a = %#v\n", a)
+	util.Console(">>>> NEW Query IS BEING ADDED\n")
 	err = db.InsertQuery(&a)
 	return err
 }
@@ -349,7 +349,7 @@ func QueryUpdate(s string, d *ServiceData) error {
 // wsdoc }
 func getQuery(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "getQuery"
-	fmt.Printf("entered %s\n", funcname)
+	util.Console("entered %s\n", funcname)
 	var g QueryGetResponse
 	a, err := db.GetQuery(d.ID)
 	if err != nil {

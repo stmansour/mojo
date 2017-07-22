@@ -24,6 +24,21 @@ const (
 	DATEREPORTFMT  = "Jan 2, 2006"
 )
 
+var consoleEnable = true
+
+// EnableConsole causes Console statements to print
+func EnableConsole() { consoleEnable = true }
+
+// DisableConsole causes Console statements to print
+func DisableConsole() { consoleEnable = false }
+
+// Console is the standard logger
+func Console(format string, a ...interface{}) {
+	if consoleEnable {
+		fmt.Printf(format, a...)
+	}
+}
+
 // GenerateOptOutCode generates a reproducable code for the user. This code
 // can be used to validate an opt-out link.
 func GenerateOptOutCode(fn, ln, email string, pid int64) string {
