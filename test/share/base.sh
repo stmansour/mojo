@@ -404,7 +404,7 @@ dojsonPOST () {
 	TESTCOUNT=$((TESTCOUNT + 1))
 	printf "PHASE %2s  %3s  %s... " ${TESTCOUNT} $3 $4
 	CMD="curl -s -X POST ${1} -H \"Content-Type: application/json\" -d @${2}"
-	${CMD} | python -m json.tool >${3} 2>>${LOGFILE}
+	${CMD} >rawcmdout; cat rawcmdout | python -m json.tool >${3} 2>>${LOGFILE}
 
 	if [ "${FORCEGOOD}" = "1" ]; then
 		cp ${3} ${GOLD}/${3}.gold

@@ -53,6 +53,7 @@ var App struct {
 	CreateGroup bool // if true and group does not exist then create it
 	GroupDesc   string
 	Group       db.EGroup
+	skipOutput  bool // show start/stop time and elapsed time
 }
 
 func main() {
@@ -136,6 +137,7 @@ func readCommandLineArgs() {
 	gPtr := flag.String("g", "", "Add people to this group")
 	cgPtr := flag.Bool("cg", false, "Create the group in from -g if necessary")
 	gdPtr := flag.String("d", "", "Group description for create (optional)")
+	soPtr := flag.Bool("o", false, "Inhibit start/stop times and duration")
 	flag.Parse()
 	App.debug = *dbgPtr
 	App.DBName = *dbnmPtr
@@ -144,6 +146,7 @@ func readCommandLineArgs() {
 	App.GroupName = *gPtr
 	App.CreateGroup = *cgPtr
 	App.GroupDesc = *gdPtr
+	App.skipOutput = *soPtr
 }
 
 // MapAndImport looks at the first 2 lines of the csv input file to determine how to map the fields:
@@ -338,8 +341,10 @@ func MapAndImport(fname string) {
 	// Print out the stats...
 	//-------------------------------------------------------------
 	fmt.Printf("Import Complete\n")
-	fmt.Printf("Start time:   %s\n", App.Group.DtStart.In(db.DB.Zone).Format(util.DATETIMEINPFMT))
-	fmt.Printf("Stop time:    %s\n", App.Group.DtStop.In(db.DB.Zone).Format(util.DATETIMEINPFMT))
-	fmt.Printf("Elapsed time: %s\n", App.Group.DtStop.Sub(App.Group.DtStart))
+	if !App.skipOutput {
+		fmt.Printf("Start time:   %s\n", App.Group.DtStart.In(db.DB.Zone).Format(util.DATETIMEINPFMT))
+		fmt.Printf("Stop time:    %s\n", App.Group.DtStop.In(db.DB.Zone).Format(util.DATETIMEINPFMT))
+		fmt.Printf("Elapsed time: %s\n", App.Group.DtStop.Sub(App.Group.DtStart))
+	}
 
 }
