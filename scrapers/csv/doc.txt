@@ -1,0 +1,9 @@
+CSV IMPORT
+
+1. Get the CSV file to import
+2. Add a line below the CSV file's first line. Each column must contain the name
+   of the Mojo CSV input column header that the column in the first line maps to.
+   It may be empty if there is no mapping.
+3. Import the data indicating the group (-g), creating the group if necessary (-cg),
+   and specifying the intput file with -f.
+4. ./test/csv has a working example of this
