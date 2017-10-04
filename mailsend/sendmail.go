@@ -116,7 +116,7 @@ func Sendmail(si *Info) error {
 		return e
 	}
 
-	// fmt.Printf("query is %s\n", q)
+	fmt.Printf("query is %s\n", q)
 	rows, err := db.DB.Db.Query(q)
 	rlib.Errcheck(err)
 	defer rows.Close()
