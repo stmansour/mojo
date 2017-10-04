@@ -124,39 +124,66 @@ func AddPersonToGroup(pid, gid int64) error {
 	return err
 }
 
-func addPerson(pnew *db.Person, GID int64) error {
+// SavePerson creates a new person in the database with the supplied
+// information. If the person already exists, it updates their info
+// with whatever is in pnew.
+//
+// INPUTS
+//  pnew = struct with information about a person to save
+//
+// RETURNS
+//  pid of the person if error is nil
+//  any error encountered
+func SavePerson(pnew *db.Person) (int64, error) {
 	var pid int64
 	p1, err := db.GetPersonByName(pnew.FirstName, pnew.MiddleName, pnew.LastName)
 	if err != nil {
 		util.Ulog("db.GetPersonByName returned: %s\n", err.Error())
-		return err
+		return pid, err
 	}
 	if len(p1) == 0 {
 		err := db.InsertPerson(pnew)
 		if err != nil {
 			util.Ulog("db.InsertPerson returned: %s\n", err.Error())
-			return err
+			return pid, err
 		}
 		pid = pnew.PID
 	} else {
 		pid = p1[0].PID
+		p1[0].FirstName = pnew.FirstName
+		p1[0].MiddleName = pnew.MiddleName
+		p1[0].LastName = pnew.LastName
+		p1[0].PreferredName = pnew.PreferredName
+		p1[0].JobTitle = pnew.JobTitle
+		p1[0].OfficePhone = pnew.OfficePhone
+		p1[0].OfficeFax = pnew.OfficeFax
+		p1[0].Email1 = pnew.Email1
+		p1[0].MailAddress = pnew.MailAddress
+		p1[0].MailAddress2 = pnew.MailAddress2
+		p1[0].MailCity = pnew.MailCity
+		p1[0].MailState = pnew.MailState
+		p1[0].MailPostalCode = pnew.MailPostalCode
+		p1[0].MailCountry = pnew.MailCountry
+		p1[0].RoomNumber = pnew.RoomNumber
+		p1[0].MailStop = pnew.MailStop
+		err = db.UpdatePerson(&p1[0])
+		if err != nil {
+			return pid, err
+		}
 	}
-	if GID == int64(0) {
-		return nil
-	}
-	return AddPersonToGroup(pid, GID)
+	return pid, nil
 }
 
 func resetUserStatus(p1 *db.Person) {
 	p, err := db.GetPersonByEmail(p1.Email1)
 	if err != nil {
 		util.UlogAndPrint("Error from db.GetPersonByEmail( %s ):  %s \n", p1.Email1, err.Error())
-		os.Exit(1)
+		return
 	}
 	p.Status = db.NORMAL
 	if err = db.UpdatePerson(&p); err != nil {
 		util.UlogAndPrint("Error from db.UpdatePerson( %s ):  %s \n", p.Email1, err.Error())
-		os.Exit(1)
+		return
 	}
 }
 
@@ -197,7 +224,11 @@ func createGroup(name, descr string, ppa *[]db.Person) {
 	pa := *ppa
 	gid := g.GID
 	for i := 0; i < len(pa); i++ {
-		addPerson(&pa[i], gid)  // if person is not in db, add them, then add them to group gid
+		pid, err := SavePerson(&pa[i]) // if person is not in db, add them, then add them to group gid
+		if err != nil {
+			util.UlogAndPrint("Error updating group: %s\n", err.Error())
+		}
+		AddPersonToGroup(pid, gid)
 		resetUserStatus(&pa[i]) // reset their status
 	}
 
@@ -297,35 +328,54 @@ func createFAAQueries() {
 	createQuery("FAA-12-fix", "fix for I@mw@lkingw1th477@ng3ls.M.McDonald@faa.gov", q)
 }
 
+// Set up the people information first. This will make the people available
+// for creating groups, for "setup" only (that is, reset status), and it will
+// make it easy to add new people to the groups.
+//-----------------------------------------------------------------------------
+var pa = []db.Person{
+	{FirstName: "Steven", MiddleName: "F", LastName: "Mansour", JobTitle: "CTO, Accord Interests", OfficePhone: "323-512-0111 X305", Email1: "sman@accordinterests.com", MailAddress: "11719 Bee Cave Road", MailAddress2: "Suite 301", MailCity: "Austin", MailState: "TX", MailPostalCode: "78738", MailCountry: "USA", Status: 0},
+	{FirstName: "Steve", MiddleName: "", LastName: "Mansour", JobTitle: "Recording Musician, Engineer, Producer", OfficePhone: "323-512-0111 X305", Email1: "sman@stevemansour.com", MailAddress: "2215 Wellington Drive", MailAddress2: "", MailCity: "Milpitas", MailState: "CA", MailPostalCode: "95035", MailCountry: "USA", Status: 0},
+}
+
+var pa1 = []db.Person{
+	pa[0],
+	pa[1],
+	{FirstName: "Bouncie", MiddleName: "", LastName: "McBounce", JobTitle: "Vagabond", OfficePhone: "123-456-7890", Email1: "bounce@simulator.amazonses.com", MailAddress: "123 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
+	{FirstName: "Wendy", MiddleName: "", LastName: "Whiner", JobTitle: "Complainer", OfficePhone: "123-321-7890", Email1: "complaint@simulator.amazonses.com", MailAddress: "321 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
+	{FirstName: "Stealthy", MiddleName: "", LastName: "McStealth", JobTitle: "Bad Guy", OfficePhone: "816-321-0123", Email1: "suppressionlist@simulator.amazonses.com", MailAddress: "700 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
+}
+var pa2 = []db.Person{
+	pa1[0],
+	pa1[1],
+	pa1[2],
+	pa1[3],
+	pa1[4],
+	{FirstName: "Joe", MiddleName: "G", LastName: "Mansour", JobTitle: "Principal, Accord Interests", OfficePhone: "323-512-0111 X303", Email1: "jgm@accordinterests.com", MailAddress: "11719 Bee Cave Road", MailAddress2: "Suite 301", MailCity: "Austin", MailState: "TX", MailPostalCode: "78738", MailCountry: "USA", Status: 0},
+	// {FirstName: "Melissa", MiddleName: "", LastName: "Wheeler", JobTitle: "General Manager, Isola Bella", OfficePhone: "405.721.2194 x205", Email1: "mwheeler@myisolabella.com", MailAddress: "8309 NW 140th St", MailAddress2: "", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73142", MailCountry: "USA", Status: 0},
+	{FirstName: "Michelle", MiddleName: "", LastName: "Falls", JobTitle: "Concierge", OfficePhone: "405.721.2194 x2014", Email1: "mfalls@myisolabella.com", MailAddress: "8309 NW 140th St", MailAddress2: "", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73142", MailCountry: "USA", Status: 0},
+	{FirstName: "Brittney", MiddleName: "", LastName: "Graham", JobTitle: "Manager", OfficePhone: "405.721.2194", Email1: "bgraham@myisolabella.com", MailAddress: "6608 Lyrewood Ln", MailAddress2: "Apt 24", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73132", MailCountry: "USA", Status: 0},
+	{FirstName: "Kristy", MiddleName: "", LastName: "Koon", JobTitle: "Serviced Apt Sales", OfficePhone: "405.721.2194", Email1: "kkoon@myisolabella.com", MailAddress: "10407 SE 23rd", MailAddress2: "Apt 24", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73130", MailCountry: "USA", Status: 0},
+}
+
 func setupTestGroups() {
-	var pa = []db.Person{
-		{FirstName: "Steven", MiddleName: "F", LastName: "Mansour", JobTitle: "CTO, Accord Interests", OfficePhone: "323-512-0111 X305", Email1: "sman@accordinterests.com", MailAddress: "11719 Bee Cave Road", MailAddress2: "Suite 301", MailCity: "Austin", MailState: "TX", MailPostalCode: "78738", MailCountry: "USA", Status: 0},
-		{FirstName: "Steve", MiddleName: "", LastName: "Mansour", JobTitle: "Recording Musician, Engineer, Producer", OfficePhone: "323-512-0111 X305", Email1: "sman@stevemansour.com", MailAddress: "2215 Wellington Drive", MailAddress2: "", MailCity: "Milpitas", MailState: "CA", MailPostalCode: "95035", MailCountry: "USA", Status: 0},
+	//--------------------------------------------------------
+	// Make sure that all people are in the database first...
+	//--------------------------------------------------------
+	for i := 0; i < len(pa2); i++ {
+		_, err := SavePerson(&pa2[i]) // if person is not in db, add them, then add them to group gid
+		if err != nil {
+			util.LogAndPrintError("setupTestGroups", err)
+			os.Exit(1)
+		}
+		resetUserStatus(&pa2[i]) // reset their status
 	}
+
 	createGroup("MojoTest", "Steve-only test group", &pa)
-
-	var pa1 = []db.Person{
-		pa[0],
-		pa[1],
-		{FirstName: "Bouncie", MiddleName: "", LastName: "McBounce", JobTitle: "Vagabond", OfficePhone: "123-456-7890", Email1: "bounce@simulator.amazonses.com", MailAddress: "123 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
-		{FirstName: "Wendy", MiddleName: "", LastName: "Whiner", JobTitle: "Complainer", OfficePhone: "123-321-7890", Email1: "complaint@simulator.amazonses.com", MailAddress: "321 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
-		{FirstName: "Stealthy", MiddleName: "", LastName: "McStealth", JobTitle: "Bad Guy", OfficePhone: "816-321-0123", Email1: "suppressionlist@simulator.amazonses.com", MailAddress: "700 Elm St", MailAddress2: "", MailCity: "Anytown", MailState: "CA", MailPostalCode: "90210", MailCountry: "USA", Status: 0},
-	}
 	createGroup("AmazonTest", "Steve + Amazon test accounts", &pa1)
-
-	var pa2 = []db.Person{
-		pa1[0],
-		pa1[1],
-		pa1[2],
-		pa1[3],
-		pa1[4],
-		{FirstName: "Joe", MiddleName: "G", LastName: "Mansour", JobTitle: "Principal, Accord Interests", OfficePhone: "323-512-0111 X303", Email1: "jgm@accordinterests.com", MailAddress: "11719 Bee Cave Road", MailAddress2: "Suite 301", MailCity: "Austin", MailState: "TX", MailPostalCode: "78738", MailCountry: "USA", Status: 0},
-		{FirstName: "Melissa", MiddleName: "", LastName: "Wheeler", JobTitle: "General Manager, Isola Bella", OfficePhone: "405.721.2194 x205", Email1: "mwheeler@myisolabella.com", MailAddress: "8309 NW 140th St", MailAddress2: "", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73142", MailCountry: "USA", Status: 0},
-		{FirstName: "Michelle", MiddleName: "", LastName: "Falls", JobTitle: "Concierge", OfficePhone: "405.721.2194 x2014", Email1: "mfalls@myisolabella.com", MailAddress: "8309 NW 140th St", MailAddress2: "", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73142", MailCountry: "USA", Status: 0},
-	}
 	createGroup("AccordTest", "Steve + Amazon test + Accord accounts", &pa2)
 	createFAAQueries()
 }
+
 func readCommandLineArgs() {
 	dbuPtr := flag.String("B", "ec2-user", "database user name")
 	dbnmPtr := flag.String("N", "mojo", "database name")

@@ -31,6 +31,8 @@ all: clean mojo test stats
 
 try: clean mojo package smalldb
 
+build: clean mojo package
+
 stats:
 	@echo "GO SOURCE CODE STATISTICS"
 	@echo "----------------------------------------"
