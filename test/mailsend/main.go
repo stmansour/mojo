@@ -286,9 +286,9 @@ func createIsolaBellaQueries() {
 		util.UlogAndPrint("Error getting group %q: %s\n", grp, err.Error())
 		os.Exit(1)
 	}
-	q := fmt.Sprintf("SELECT People.* from People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d) WHERE People.Status=0 AND (People.MailPostalCode LIKE \"73750%%\" OR People.MailPostalCode LIKE \"73762%%\" OR People.MailPostalCode LIKE \"73078%%\" OR People.MailPostalCode LIKE \"73016%%\" OR People.MailPostalCode LIKE \"73735%%\" OR People.MailPostalCode LIKE \"73773%%\" OR People.MailPostalCode LIKE \"73718%%\" OR People.MailPostalCode LIKE \"73763%%\"", g.GID)
+	q := fmt.Sprintf("SELECT People.* from People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d) WHERE People.Status=0 AND (People.MailPostalCode LIKE \"73750%%\" OR People.MailPostalCode LIKE \"73762%%\" OR People.MailPostalCode LIKE \"73078%%\" OR People.MailPostalCode LIKE \"73016%%\" OR People.MailPostalCode LIKE \"73735%%\" OR People.MailPostalCode LIKE \"73773%%\" OR People.MailPostalCode LIKE \"73718%%\" OR People.MailPostalCode LIKE \"73763%%\")", g.GID)
 	createQuery("ISO-Frack", "includes zipcodes 73750...", q)
-	q = fmt.Sprintf("SELECT People.* from People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d) WHERE People.Status=0 AND NOT (People.MailPostalCode LIKE \"73750%%\" OR People.MailPostalCode LIKE \"73762%%\" OR People.MailPostalCode LIKE \"73078%%\" OR People.MailPostalCode LIKE \"73016%%\" OR People.MailPostalCode LIKE \"73735%%\" OR People.MailPostalCode LIKE \"73773%%\" OR People.MailPostalCode LIKE \"73718%%\" OR People.MailPostalCode LIKE \"73763%%\"", g.GID)
+	q = fmt.Sprintf("SELECT People.* from People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d) WHERE People.Status=0 AND NOT (People.MailPostalCode LIKE \"73750%%\" OR People.MailPostalCode LIKE \"73762%%\" OR People.MailPostalCode LIKE \"73078%%\" OR People.MailPostalCode LIKE \"73016%%\" OR People.MailPostalCode LIKE \"73735%%\" OR People.MailPostalCode LIKE \"73773%%\" OR People.MailPostalCode LIKE \"73718%%\" OR People.MailPostalCode LIKE \"73763%%\")", g.GID)
 	createQuery("ISO-Commissions", "excludes zipcodes 73750...", q)
 	fmt.Printf("Isola Bella queries created\n")
 }
