@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -124,6 +125,21 @@ func ScrubEmailAddr(ss string) string {
 	}
 
 	return s1
+}
+
+var validemail = regexp.MustCompile(`^([a-zA-Z0-9][-_.a-zA-Z0-9]*)@([-_.a-zA-Z0-9]+)?$`)
+
+// ValidEmailAddress parses s and ensures that it conforms to the regexp above,
+// which to the best of my ability represents an email address.
+//
+// INPUT
+// s - the email address to verify
+//
+// RETURNS
+// bool - true = the address is valid, otherwise false
+//-----------------------------------------------------------------------------
+func ValidEmailAddress(s string) bool {
+	return validemail.MatchString(s)
 }
 
 // LoadCSV loads a comma-separated-value file into an array of strings and returns the array of strings

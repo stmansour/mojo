@@ -19,24 +19,25 @@ import (
 
 // App is the application structure available to the whole app.
 var App struct {
-	MsgFile    string
-	AttachFile string
-	QueryName  string
-	MojoHost   string // domain and port for mojosrv:   http://example.domain.com:8275/
-	db         *sql.DB
-	DBName     string
-	DBUser     string
-	SetupOnly  bool
-	Subject    string                   // subject line of the email message
-	From       string                   // email from address
-	QueryCount bool                     // if true, just print the solution set count for the query and exit
-	Bounce     bool                     // if true, just print the solution set count for the query and exit
-	Complaint  bool                     // if true, just print the solution set count for the query and exit
-	OOO        bool                     // if true, just print the solution set count for the query and exit
-	Suppress   bool                     // if true, just print the solution set count for the query and exit
-	Fix        bool                     // if true, just scan the database for errors, fix the ones we can, then exit
-	LogFile    *os.File                 // where to log messages
-	XR         extres.ExternalResources // dbs, smtp...
+	MsgFile       string
+	AttachFile    string
+	QueryName     string
+	MojoHost      string // domain and port for mojosrv:   http://example.domain.com:8275/
+	db            *sql.DB
+	DBName        string
+	DBUser        string
+	ValidateGroup string // validate all the email addresses in this group
+	SetupOnly     bool
+	Subject       string                   // subject line of the email message
+	From          string                   // email from address
+	QueryCount    bool                     // if true, just print the solution set count for the query and exit
+	Bounce        bool                     // if true, just print the solution set count for the query and exit
+	Complaint     bool                     // if true, just print the solution set count for the query and exit
+	OOO           bool                     // if true, just print the solution set count for the query and exit
+	Suppress      bool                     // if true, just print the solution set count for the query and exit
+	Fix           bool                     // if true, just scan the database for errors, fix the ones we can, then exit
+	LogFile       *os.File                 // where to log messages
+	XR            extres.ExternalResources // dbs, smtp...
 }
 
 // SendBouncedEmailTest sends an email message that bounces.  For testing.
@@ -406,6 +407,7 @@ func readCommandLineArgs() {
 	aPtr := flag.String("a", "", "filename of attachment")
 	qPtr := flag.String("q", "MojoTest", "name of the query to send messages to")
 	hPtr := flag.String("h", db.MojoDBConfig.MojoWebAddr, "name of host and port for mojosrv")
+	vPtr := flag.String("validate", "MojoTest", "validate the email addresses of everyone in the group name provided, then exit")
 	qcPtr := flag.Bool("count", false, "returns the count of target addresses in the query, then exits.")
 	soPtr := flag.Bool("setup", false, "just run the setup, do not send email")
 	bPTR := flag.Bool("bounce", false, "just send a message to bounce@simulator.amazonses.com")
@@ -432,6 +434,7 @@ func readCommandLineArgs() {
 	App.QueryCount = *qcPtr
 	App.MojoHost = *hPtr
 	App.Fix = *fixPtr
+	App.ValidateGroup = *vPtr
 }
 
 func main() {
@@ -530,6 +533,14 @@ func main() {
 		util.UlogAndPrint("Suppression List Email\n")
 		SendSuppressionListEmailTest()
 		util.UlogAndPrint("Suppression List Email Complete\n")
+		os.Exit(0)
+	}
+	if len(App.ValidateGroup) > 0 {
+		err := mailsend.ValidateGroupEmailAddresses(App.ValidateGroup)
+		if err != nil {
+			fmt.Printf("mailsend.ValidateGroupEmailAddresses:  err = %s\n", err)
+			os.Exit(1)
+		}
 		os.Exit(0)
 	}
 

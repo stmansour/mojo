@@ -145,7 +145,7 @@ func Sendmail(si *Info) error {
 		err = d.DialAndSend(m)
 		if err != nil {
 			util.Ulog("Error on DialAndSend = %s\n", err.Error())
-			util.Ulog("Error occurred while sending to address: %s\n", p.Email1)
+			util.Ulog("Error occurred while sending to person %d, address: %s\n", p.PID, p.Email1)
 			return err
 		}
 		si.SentCount++ // update the si.SentCount only after adding the record
