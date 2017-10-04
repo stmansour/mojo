@@ -26,6 +26,8 @@ type Info struct {
 	SMTPLogin   string // login name on smtp server
 	SMTPPass    string // passwd for smtp login
 	SMTPPort    int    // port to contact on smtp server
+	Offset      int    // ignore if 0, otherwise use as query OFFSET
+	Limit       int    // ignore if 0, otherwise use as query LIMIT
 }
 
 // BuildQuery creates a sql query from the JSON data
@@ -86,6 +88,8 @@ func Sendmail(si *Info) error {
 	util.Ulog("\t Hostname    = %s\n", si.Hostname)
 	util.Ulog("\t SMTPHost    = %s\n", si.SMTPHost)
 	util.Ulog("\t SMTPPort    = %d\n", si.SMTPPort)
+	util.Ulog("\t OFFSET      = %d\n", si.Offset)
+	util.Ulog("\t LIMIT       = %d\n", si.Limit)
 
 	// template for email
 	var tname string
@@ -115,8 +119,14 @@ func Sendmail(si *Info) error {
 		util.Ulog(e.Error() + "\n")
 		return e
 	}
+	if si.Limit > 0 {
+		q += fmt.Sprintf(" LIMIT %d", si.Limit)
+	}
+	if si.Offset > 0 {
+		q += fmt.Sprintf(" OFFSET %d", si.Offset)
+	}
 
-	fmt.Printf("query is %s\n", q)
+	fmt.Printf("query is:\n%s\n", q)
 	rows, err := db.DB.Db.Query(q)
 	rlib.Errcheck(err)
 	defer rows.Close()
@@ -154,6 +164,7 @@ func Sendmail(si *Info) error {
 			util.Ulog("Processing query %s, SentCount = %d\n", si.QName, si.SentCount)
 		}
 	}
+
 	util.Ulog("Finished query %s. Successfully sent %d messages\n", si.QName, si.SentCount)
 	return nil
 }

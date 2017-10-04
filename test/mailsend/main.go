@@ -38,6 +38,8 @@ var App struct {
 	Fix           bool                     // if true, just scan the database for errors, fix the ones we can, then exit
 	LogFile       *os.File                 // where to log messages
 	XR            extres.ExternalResources // dbs, smtp...
+	Offset        int                      // if 0, ignore, if nonzero then use as query OFFSET
+	Limit         int                      // if 0, ignore, if nonzero then use as query LIMIT
 }
 
 // SendBouncedEmailTest sends an email message that bounces.  For testing.
@@ -417,8 +419,11 @@ func readCommandLineArgs() {
 	subjPtr := flag.String("subject", "Test Message", "Email subject line.")
 	fromPtr := flag.String("from", "sman@accordinterests.com", "Message sender.")
 	fixPtr := flag.Bool("fix", false, "Scan db for known errors, fix them wherever possible, then exit.")
+	offsetPtr := flag.Int("offset", 0, "ignore if 0, otherwise use as query OFFSET")
+	limitPtr := flag.Int("limit", 0, "ignore if 0, otherwise use as query LIMIT")
 
 	flag.Parse()
+
 	App.Bounce = *bPTR
 	App.Complaint = *cPTR
 	App.OOO = *oPTR
@@ -435,6 +440,8 @@ func readCommandLineArgs() {
 	App.MojoHost = *hPtr
 	App.Fix = *fixPtr
 	App.ValidateGroup = *vPtr
+	App.Offset = *offsetPtr
+	App.Limit = *limitPtr
 }
 
 func main() {
@@ -496,6 +503,8 @@ func main() {
 		SMTPLogin:   db.MojoDBConfig.SMTPLogin,
 		SMTPPass:    db.MojoDBConfig.SMTPPass,
 		SMTPPort:    db.MojoDBConfig.SMTPPort,
+		Offset:      App.Offset,
+		Limit:       App.Limit,
 	}
 	// fmt.Printf("SMTP Info: host:port = %s:%d, login = %s, pass = %s\n", si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
 	if App.SetupOnly {
@@ -535,13 +544,18 @@ func main() {
 		util.UlogAndPrint("Suppression List Email Complete\n")
 		os.Exit(0)
 	}
-	if len(App.ValidateGroup) > 0 {
+	if App.ValidateGroup != "MojoTest" {
 		err := mailsend.ValidateGroupEmailAddresses(App.ValidateGroup)
 		if err != nil {
 			fmt.Printf("mailsend.ValidateGroupEmailAddresses:  err = %s\n", err)
 			os.Exit(1)
 		}
 		os.Exit(0)
+	}
+
+	if si.Offset > 0 && si.Limit == 0 {
+		fmt.Printf("You MUST supply a limit value if you specify an offset\n")
+		os.Exit(1)
 	}
 
 	err = mailsend.Sendmail(&si)
