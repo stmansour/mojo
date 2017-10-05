@@ -382,6 +382,12 @@ var pa2 = []db.Person{
 	{FirstName: "Kristy", MiddleName: "", LastName: "Koon", JobTitle: "Serviced Apt Sales", OfficePhone: "405.721.2194", Email1: "kkoon@myisolabella.com", MailAddress: "10407 SE 23rd", MailAddress2: "Apt 24", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73130", MailCountry: "USA", Status: 0},
 }
 
+var pa3 = []db.Person{
+	pa[0],
+	pa[1],
+	pa2[5],
+}
+
 func setupTestGroups() {
 	//--------------------------------------------------------
 	// Make sure that all people are in the database first...
@@ -398,6 +404,7 @@ func setupTestGroups() {
 	createGroup("MojoTest", "Steve-only test group", &pa)
 	createGroup("AmazonTest", "Steve + Amazon test accounts", &pa1)
 	createGroup("AccordTest", "Steve + Amazon test + Accord accounts", &pa2)
+	createGroup("SteveJoe", "Steve + Joe accounts", &pa3)
 	createIsolaBellaQueries()
 	createFAAQueries()
 }
