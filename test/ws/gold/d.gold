@@ -2,7 +2,7 @@
     "records": [
         {
             "LastModBy": 0,
-            "LastModTime": "2017-10-04T18:18:40Z",
+            "LastModTime": "2017-10-11T09:58:33Z",
             "QID": 3,
             "QueryDescr": "Steve + Amazon test + Accord accounts",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=4 WHERE People.Status=0",
@@ -11,7 +11,7 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-10-04T18:18:40Z",
+            "LastModTime": "2017-10-11T09:58:33Z",
             "QID": 2,
             "QueryDescr": "Steve + Amazon test accounts",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=3 WHERE People.Status=0",
@@ -20,16 +20,16 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-10-04T18:18:40Z",
+            "LastModTime": "2017-10-11T09:58:33Z",
             "QID": 5,
             "QueryDescr": "The first 50 people in the FAA",
-            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0 LIMIT 50 OFFSET 0",
-            "QueryName": "FAA-1-First50",
+            "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=1 WHERE People.Status=0",
+            "QueryName": "FAA",
             "recid": 0
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-10-04T18:18:40Z",
+            "LastModTime": "2017-10-11T09:58:33Z",
             "QID": 1,
             "QueryDescr": "Steve-only test group",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=2 WHERE People.Status=0",
@@ -38,7 +38,7 @@
         },
         {
             "LastModBy": 0,
-            "LastModTime": "2017-10-04T18:18:40Z",
+            "LastModTime": "2017-10-11T09:58:33Z",
             "QID": 4,
             "QueryDescr": "Steve + Joe accounts",
             "QueryJSON": "SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=5 WHERE People.Status=0",

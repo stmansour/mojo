@@ -294,6 +294,18 @@ func createIsolaBellaQueries() {
 	createQuery("ISO-Frack", "includes zipcodes 73750...", q)
 	q = fmt.Sprintf("SELECT People.* from People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d) WHERE People.Status=0 AND NOT (People.MailPostalCode LIKE \"73750%%\" OR People.MailPostalCode LIKE \"73762%%\" OR People.MailPostalCode LIKE \"73078%%\" OR People.MailPostalCode LIKE \"73016%%\" OR People.MailPostalCode LIKE \"73735%%\" OR People.MailPostalCode LIKE \"73773%%\" OR People.MailPostalCode LIKE \"73718%%\" OR People.MailPostalCode LIKE \"73763%%\")", g.GID)
 	createQuery("ISO-Commissions", "excludes zipcodes 73750...", q)
+
+	g, err = db.GetGroupByName("FAA Tech Ops")
+	if err != nil && util.IsSQLNoResultsError(err) {
+		fmt.Printf("Group %q does not exist... no queries added\n", grp)
+		return
+	}
+	if err != nil {
+		util.UlogAndPrint("Error getting group %q: %s\n", grp, err.Error())
+		os.Exit(1)
+	}
+	q = fmt.Sprintf("SELECT People.* from People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d) WHERE People.Status=0", g.GID)
+	createQuery("ISO-FAATechOps", "FAA employees who have stayed at IB", q)
 	fmt.Printf("Isola Bella queries created\n")
 }
 
@@ -310,48 +322,8 @@ func createFAAQueries() {
 		util.UlogAndPrint("Error getting group FAA: %s\n", err.Error())
 		os.Exit(1)
 	}
-	q := fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 50 OFFSET 0", g.GID) // 50
-	createQuery("FAA-1-First50", "The first 50 people in the FAA", q)
-
-	// q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 250 OFFSET 50", g.GID) // 300
-	// createQuery("FAA-2-Next250", "After FAA-1-First50, the next 250 people in the FAA", q)
-
-	// q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 700 OFFSET 300", g.GID) // 1,000
-	// createQuery("FAA-3-Next700", "After FAA-2-Next250, the next 700 people in the FAA", q)
-
-	// q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 61 OFFSET 939", g.GID) // 1,000
-	// createQuery("FAA-fix-1-at-962", "Fix to finish 700 which broke due to Peter.C..Cyr@faa.gov", q)
-
-	// q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 5000 OFFSET 1000", g.GID) // 6,000
-	// createQuery("FAA-4-Next5000", "After FAA-3-Next700, the next 700 people in the FAA", q)
-
-	// q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 4983 OFFSET 1017", g.GID) // 6,000
-	// createQuery("FAA-fix-2-at-1046", "Fix to finish 5000 which broke due to Tommy.J.VernonJr.@faa.gov", q)
-
-	// q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 20000 OFFSET 6000", g.GID) // 26,000
-	// createQuery("FAA-5-Next20000", "After FAA-4-Next5000, the next 20000 people in the FAA", q)
-
-	// q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 50000 OFFSET 26000", g.GID) // up to 56,0000 people
-	// createQuery("FAA-6-TheRest", "After FAA-5-Next20000, the remaining people in the FAA", q)
-
-	// limit := 1500
-	// offset := 26000
-	// for i := 0; i < 20; i++ {
-	// 	q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT %d OFFSET %d", g.GID, limit, offset) // 26,000
-	// 	s := fmt.Sprintf("FAA-%02d", 7+i)
-	// 	createQuery(s, "1500 each day until we are done", q)
-	// 	offset += limit
-	// }
-
-	// // Fix for this guy:
-	// // +-------+-------------------------+------------+----------+--------------------------------------------+
-	// // | PID   | FirstName               | MiddleName | LastName | Email1                                     |
-	// // +-------+-------------------------+------------+----------+--------------------------------------------+
-	// // | 34385 | I@mw@lkingw1th477@ng3ls | M          | McDonald | I@mw@lkingw1th477@ng3ls.M.McDonald@faa.gov |
-	// // +-------+-------------------------+------------+----------+--------------------------------------------+
-	// q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0 LIMIT 925 OFFSET 34084", g.GID) // up to 56,0000 people
-	// createQuery("FAA-12-fix", "fix for I@mw@lkingw1th477@ng3ls.M.McDonald@faa.gov", q)
-
+	q := fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d WHERE People.Status=0", g.GID) // 50
+	createQuery("FAA", "The first 50 people in the FAA", q)
 }
 
 // Set up the people information first. This will make the people available
