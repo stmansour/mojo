@@ -40,6 +40,12 @@ newdb:
 	${BINDIR}/mojonewdb
 	./mailsend -setup
 
+tar:
+	tar cvf campaigns.tar campaigns
+
+untar:
+	tar xvf campaigns.tar
+
 test:
 	@echo "*** ${THISDIR}: completed test ***"
 

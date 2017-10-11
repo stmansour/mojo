@@ -161,6 +161,7 @@ func SavePerson(pnew *db.Person) (int64, error) {
 		p1[0].OfficePhone = pnew.OfficePhone
 		p1[0].OfficeFax = pnew.OfficeFax
 		p1[0].Email1 = pnew.Email1
+		p1[0].Email2 = pnew.Email2
 		p1[0].MailAddress = pnew.MailAddress
 		p1[0].MailAddress2 = pnew.MailAddress2
 		p1[0].MailCity = pnew.MailCity
@@ -178,9 +179,9 @@ func SavePerson(pnew *db.Person) (int64, error) {
 }
 
 func resetUserStatus(p1 *db.Person) {
-	p, err := db.GetPersonByEmail(p1.Email1)
+	p, err := db.GetPersonByEmail(p1.Email1, p1.Email2)
 	if err != nil {
-		util.UlogAndPrint("Error from db.GetPersonByEmail( %s ):  %s \n", p1.Email1, err.Error())
+		util.UlogAndPrint("Error from db.GetPersonByEmail( %s, %s ):  %s \n", p1.Email1, p1.Email2, err.Error())
 		return
 	}
 	p.Status = db.NORMAL

@@ -20,6 +20,7 @@ type Person struct {
 	OfficePhone    string
 	OfficeFax      string
 	Email1         string
+	Email2         string
 	MailAddress    string
 	MailAddress2   string
 	MailCity       string
@@ -164,7 +165,7 @@ func GetQueryRowCount(qname string) (int64, error) {
 //=================================================
 func readPerson(row *sql.Row) (Person, error) {
 	var a Person
-	err := row.Scan(&a.PID, &a.FirstName, &a.MiddleName, &a.LastName, &a.PreferredName, &a.JobTitle, &a.OfficePhone, &a.OfficeFax, &a.Email1, &a.MailAddress, &a.MailAddress2, &a.MailCity, &a.MailState, &a.MailPostalCode, &a.MailCountry, &a.RoomNumber, &a.MailStop, &a.Status, &a.OptOutDate, &a.LastModTime, &a.LastModBy)
+	err := row.Scan(&a.PID, &a.FirstName, &a.MiddleName, &a.LastName, &a.PreferredName, &a.JobTitle, &a.OfficePhone, &a.OfficeFax, &a.Email1, &a.Email2, &a.MailAddress, &a.MailAddress2, &a.MailCity, &a.MailState, &a.MailPostalCode, &a.MailCountry, &a.RoomNumber, &a.MailStop, &a.Status, &a.OptOutDate, &a.LastModTime, &a.LastModBy)
 	return a, err
 }
 
@@ -174,14 +175,14 @@ func GetPerson(id int64) (Person, error) {
 }
 
 // GetPersonByEmail reads a Person the structure for the supplied id
-func GetPersonByEmail(s string) (Person, error) {
-	return readPerson(DB.Prepstmt.GetPersonByEmail.QueryRow(s))
+func GetPersonByEmail(s1, s2 string) (Person, error) {
+	return readPerson(DB.Prepstmt.GetPersonByEmail.QueryRow(s1, s2))
 }
 
 // ReadPersonFromRows uses the supplied sql.Rows struct to read a Person record
 func ReadPersonFromRows(rows *sql.Rows) (Person, error) {
 	var a Person
-	err := rows.Scan(&a.PID, &a.FirstName, &a.MiddleName, &a.LastName, &a.PreferredName, &a.JobTitle, &a.OfficePhone, &a.OfficeFax, &a.Email1, &a.MailAddress, &a.MailAddress2, &a.MailCity, &a.MailState, &a.MailPostalCode, &a.MailCountry, &a.RoomNumber, &a.MailStop, &a.Status, &a.OptOutDate, &a.LastModTime, &a.LastModBy)
+	err := rows.Scan(&a.PID, &a.FirstName, &a.MiddleName, &a.LastName, &a.PreferredName, &a.JobTitle, &a.OfficePhone, &a.OfficeFax, &a.Email1, &a.Email2, &a.MailAddress, &a.MailAddress2, &a.MailCity, &a.MailState, &a.MailPostalCode, &a.MailCountry, &a.RoomNumber, &a.MailStop, &a.Status, &a.OptOutDate, &a.LastModTime, &a.LastModBy)
 	return a, err
 }
 
@@ -195,7 +196,7 @@ func ReadPeople(rows *sql.Rows, err error) ([]Person, error) {
 	}
 	for i := 0; rows.Next(); i++ {
 		var a Person
-		err = rows.Scan(&a.PID, &a.FirstName, &a.MiddleName, &a.LastName, &a.PreferredName, &a.JobTitle, &a.OfficePhone, &a.OfficeFax, &a.Email1, &a.MailAddress, &a.MailAddress2, &a.MailCity, &a.MailState, &a.MailPostalCode, &a.MailCountry, &a.RoomNumber, &a.MailStop, &a.Status, &a.OptOutDate, &a.LastModTime, &a.LastModBy)
+		err = rows.Scan(&a.PID, &a.FirstName, &a.MiddleName, &a.LastName, &a.PreferredName, &a.JobTitle, &a.OfficePhone, &a.OfficeFax, &a.Email1, &a.Email2, &a.MailAddress, &a.MailAddress2, &a.MailCity, &a.MailState, &a.MailPostalCode, &a.MailCountry, &a.RoomNumber, &a.MailStop, &a.Status, &a.OptOutDate, &a.LastModTime, &a.LastModBy)
 		if err != nil {
 			return t, err
 		}
@@ -218,13 +219,13 @@ func GetPersonByRecordFieldMatching(f, m, l, o, e string) ([]Person, error) {
 
 // UpdatePerson updates the existing database record for a
 func UpdatePerson(a *Person) error {
-	_, err := DB.Prepstmt.UpdatePerson.Exec(a.FirstName, a.MiddleName, a.LastName, a.PreferredName, a.JobTitle, a.OfficePhone, a.OfficeFax, a.Email1, a.MailAddress, a.MailAddress2, a.MailCity, a.MailState, a.MailPostalCode, a.MailCountry, a.RoomNumber, a.MailStop, a.Status, a.OptOutDate, a.LastModBy, a.PID)
+	_, err := DB.Prepstmt.UpdatePerson.Exec(a.FirstName, a.MiddleName, a.LastName, a.PreferredName, a.JobTitle, a.OfficePhone, a.OfficeFax, a.Email1, a.Email2, a.MailAddress, a.MailAddress2, a.MailCity, a.MailState, a.MailPostalCode, a.MailCountry, a.RoomNumber, a.MailStop, a.Status, a.OptOutDate, a.LastModBy, a.PID)
 	return err
 }
 
 // InsertPerson writes a new Person record to the database
 func InsertPerson(a *Person) error {
-	res, err := DB.Prepstmt.InsertPerson.Exec(a.FirstName, a.MiddleName, a.LastName, a.PreferredName, a.JobTitle, a.OfficePhone, a.OfficeFax, a.Email1, a.MailAddress, a.MailAddress2, a.MailCity, a.MailState, a.MailPostalCode, a.MailCountry, a.RoomNumber, a.MailStop, a.Status, a.OptOutDate, a.LastModBy)
+	res, err := DB.Prepstmt.InsertPerson.Exec(a.FirstName, a.MiddleName, a.LastName, a.PreferredName, a.JobTitle, a.OfficePhone, a.OfficeFax, a.Email1, a.Email2, a.MailAddress, a.MailAddress2, a.MailCity, a.MailState, a.MailPostalCode, a.MailCountry, a.RoomNumber, a.MailStop, a.Status, a.OptOutDate, a.LastModBy)
 	if nil == err {
 		id, err := res.LastInsertId()
 		if err == nil {

@@ -24,6 +24,7 @@ CREATE TABLE People (
     OfficePhone VARCHAR(100) DEFAULT '',
     OfficeFax VARCHAR(100) DEFAULT '',
     Email1 VARCHAR(50) DEFAULT '',
+    Email2 VARCHAR(50) NOT NULL DEFAULT '',
     MailAddress VARCHAR(50) DEFAULT '',
     MailAddress2 VARCHAR(50) DEFAULT '',
     MailCity VARCHAR(100) DEFAULT '',

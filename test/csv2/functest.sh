@@ -20,8 +20,8 @@ echo "Create new database..."
 mysql --no-defaults mojo < smalldb.sql
 
 source ../share/base.sh
-GRP="OK Real Estate Agents"
-echo "${BINDIR}/mojocsv -g \"${GRP}\" -cg -f orea.csv"
-${BINDIR}/mojocsv -g "${GRP}" -o -cg -f orea.csv  >log 2>&1
+GRP="AccordTest"
+echo "${BINDIR}/mojocsv -g \"${GRP}\" -cg  -f accordtest.csv"
+${BINDIR}/mojocsv -g "${GRP}" -o -cg -f accordtest.csv  >log 2>&1
 
 logcheck

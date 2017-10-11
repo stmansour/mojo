@@ -25,6 +25,7 @@ var MojoDBFields = []string{
 	"OfficePhone",
 	"OfficeFax",
 	"Email1",
+	"Email2",
 	"MailAddress",
 	"MailAddress2",
 	"MailCity",
@@ -54,6 +55,7 @@ var App struct {
 	GroupDesc   string
 	Group       db.EGroup
 	skipOutput  bool // show start/stop time and elapsed time
+	keepEmail1  bool // if importing and Email1 != Email2
 }
 
 func main() {
@@ -188,10 +190,19 @@ func MapAndImport(fname string) {
 		}
 		fldmap = append(fldmap, k)
 	}
-	// fmt.Printf("fldmap[]:\n")
-	// for i := 0; i < len(fldmap); i++ {
-	// 	fmt.Printf("%d. %d\n", i, fldmap[i])
-	// }
+	// util.Console("fldmap[]:\n")
+	count := 0
+	for i := 0; i < len(fldmap); i++ {
+		// util.Console("%d. %d\n", i, fldmap[i])
+		if fldmap[i] > 0 {
+			count++
+		}
+	}
+	if count == 0 {
+		err := fmt.Errorf("No mapping information in second line of csv file could be mapped to a recognized column")
+		util.LogAndPrintError("MapAndImport", err)
+		os.Exit(1)
+	}
 
 	//-------------------------------------------------------------
 	// Mark Start time of group update
@@ -210,6 +221,8 @@ func MapAndImport(fname string) {
 	// Now that we know the mapping, go through the data and
 	// load the people.
 	//-------------------------------------------------------------
+	matches := 0
+	newEntries := 0
 	flt := float64(len(t))
 	for i := 2; i < len(t); i++ {
 		var a db.Person
@@ -234,30 +247,34 @@ func MapAndImport(fname string) {
 			case 6:
 				a.OfficeFax = *p
 			case 7:
-				a.Email1 = *p
+				a.Email1 = util.ScrubEmailAddr(*p)
 			case 8:
-				a.MailAddress = *p
+				a.Email2 = util.ScrubEmailAddr(*p)
 			case 9:
-				a.MailAddress2 = *p
+				a.MailAddress = *p
 			case 10:
-				a.MailCity = *p
+				a.MailAddress2 = *p
 			case 11:
-				a.MailState = *p
+				a.MailCity = *p
 			case 12:
-				a.MailPostalCode = *p
+				a.MailState = *p
 			case 13:
-				a.MailCountry = *p
+				a.MailPostalCode = *p
 			case 14:
-				a.RoomNumber = *p
+				a.MailCountry = *p
 			case 15:
+				a.RoomNumber = *p
+			case 16:
 				a.MailStop = *p
 			default:
 				fmt.Printf("unexpected fldmap index: %d\n", fldmap[j])
 				os.Exit(1)
 			}
 		}
-
-		// fmt.Printf("Adding person:  %s %s (%s)\n", a.FirstName, a.LastName, a.Email1)
+		if len(a.Email1) == 0 && len(a.Email2) == 0 {
+			// util.Console("no email address found for this entry, skipping to next person\n")
+		}
+		// util.Console("Processing person:  %q %q (%s)\n", a.FirstName, a.LastName, a.Email1)
 
 		//---------------------------------------------
 		// Do we already have this person?
@@ -267,7 +284,7 @@ func MapAndImport(fname string) {
 		var dup db.Person
 		var err error
 		createdPerson := false
-		dup, err = db.GetPersonByEmail(a.Email1)
+		dup, err = db.GetPersonByEmail(a.Email1, a.Email1)
 		if err != nil {
 			if !util.IsSQLNoResultsError(err) {
 				log.Fatalf("Error searching for person with email address %s: %s\n", a.Email1, err.Error())
@@ -278,12 +295,16 @@ func MapAndImport(fname string) {
 		// Add this person if he/she was not found in the database
 		//----------------------------------------------------------
 		if dup.PID == 0 {
+			// util.Console("%s NOT FOUND, adding new\n", a.Email1)
 			if err = db.InsertPerson(&a); err != nil { // no: insert the person
 				log.Fatalf("Error inserting Person: %s\n", err.Error())
 			}
-			PID = a.PID          // now add this person to the group
+			PID = a.PID // now add this person to the group
+			newEntries++
 			createdPerson = true //mark that it
 		} else {
+			matches++
+			// util.Console("%s FOUND, PID = %d, will just add to group\n", a.Email1, dup.PID)
 			PID = dup.PID // yes: just add the person to this group
 		}
 
@@ -296,9 +317,13 @@ func MapAndImport(fname string) {
 			if err != nil {
 				if !util.IsSQLNoResultsError(err) {
 					log.Fatalf("Error getting person group: %s\n", err.Error())
+				} else {
+					// util.Console("At point P1 - PID=%d IS NOT already a member of group %d.  addToGroup = %t\n", PID, GID, addToGroup)
+
 				}
 			} else {
 				addToGroup = false // this person is already a member of the group
+				// util.Console("At point P1 - PID=%d IS already a member of group %d.  addToGroup = %t\n", PID, GID, addToGroup)
 			}
 		}
 
@@ -310,6 +335,7 @@ func MapAndImport(fname string) {
 				PID: PID,
 				GID: GID,
 			}
+			// util.Console("Adding %d to group %d\n", PID, GID)
 			if err = db.InsertPGroup(&pg); err != nil {
 				fmt.Printf("Error inserting Person into group: %s\n", err.Error())
 				os.Exit(1)
@@ -342,9 +368,11 @@ func MapAndImport(fname string) {
 	//-------------------------------------------------------------
 	fmt.Printf("Import Complete\n")
 	if !App.skipOutput {
-		fmt.Printf("Start time:   %s\n", App.Group.DtStart.In(db.DB.Zone).Format(util.DATETIMEINPFMT))
-		fmt.Printf("Stop time:    %s\n", App.Group.DtStop.In(db.DB.Zone).Format(util.DATETIMEINPFMT))
-		fmt.Printf("Elapsed time: %s\n", App.Group.DtStop.Sub(App.Group.DtStart))
+		fmt.Printf("Start time:    %s\n", App.Group.DtStart.In(db.DB.Zone).Format(util.DATETIMEINPFMT))
+		fmt.Printf("Stop time:     %s\n", App.Group.DtStop.In(db.DB.Zone).Format(util.DATETIMEINPFMT))
+		fmt.Printf("Elapsed time:  %s\n", App.Group.DtStop.Sub(App.Group.DtStart))
+		fmt.Printf("Matched:       %6d\n", matches)
+		fmt.Printf("New Entries:   %6d\n", newEntries)
+		fmt.Printf("Total Updates: %6d\n", matches+newEntries)
 	}
-
 }

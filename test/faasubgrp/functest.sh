@@ -17,11 +17,15 @@ CREATENEWDB=0
 #  Use the testdb for these tests...
 #---------------------------------------------------------------
 echo "Create new database..." 
-mysql --no-defaults mojo < smalldb.sql
+# mysql --no-defaults mojo < smalldb.sql
+pushd ../testdb
+echo "Loading bigdb"
+make bigdb
+popd
 
 source ../share/base.sh
-GRP="OK Real Estate Agents"
-echo "${BINDIR}/mojocsv -g \"${GRP}\" -cg -f orea.csv"
-${BINDIR}/mojocsv -g "${GRP}" -o -cg -f orea.csv  >log 2>&1
+GRP="FAA Tech Ops"
+echo "${BINDIR}/mojocsv -g \"${GRP}\" -cg -f faatechops.csv"
+${BINDIR}/mojocsv -g "${GRP}" -o -cg -f faatechops.csv  >log 2>&1
 
 logcheck

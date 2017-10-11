@@ -303,7 +303,7 @@ func InsertOrUpdatePerson(p *db.Person) {
 	}
 
 	// see if there's a match on email...
-	p2, err := db.GetPersonByEmail(p.Email1)
+	p2, err := db.GetPersonByEmail(p.Email1, p.Email2)
 	if err != nil && !util.IsSQLNoResultsError(err) {
 		util.Ulog("GetPersonByEmail returned: %s\n", err.Error())
 		return

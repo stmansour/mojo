@@ -49,7 +49,7 @@ func SvcOptOut(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 
 	util.Console("Found email = %s, code = %s\n", email, code)
 
-	p, err := db.GetPersonByEmail(email)
+	p, err := db.GetPersonByEmail(email, email)
 	if err != nil {
 		util.Console("EGetPersonByEmail %s returned:  %s", email, err.Error())
 		SvcGridErrorReturn(w, err)
