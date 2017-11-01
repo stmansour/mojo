@@ -18,7 +18,7 @@ config.json:
 
 clean:
 	go clean
-	rm -f faa conf*.json *.log
+	rm -rf faa conf*.json *.log csvdump
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package:
@@ -36,5 +36,10 @@ q:
 	@${BINDIR}/mojonewdb
 	@./faa -q
 	@mysqldump --no-defaults mojo >faa.sql
+
+update:
+	@echo "Create a new updated database"
+	@${BINDIR}/mojonewdb
+	@./faa
 
 all: clean faa package test

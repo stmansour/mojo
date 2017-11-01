@@ -524,7 +524,7 @@ func main() {
 		util.UlogAndPrint("Suppression List Email Complete\n")
 		os.Exit(0)
 	}
-	if App.ValidateGroup != "MojoTest" {
+	if len(App.ValidateGroup) > 0 {
 		err := mailsend.ValidateGroupEmailAddresses(App.ValidateGroup)
 		if err != nil {
 			fmt.Printf("mailsend.ValidateGroupEmailAddresses:  err = %s\n", err)

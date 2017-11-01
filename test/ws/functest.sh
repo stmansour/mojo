@@ -5,17 +5,28 @@
 # in base.sh to set other useful directories such as ${BASHDIR}
 #---------------------------------------------------------------
 TOP=../..
+BINDIR=${TOP}/tmp/mojo
 
 TESTNAME="Web Services"
 TESTSUMMARY="Test Web Services"
+SMALLDB="smalldb.sql"
+FAASCRAPE="${BINDIR}/scrapefaa"
+NEWDB="${BINDIR}/mojonewdb"
 
 CREATENEWDB=0
 
 #---------------------------------------------------------------
 #  Use the testdb for these tests...
 #---------------------------------------------------------------
-echo "Create new database..." 
-mysql --no-defaults mojo < smalldb.sql
+echo "Create new database..."
+
+if [ ! -f "${SMALLDB}" ]; then
+	${NEWDB}
+	${FAASCRAPE} -q
+	mysqldump --no-defaults mojo >${SMALLDB}
+fi
+
+mysql --no-defaults mojo < ${SMALLDB}
 
 source ../share/base.sh
 

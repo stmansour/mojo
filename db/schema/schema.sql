@@ -7,6 +7,7 @@ GRANT ALL PRIVILEGES ON mojo TO 'ec2-user'@'localhost';
 GRANT ALL PRIVILEGES ON mojo.* TO 'ec2-user'@'localhost';
 GRANT ALL PRIVILEGES ON mojo TO 'adbuser'@'localhost';
 GRANT ALL PRIVILEGES ON mojo.* TO 'adbuser'@'localhost';
+set GLOBAL sql_mode='ALLOW_INVALID_DATES';
 
 -- **************************************
 -- ****                              ****
