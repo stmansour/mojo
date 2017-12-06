@@ -227,6 +227,9 @@ func MapAndImport(fname string) {
 	for i := 2; i < len(t); i++ {
 		var a db.Person
 		for j := 0; j < len(t[i]); j++ {
+			if j >= len(fldmap) {
+				continue
+			}
 			if fldmap[j] == -1 {
 				continue
 			}
