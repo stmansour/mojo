@@ -1,5 +1,7 @@
 How To Use Mojo
 
+To initialize all the queryies and required groups:
+	./mailsend -setup
 
 To import a csv file use a command like this:
 

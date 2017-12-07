@@ -28,6 +28,7 @@ type Info struct {
 	SMTPPort    int    // port to contact on smtp server
 	Offset      int    // ignore if 0, otherwise use as query OFFSET
 	Limit       int    // ignore if 0, otherwise use as query LIMIT
+	DebugSend   bool   // if true, print the email addresses  but don't do the send
 }
 
 // BuildQuery creates a sql query from the JSON data
@@ -90,6 +91,7 @@ func Sendmail(si *Info) error {
 	util.Ulog("\t SMTPPort    = %d\n", si.SMTPPort)
 	util.Ulog("\t OFFSET      = %d\n", si.Offset)
 	util.Ulog("\t LIMIT       = %d\n", si.Limit)
+	util.Ulog("\t DebugSend   = %t\n", si.DebugSend)
 
 	// template for email
 	var tname string
@@ -144,6 +146,9 @@ func Sendmail(si *Info) error {
 		}
 		// fmt.Printf("Sending to %s\n", p.Email1)
 		if len(p.Email1) == 0 {
+			if si.DebugSend {
+				fmt.Printf("Sendmail: no email address for user: %d - %s %s\n", p.PID, p.FirstName, p.LastName)
+			}
 			continue
 		}
 
@@ -153,6 +158,9 @@ func Sendmail(si *Info) error {
 		//-------------------------------------------------------------------
 		if !util.ValidEmailAddress(p.Email1) {
 			bad++
+			if si.DebugSend {
+				fmt.Printf("Sendmail: invalid email address %s for user: %d - %s %s\n", p.Email1, p.PID, p.FirstName, p.LastName)
+			}
 			util.Ulog("Invalid email address:  PID = %d, email = %q\n", p.PID, p.Email1)
 			continue
 		} else {
@@ -167,11 +175,15 @@ func Sendmail(si *Info) error {
 		}
 		m.SetBody("text/html", string(s))
 
-		err = d.DialAndSend(m)
-		if err != nil {
-			util.Ulog("Error on DialAndSend = %s\n", err.Error())
-			util.Ulog("Error occurred while sending to person %d, address: %s\n", p.PID, p.Email1)
-			return err
+		if si.DebugSend {
+			fmt.Printf("Sendmail: Send to %s\n", p.Email1)
+		} else {
+			err = d.DialAndSend(m)
+			if err != nil {
+				util.Ulog("Error on DialAndSend = %s\n", err.Error())
+				util.Ulog("Error occurred while sending to person %d, address: %s\n", p.PID, p.Email1)
+				return err
+			}
 		}
 		si.SentCount++ // update the si.SentCount only after adding the record
 

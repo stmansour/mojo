@@ -40,6 +40,7 @@ var App struct {
 	XR            extres.ExternalResources // dbs, smtp...
 	Offset        int                      // if 0, ignore, if nonzero then use as query OFFSET
 	Limit         int                      // if 0, ignore, if nonzero then use as query LIMIT
+	DebugSend     bool                     // print email addresses where send would have gone but don't send
 }
 
 // SendBouncedEmailTest sends an email message that bounces.  For testing.
@@ -306,6 +307,18 @@ func createIsolaBellaQueries() {
 	}
 	q = fmt.Sprintf("SELECT People.* from People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d) WHERE People.Status=0", g.GID)
 	createQuery("ISO-FAATechOps", "FAA employees who have stayed at IB", q)
+
+	g, err = db.GetGroupByName("ibguests20171206")
+	if err != nil && util.IsSQLNoResultsError(err) {
+		fmt.Printf("Group %q does not exist... no queries added\n", grp)
+		return
+	}
+	if err != nil {
+		util.UlogAndPrint("Error getting group %q: %s\n", grp, err.Error())
+		os.Exit(1)
+	}
+	q = fmt.Sprintf("SELECT People.* from People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d) WHERE People.Status=0", g.GID)
+	createQuery("ibguests20171206", "FAA employees who have stayed at IB", q)
 	fmt.Printf("Isola Bella queries created\n")
 }
 
@@ -389,7 +402,7 @@ func readCommandLineArgs() {
 	aPtr := flag.String("a", "", "filename of attachment")
 	qPtr := flag.String("q", "MojoTest", "name of the query to send messages to")
 	hPtr := flag.String("h", db.MojoDBConfig.MojoWebAddr, "name of host and port for mojosrv")
-	vPtr := flag.String("validate", "MojoTest", "validate the email addresses of everyone in the group name provided, then exit")
+	vPtr := flag.String("validate", "", "validate the email addresses of everyone in the group name provided, then exit")
 	qcPtr := flag.Bool("count", false, "returns the count of target addresses in the query, then exits.")
 	soPtr := flag.Bool("setup", false, "just run the setup, do not send email")
 	bPTR := flag.Bool("bounce", false, "just send a message to bounce@simulator.amazonses.com")
@@ -401,6 +414,7 @@ func readCommandLineArgs() {
 	fixPtr := flag.Bool("fix", false, "Scan db for known errors, fix them wherever possible, then exit.")
 	offsetPtr := flag.Int("offset", 0, "ignore if 0, otherwise use as query OFFSET")
 	limitPtr := flag.Int("limit", 0, "ignore if 0, otherwise use as query LIMIT")
+	dbs := flag.Bool("debugsend", false, "print email addresses for recipients but don't send")
 
 	flag.Parse()
 
@@ -422,6 +436,7 @@ func readCommandLineArgs() {
 	App.ValidateGroup = *vPtr
 	App.Offset = *offsetPtr
 	App.Limit = *limitPtr
+	App.DebugSend = *dbs
 }
 
 func main() {
@@ -433,6 +448,9 @@ func main() {
 		os.Exit(1)
 	}
 	readCommandLineArgs()
+
+	util.Console("P1 App.QueryName = %s\n", App.QueryName)
+
 	//----------------------------------------------
 	// Open the logfile and begin logging...
 	//----------------------------------------------
@@ -472,6 +490,8 @@ func main() {
 		os.Exit(0)
 	}
 
+	util.Console("P2 App.QueryName = %s\n", App.QueryName)
+
 	si := mailsend.Info{
 		From:        App.From,
 		QName:       App.QueryName,
@@ -485,6 +505,7 @@ func main() {
 		SMTPPort:    db.MojoDBConfig.SMTPPort,
 		Offset:      App.Offset,
 		Limit:       App.Limit,
+		DebugSend:   App.DebugSend,
 	}
 	// fmt.Printf("SMTP Info: host:port = %s:%d, login = %s, pass = %s\n", si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
 	if App.SetupOnly {
@@ -493,12 +514,14 @@ func main() {
 		util.UlogAndPrint("Setup completed\n")
 		return
 	}
+	util.Console("P2.1 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 
 	if App.Fix {
 		fixDoubleDotEmail()
 		fixDotAtEmail()
 		return
 	}
+	util.Console("P2.2 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 
 	if App.Bounce {
 		util.UlogAndPrint("Bounce Email\n")
@@ -506,25 +529,30 @@ func main() {
 		util.UlogAndPrint("Bounce Email Complete\n")
 		return
 	}
+	util.Console("P2.3 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 	if App.Complaint {
 		util.UlogAndPrint("Complain Email\n")
 		SendComplaintEmailTest()
 		util.UlogAndPrint("Complain Email Complete\n")
 		return
 	}
+	util.Console("P2.4 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 	if App.OOO {
 		util.UlogAndPrint("Out-of-Office Email\n")
 		SendOOOEmailTest()
 		util.UlogAndPrint("Out-of-Office Email Complete\n")
 		os.Exit(0)
 	}
+	util.Console("P2.5 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 	if App.Suppress {
 		util.UlogAndPrint("Suppression List Email\n")
 		SendSuppressionListEmailTest()
 		util.UlogAndPrint("Suppression List Email Complete\n")
 		os.Exit(0)
 	}
+	util.Console("P2.6 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 	if len(App.ValidateGroup) > 0 {
+		fmt.Printf("Validating email addresses for group: %s\n", App.ValidateGroup)
 		err := mailsend.ValidateGroupEmailAddresses(App.ValidateGroup)
 		if err != nil {
 			fmt.Printf("mailsend.ValidateGroupEmailAddresses:  err = %s\n", err)
@@ -533,10 +561,13 @@ func main() {
 		os.Exit(0)
 	}
 
+	util.Console("P2.7 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 	if si.Offset > 0 && si.Limit == 0 {
 		fmt.Printf("You MUST supply a limit value if you specify an offset\n")
 		os.Exit(1)
 	}
+
+	util.Console("P3 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 
 	err = mailsend.Sendmail(&si)
 	if err != nil {
