@@ -1,0 +1,23 @@
+How To Use Mojo
+
+
+To import a csv file use a command like this:
+
+    ./mojocsv -g groupname -o -cg -f xyz.csv
+
+where
+
+    -g is followed by the name of the group you want to send the email to
+    -cg means create the group if necessary
+    -o means don't print the time statistics associated with this import
+    -f is followed by the csv file to import
+
+    example:
+    ./mojocsv -g ibguests20171206 -cg -f prevgest.csv
+
+
+CSV File Format
+	The first row should be the column titles of all the data below
+	The secont row should be the name of the Mojo DB Person field to which it maps.
+
+

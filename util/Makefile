@@ -3,6 +3,7 @@ THISDIR="util"
 COUNTOL=${TOP}/tools/bashtools/countol.sh
 
 util: *.go
+	go get -v golang.org/x/text/secure/precis
 	@find . -name "fail" -exec rm -r "{}" \;
 	@touch fail
 	@${COUNTOL} "go vet"

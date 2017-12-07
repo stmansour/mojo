@@ -132,6 +132,8 @@ func Sendmail(si *Info) error {
 	defer rows.Close()
 
 	si.SentCount = 0
+	good := 0 // number of valid email addresses
+	bad := 0  // number of invalid email addresses
 	//fmt.Printf("EMAIL:  host: %s, port: %d, login: %s, pass: %s\n", si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
 	d := gomail.NewDialer(si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
 	for rows.Next() {
@@ -144,6 +146,19 @@ func Sendmail(si *Info) error {
 		if len(p.Email1) == 0 {
 			continue
 		}
+
+		//-------------------------------------------------------------------
+		// We will always validate the email address first. They are often
+		// completely bogus...
+		//-------------------------------------------------------------------
+		if !util.ValidEmailAddress(p.Email1) {
+			bad++
+			util.Ulog("Invalid email address:  PID = %d, email = %q\n", p.PID, p.Email1)
+			continue
+		} else {
+			good++
+		}
+
 		m.SetHeader("To", p.Email1)
 		s, err := GeneratePageHTML(si.MsgFName, si.Hostname, &p, t)
 		if err != nil {
@@ -166,5 +181,6 @@ func Sendmail(si *Info) error {
 	}
 
 	util.Ulog("Finished query %s. Successfully sent %d messages\n", si.QName, si.SentCount)
+	util.Ulog("Number of invalid email addresses: %d (these users were skipped)\n", bad)
 	return nil
 }
