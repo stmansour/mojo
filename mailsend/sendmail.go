@@ -117,7 +117,7 @@ func Sendmail(si *Info) error {
 
 	q, err := BuildQuery(si.QName)
 	if err != nil {
-		e := fmt.Errorf("Error getting database query: %s", err.Error())
+		e := fmt.Errorf("%s: Error getting database query: %s", funcname, err.Error())
 		util.Ulog(e.Error() + "\n")
 		return e
 	}
@@ -134,21 +134,45 @@ func Sendmail(si *Info) error {
 	defer rows.Close()
 
 	si.SentCount = 0
-	good := 0 // number of valid email addresses
-	bad := 0  // number of invalid email addresses
+	good := 0      // number of valid email addresses
+	bad := 0       // number of invalid email addresses
+	optout := 0    // skipped because status was optout
+	bounced := 0   // skipped because status was bounced
+	complaint := 0 // skipped because status was complaint
+
 	//fmt.Printf("EMAIL:  host: %s, port: %d, login: %s, pass: %s\n", si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
 	d := gomail.NewDialer(si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
 	for rows.Next() {
 		p, err := db.ReadPersonFromRows(rows)
 		if err != nil {
-			util.Ulog("Error with ReadPersonFromRows: %s\n", err.Error())
+			util.Ulog("%s: Error with ReadPersonFromRows: %s\n", funcname, err.Error())
 			return err
 		}
-		// fmt.Printf("Sending to %s\n", p.Email1)
+
 		if len(p.Email1) == 0 {
 			if si.DebugSend {
-				fmt.Printf("Sendmail: no email address for user: %d - %s %s\n", p.PID, p.FirstName, p.LastName)
+				fmt.Printf("%s: no email address for user: %d - %s %s\n", funcname, p.PID, p.FirstName, p.LastName)
 			}
+			continue
+		}
+
+		switch p.Status {
+		case db.NORMAL:
+			// do nothing
+		case db.OPTOUT:
+			optout++
+			util.Ulog("%s: Email not sent to user %d, %s, due to prior: OPT OUT\n", funcname, p.PID, p.Email1)
+			continue
+		case db.BOUNCED:
+			bounced++
+			util.Ulog("%s: Email not sent to user %d, %s, due to prior: BOUNCED MESSAGE\n", funcname, p.PID, p.Email1)
+			continue
+		case db.COMPLAINT:
+			complaint++
+			util.Ulog("%s: Email not sent to user %d, %s, due to prior: COMPLAINT\n", funcname, p.PID, p.Email1)
+			continue
+		case db.SUPPRESSED:
+			util.Ulog("%s: Email not sent to user %d, %s, due to prior: SUPPRESSION\n", funcname, p.PID, p.Email1)
 			continue
 		}
 
@@ -159,9 +183,9 @@ func Sendmail(si *Info) error {
 		if !util.ValidEmailAddress(p.Email1) {
 			bad++
 			if si.DebugSend {
-				fmt.Printf("Sendmail: invalid email address %s for user: %d - %s %s\n", p.Email1, p.PID, p.FirstName, p.LastName)
+				fmt.Printf("%s: invalid email address %s for user: %d - %s %s\n", funcname, p.Email1, p.PID, p.FirstName, p.LastName)
 			}
-			util.Ulog("Invalid email address:  PID = %d, email = %q\n", p.PID, p.Email1)
+			util.Ulog("%s: Invalid email address:  PID = %d, email = %q\n", funcname, p.PID, p.Email1)
 			continue
 		} else {
 			good++
@@ -170,29 +194,30 @@ func Sendmail(si *Info) error {
 		m.SetHeader("To", p.Email1)
 		s, err := GeneratePageHTML(si.MsgFName, si.Hostname, &p, t)
 		if err != nil {
-			util.Ulog("Error on person with address: %s\n", p.Email1)
+			util.Ulog("%s: Error on person with address: %s\n", funcname, p.Email1)
 			return err
 		}
 		m.SetBody("text/html", string(s))
 
 		if si.DebugSend {
-			fmt.Printf("Sendmail: Send to %s\n", p.Email1)
+			fmt.Printf("%s: Send to %s\n", funcname, p.Email1)
 		} else {
 			err = d.DialAndSend(m)
 			if err != nil {
-				util.Ulog("Error on DialAndSend = %s\n", err.Error())
-				util.Ulog("Error occurred while sending to person %d, address: %s\n", p.PID, p.Email1)
+				util.Ulog("%s: Error on DialAndSend = %s\n", funcname, err.Error())
+				util.Ulog("%s: Error occurred while sending to person %d, address: %s\n", funcname, p.PID, p.Email1)
 				return err
 			}
 		}
 		si.SentCount++ // update the si.SentCount only after adding the record
 
 		if si.SentCount%25 == 0 {
-			util.Ulog("Processing query %s, SentCount = %d\n", si.QName, si.SentCount)
+			util.Ulog("%s: Processing query %s, SentCount = %d\n", funcname, si.QName, si.SentCount)
 		}
 	}
 
-	util.Ulog("Finished query %s. Successfully sent %d messages\n", si.QName, si.SentCount)
-	util.Ulog("Number of invalid email addresses: %d (these users were skipped)\n", bad)
+	util.Ulog("%s: Finished query %s\n", funcname, si.QName)
+	util.Ulog("%s: Messages successfully sent: %d\n", funcname, si.SentCount)
+	util.Ulog("%s: Number of invalid email addresses: %d (these users were skipped)\n", funcname, bad)
 	return nil
 }

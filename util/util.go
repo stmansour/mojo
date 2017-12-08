@@ -127,7 +127,7 @@ func ScrubEmailAddr(ss string) string {
 	return s1
 }
 
-var validemail = regexp.MustCompile(`^([a-zA-Z0-9][-_.a-zA-Z0-9]*)@([-_.a-zA-Z0-9]+)?$`)
+var validemail = regexp.MustCompile(`^([a-zA-Z0-9][-_.a-zA-Z0-9]*)@([-_.a-zA-Z0-9]+)\.([a-zA-Z]+)$`)
 
 // ValidEmailAddress parses s and ensures that it conforms to the regexp above,
 // which to the best of my ability represents an email address.
