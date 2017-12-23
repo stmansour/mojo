@@ -449,7 +449,7 @@ func main() {
 	}
 	readCommandLineArgs()
 
-	util.Console("P1 App.QueryName = %s\n", App.QueryName)
+	// util.Console("P1 App.QueryName = %s\n", App.QueryName)
 
 	//----------------------------------------------
 	// Open the logfile and begin logging...
@@ -490,7 +490,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	util.Console("P2 App.QueryName = %s\n", App.QueryName)
+	// util.Console("P2 App.QueryName = %s\n", App.QueryName)
 
 	si := mailsend.Info{
 		From:        App.From,
@@ -514,14 +514,14 @@ func main() {
 		util.UlogAndPrint("Setup completed\n")
 		return
 	}
-	util.Console("P2.1 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
+	// util.Console("P2.1 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 
 	if App.Fix {
 		fixDoubleDotEmail()
 		fixDotAtEmail()
 		return
 	}
-	util.Console("P2.2 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
+	// util.Console("P2.2 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 
 	if App.Bounce {
 		util.UlogAndPrint("Bounce Email\n")
@@ -529,28 +529,28 @@ func main() {
 		util.UlogAndPrint("Bounce Email Complete\n")
 		return
 	}
-	util.Console("P2.3 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
+	// util.Console("P2.3 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 	if App.Complaint {
 		util.UlogAndPrint("Complain Email\n")
 		SendComplaintEmailTest()
 		util.UlogAndPrint("Complain Email Complete\n")
 		return
 	}
-	util.Console("P2.4 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
+	// util.Console("P2.4 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 	if App.OOO {
 		util.UlogAndPrint("Out-of-Office Email\n")
 		SendOOOEmailTest()
 		util.UlogAndPrint("Out-of-Office Email Complete\n")
 		os.Exit(0)
 	}
-	util.Console("P2.5 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
+	// util.Console("P2.5 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 	if App.Suppress {
 		util.UlogAndPrint("Suppression List Email\n")
 		SendSuppressionListEmailTest()
 		util.UlogAndPrint("Suppression List Email Complete\n")
 		os.Exit(0)
 	}
-	util.Console("P2.6 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
+	// util.Console("P2.6 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 	if len(App.ValidateGroup) > 0 {
 		fmt.Printf("Validating email addresses for group: %s\n", App.ValidateGroup)
 		err := mailsend.ValidateGroupEmailAddresses(App.ValidateGroup)
@@ -561,13 +561,13 @@ func main() {
 		os.Exit(0)
 	}
 
-	util.Console("P2.7 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
+	// util.Console("P2.7 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 	if si.Offset > 0 && si.Limit == 0 {
 		fmt.Printf("You MUST supply a limit value if you specify an offset\n")
 		os.Exit(1)
 	}
 
-	util.Console("P3 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
+	// util.Console("P3 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 
 	err = mailsend.Sendmail(&si)
 	if err != nil {

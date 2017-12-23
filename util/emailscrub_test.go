@@ -24,3 +24,6 @@ func TestEmailScrub(t *testing.T) {
 		}
 	}
 }
+
+// ryan.t.baldwain@.com
+// mp_sargechuck@yahoo.

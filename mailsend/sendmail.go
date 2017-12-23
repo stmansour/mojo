@@ -212,12 +212,16 @@ func Sendmail(si *Info) error {
 		si.SentCount++ // update the si.SentCount only after adding the record
 
 		if si.SentCount%25 == 0 {
-			util.Ulog("%s: Processing query %s, SentCount = %d\n", funcname, si.QName, si.SentCount)
+			util.Console("%s: Processing query %s, SentCount = %d\n", funcname, si.QName, si.SentCount)
 		}
 	}
 
 	util.Ulog("%s: Finished query %s\n", funcname, si.QName)
-	util.Ulog("%s: Messages successfully sent: %d\n", funcname, si.SentCount)
-	util.Ulog("%s: Number of invalid email addresses: %d (these users were skipped)\n", funcname, bad)
+	util.Ulog("%s: Messages successfully sent:                 %5d\n", funcname, si.SentCount)
+	util.Ulog("%s: Users skipped due to invalid email address: %5d\n", funcname, bad)
+	util.Ulog("%s: Users skipped due to prior opt out:         %5d\n", funcname, optout)
+	util.Ulog("%s: Users skipped due to prior bounced message: %5d\n", funcname, bounced)
+	util.Ulog("%s: Users skipped due to prior complaint:       %5d\n", funcname, complaint)
+	util.Ulog("%s: TOTAL USERS PROCESSED.......................%5d\n", funcname, si.SentCount+bad+optout+bounced+complaint)
 	return nil
 }
