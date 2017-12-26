@@ -22,6 +22,7 @@ type PersonGrid struct {
 	OfficePhone    string
 	OfficeFax      string
 	Email1         string
+	Email2         string
 	MailAddress    string
 	MailAddress2   string
 	MailCity       string
@@ -31,7 +32,7 @@ type PersonGrid struct {
 	RoomNumber     string
 	MailStop       string
 	Status         int64
-	OptOutDate     time.Time
+	OptOutDate     util.JSONDate /*Time*/
 	LastModTime    time.Time
 	LastModBy      int64
 }
@@ -132,6 +133,7 @@ func SvcHandlerPerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 //	@Input WebGridSearchRequest
 //  @Response CountResponse
 // wsdoc }
+//-----------------------------------------------------------------------------
 func SvcPeopleCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcPeopleCount"
 	util.Console("Entered %s\n", funcname)
@@ -162,6 +164,7 @@ func SvcPeopleCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 //	@Input WebGridSearchRequest
 //  @Response CountResponse
 // wsdoc }
+//-----------------------------------------------------------------------------
 func SvcPeopleStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcPeopleStats"
 	util.Console("Entered %s\n", funcname)
@@ -211,6 +214,7 @@ func SvcPeopleStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 //	@Input WebGridSearchRequest
 //  @Response PersonSearchResponse
 // wsdoc }
+//-----------------------------------------------------------------------------
 func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcSearchHandlerPeople"
 	util.Console("Entered %s\n", funcname)
@@ -264,6 +268,7 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 			util.Console("%s.  Error reading Person: %s\n", funcname, err.Error())
 		}
 		util.MigrateStructVals(&p, &q)
+		q.Recid = p.PID
 		g.Records = append(g.Records, q)
 		count++ // update the count only after adding the record
 		if count >= d.wsSearchReq.Limit {
@@ -282,13 +287,14 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 // deletePerson deletes a payment type from the database
 // wsdoc {
 //  @Title  Delete Person
-//	@URL /v1/dep/:BUI/:RAID
+//	@URL /v1/person/PID
 //  @Method  POST
 //	@Synopsis Delete a Payment Type
 //  @Desc  This service deletes a Person.
 //	@Input WebGridDelete
 //  @Response SvcStatusResponse
 // wsdoc }
+//-----------------------------------------------------------------------------
 func deletePerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "deletePerson"
 	util.Console("Entered %s\n", funcname)
@@ -300,6 +306,11 @@ func deletePerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		return
 	}
 
+	// Cmd      string  `json:"cmd"`
+	// Selected []int64 `json:"selected"`
+	// Limit    int     `json:"limit"`
+	// Offset   int     `json:"offset"`
+
 	for i := 0; i < len(del.Selected); i++ {
 		if err := db.DeletePerson(del.Selected[i]); err != nil {
 			SvcGridErrorReturn(w, err)
@@ -309,16 +320,18 @@ func deletePerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	SvcWriteSuccessResponse(w)
 }
 
-// GetPerson returns the requested assessment
+// SavePerson returns the requested assessment
 // wsdoc {
 //  @Title  Save Person
-//	@URL /v1/dep/:BUI/:PID
+//	@URL /v1/persone/PID
 //  @Method  GET
-//	@Synopsis Update the information on a Person with the supplied data
-//  @Description  This service updates Person :PID with the information supplied. All fields must be supplied.
+//	@Synopsis Update the information on a Person with the supplied data, create if necessary.
+//  @Description  This service creates a person if PID == 0 or updates a Person if PID > 0 with
+//  @Description  the information supplied. All fields must be supplied.
 //	@Input PersonGridSave
 //  @Response SvcStatusResponse
 // wsdoc }
+//-----------------------------------------------------------------------------
 func savePerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "savePerson"
 	util.Console("Entered %s\n", funcname)
@@ -334,11 +347,11 @@ func savePerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		return
 	}
 
-	if len(foo.Changes) == 0 { // This is a new record
+	if foo.Record.PID == 0 { // This is a new record
 		var a db.Person
 		util.MigrateStructVals(&foo.Record, &a) // the variables that don't need special handling
 		util.Console("a = %#v\n", a)
-		util.Console(">>>> NEW PAYMENT TYPE IS BEING ADDED\n")
+		util.Console(">>>> NEW PERSON IS BEING ADDED\n")
 		err = db.InsertPerson(&a)
 		if err != nil {
 			e := fmt.Errorf("%s: Error saving Person: %s", funcname, err.Error())
@@ -346,45 +359,54 @@ func savePerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 			return
 		}
 	} else { // update existing or add new record(s)
-		util.Console("Uh oh - we have not yet implemented this!!!\n")
-		fmt.Fprintf(w, "Have not implemented this function")
-		// if err = JSONchangeParseUtil(d.data, PersonUpdate, d); err != nil {
-		// 	SvcGridErrorReturn(w, err)
-		// 	return
-		// }
+		err = PersonUpdate(&foo.Record, d)
+		if err != nil {
+			SvcGridErrorReturn(w, err)
+			return
+		}
 	}
 	SvcWriteSuccessResponse(w)
 }
 
-// PersonUpdate unmarshals the supplied string. If Recid > 0 it updates the
-// Person record using Recid as the PID.  If Recid == 0, then it inserts a
-// new Person record.
-func PersonUpdate(s string, d *ServiceData) error {
+// PersonUpdate updates the supplied person in the database with the supplied
+// info. It only allows certain fields to be updated.
+//-----------------------------------------------------------------------------
+func PersonUpdate(p *PersonGrid, d *ServiceData) error {
+	util.Console("entered PersonUpdate, p.Email2 = %s\n", p.Email2)
 	var err error
-	b := []byte(s)
-	var rec PersonGrid
-	if err = json.Unmarshal(b, &rec); err != nil { // first parse to determine the record ID we need to load
+	pt, err := db.GetPerson(p.PID) // now load that record...
+	if err != nil {
 		return err
 	}
-	if rec.Recid > 0 { // is this an update?
-		pt, err := db.GetPerson(rec.Recid) // now load that record...
-		if err != nil {
-			return err
-		}
-		if err = json.Unmarshal(b, &pt); err != nil { // merge in the changes...
-			return err
-		}
-		return db.UpdatePerson(&pt) // and save the result
+
+	if !util.ValidEmailAddress(p.Email1) {
+		return fmt.Errorf("Invalid email address: %s", p.Email1)
 	}
-	// no, it is a new table entry that has not been saved...
-	var a db.Person
-	if err := json.Unmarshal(b, &a); err != nil { // merge in the changes...
-		return err
+
+	if !util.ValidEmailAddress(p.Email2) {
+		return fmt.Errorf("Invalid email address: %s", p.Email2)
 	}
-	util.Console("a = %#v\n", a)
-	util.Console(">>>> NEW Person IS BEING ADDED\n")
-	err = db.InsertPerson(&a)
-	return err
+
+	pt.FirstName = p.FirstName
+	pt.MiddleName = p.MiddleName
+	pt.LastName = p.LastName
+	pt.PreferredName = p.PreferredName
+	pt.JobTitle = p.JobTitle
+	pt.OfficePhone = p.OfficePhone
+	pt.OfficeFax = p.OfficeFax
+	pt.Email1 = p.Email1
+	pt.Email2 = p.Email2
+	pt.MailAddress = p.MailAddress
+	pt.MailAddress2 = p.MailAddress2
+	pt.MailCity = p.MailCity
+	pt.MailState = p.MailState
+	pt.MailPostalCode = p.MailPostalCode
+	pt.MailCountry = p.MailCountry
+	pt.RoomNumber = p.RoomNumber
+	pt.MailStop = p.MailStop
+	pt.Status = p.Status
+
+	return db.UpdatePerson(&pt) // and save the result
 }
 
 // GetPerson returns the requested assessment
@@ -397,6 +419,7 @@ func PersonUpdate(s string, d *ServiceData) error {
 //	@Input WebGridSearchRequest
 //  @Response PersonGetResponse
 // wsdoc }
+//-----------------------------------------------------------------------------
 func getPerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "getPerson"
 	util.Console("entered %s\n", funcname)
@@ -409,6 +432,7 @@ func getPerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	if a.PID > 0 {
 		var gg PersonGrid
 		util.MigrateStructVals(&a, &gg)
+		gg.Recid = gg.PID
 		g.Record = gg
 	}
 	g.Status = "success"

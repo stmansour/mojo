@@ -1,8 +1,35 @@
 package util
 
-// SIMPLIFIED version of the migrate capability
+import (
+	"fmt"
+	"reflect"
+)
 
-import "reflect"
+// ReverseMap takes a string-to-int64 map and does a search for the int64 val
+// and returns the string. The return value is the string along with an error.
+// The error is nil if the int64 was found, otherwise it indicates the problem.
+func (t *Str2Int64Map) ReverseMap(m int64) (string, error) {
+	for k, v := range *t {
+		if m == v {
+			return k, nil
+		}
+	}
+	return "", fmt.Errorf("%d not found", m)
+}
+
+// Str2IntMap is a generic type for mapping strings and ints
+type Str2IntMap map[string]int
+
+// ReverseMap takes a Str2IntMap and does a search for the int val
+// and returns the string and an error if not found.
+func (t *Str2IntMap) ReverseMap(m int) (string, error) {
+	for k, v := range *t {
+		if m == v {
+			return k, nil
+		}
+	}
+	return "", fmt.Errorf("%d not found", m)
+}
 
 // BuildFieldMap creates a map so that we can find
 // a field's index using its name as the map index
@@ -21,7 +48,8 @@ func BuildFieldMap(p interface{}) map[string]int {
 // names for the struct pa points to matches the field names in
 // the struct pb points to.
 // There is a basic assumption that the data will either copy directly
-// or convert cleanly from one struct to another.
+// or convert cleanly from one struct to another.  Where it does not
+// it will call XJSONprocess to see if there is a known conversion.
 //--------------------------------------------------------------------
 func MigrateStructVals(pa interface{}, pb interface{}) error {
 	m := BuildFieldMap(pb)
@@ -44,6 +72,12 @@ func MigrateStructVals(pa interface{}, pb interface{}) error {
 		// fmt.Printf("Can set b field\n")
 		if fa.Type() == fb.Type() {
 			fb.Set(reflect.ValueOf(fa.Interface()))
+		} else {
+			err := XJSONprocess(&fa, &fb)
+			if err != nil {
+				val := reflect.ValueOf(fa.Interface()) // instantiate new pa value
+				fb.Set(val.Convert(fb.Type()))         // set pb to the value of the new type value
+			}
 		}
 	}
 	return nil

@@ -13,13 +13,7 @@
 
 <script>
 /*global
-    w2ui, console, plural, monthBack, monthFwd, dayBack, dayFwd, setToRAForm, setToForm,
-    w2uiDateControlString, w2popup, getCurrentBusiness, dateControlString, dateMonthFwd,
-    tcidPickerDropRender, tcidRAPayorPickerRender, tcidPickerCompare, dateMonthBack,
-    ridRentablePickerRender, ridRentableDropRender,ridRentableCompare, calcRarGridContractRent,
-    handleDateToolbarAction, setDateControlsInToolbar, genDateRangeNavigator, getPaymentTypeName,
-    getBUDfromBID, buildPaymentTypeOptions, getPaymentTypeID, buildPaymentTypeSelectList,
-    tcidReceiptPayorPickerRender
+    w2ui,$,console,
 */
 
 /*globals $:false */
@@ -44,10 +38,99 @@ var app = {
 };
 
 function openInNewTab(url) {
-    "use strict";
     var win = window.open(url, '_blank');
     win.focus();
 }
+
+function defineDateFmts() {
+    var month = (new Date()).getMonth() + 1;
+    var year  = (new Date()).getFullYear();
+    // // US Format
+    $('input[type=us-date]').w2field('date',  { format: 'm/d/yyy' });
+    $('input[type=us-dateA]').w2field('date', { format: 'm/d/yyyy', start:  month + '/5/' + year, end: month + '/25/' + year });
+    $('input[type=us-dateB]').w2field('date', { format: 'm/d/yyyy', blocked: [ month+'/12/2014',month+'/13/2014',month+'/14/' + year,]});
+    $('input[type=us-date1]').w2field('date', { format: 'm/d/yyyy', end: $('input[type=us-date2]') });
+    $('input[type=us-date2]').w2field('date', { format: 'm/d/yyyy', start: $('input[type=us-date1]') });
+    $('input[type=us-time]').w2field('time',  { format: 'h12' });
+    $('input[type=us-timeA]').w2field('time', { format: 'h12', start: '8:00 am', end: '4:30 pm' });
+
+    // EU Common Format
+    $('input[type=eu-date]').w2field('date',  { format: 'd.m.yyyy' });
+    $('input[type=eu-dateA]').w2field('date', { format: 'd.m.yyyy', start:  '5.' + month + '.' + year, end: '25.' + month + '.' + year });
+    $('input[type=eu-dateB]').w2field('date', { format: 'd.m.yyyy', blocked: ['12.' + month + '.' + year, '13.' + month + '.' + year, '14.' + month + '.' + year]});
+    $('input[type=eu-date1]').w2field('date', { format: 'd.m.yyyy', end: $('input[type=eu-date2]') });
+    $('input[type=eu-date2]').w2field('date', { format: 'd.m.yyyy', start: $('input[type=eu-date1]') });
+    $('input[type=eu-time]').w2field('time',  { format: 'h24' });
+    $('input[type=eu-timeA]').w2field('time', { format: 'h24', start: '8:00 am', end: '4:30 pm' });
+}
+
+function initializePersonRecord() {
+    var rec = {
+            recid: 0,
+            PID: 0,
+            FirstName: '',
+            MiddleName: '',
+            LastName: '',
+            PreferredName: '',
+            JobTitle: '',
+            OfficePhone: '',
+            OfficeFax: '',
+            Email1: '',
+            Email2: '',
+            MailAddress: '',
+            MailAddress2: '',
+            MailCity: '',
+            MailState: '',
+            MailPostalCode: '',
+            MailCountry: '',
+            RoomNumber: '',
+            MailStop: '',
+            Status: 0,
+            OptOutDate: '12/31/3000',
+            LastModTime: new Date(),
+            LastModBy: 0
+    };
+    return rec;
+}
+
+//-----------------------------------------------------------------------------
+// setToForm -  enable form sform in toplayout.  Also, set the forms url and
+//              request data from the server
+// @params
+//   sform   = name of the form
+//   url     = request URL for the form
+//   [width] = optional, if specified it is the width of the form
+//   doRequest =
+//-----------------------------------------------------------------------------
+function setToForm(sform, url, width) {
+    if (url.length <= 0) {
+        return false;
+    }
+
+    var f = w2ui[sform];
+    if (!f) {
+        return false;
+    }
+
+    // var g = w2ui[app.active_grid];
+    // if (!g) {
+    //     return false;
+    // }
+
+    f.url = url;
+    if (typeof f.tabs != "undefined"){
+        if (typeof f.tabs.name == "string") {
+            f.tabs.click('tab1');
+        }
+    }
+
+    f.reload();
+    w2ui.toplayout.content('right', f);
+    w2ui.toplayout.sizeTo('right', width);
+    w2ui.toplayout.render();
+    w2ui.toplayout.show('right', true);
+}
+
 
 
 // The reason to load these elements in this way rather than storing them as part of a
@@ -176,6 +259,7 @@ function buildPageElements() {
             },
         ],
         onClick: function (event) {
+            var grid;
             console.log('event.target = ' + event.target);
             switch(event.target) {
                 case 'dashboard':
@@ -183,21 +267,21 @@ function buildPageElements() {
                     w2ui.toplayout.hide('right',true);
                     break;
                 case 'query':
-                    var grid = event.target + 'Grid';
+                    grid = event.target + 'Grid';
                     w2ui[grid].url = '/v' + app.protocolVersion + '/' + event.target + '/';
                     console.log('url = ' + w2ui[grid].url);
                     w2ui.toplayout.content('main', w2ui[grid]);
                     w2ui.toplayout.hide('right',true);
                     break;
                 case 'people':
-                    var grid = event.target + 'Grid';
+                    grid = event.target + 'Grid';
                     w2ui[grid].url = '/v' + app.protocolVersion + '/' + event.target + '/';
                     console.log('url = ' + w2ui[grid].url);
                     w2ui.toplayout.content('main', w2ui[grid]);
                     w2ui.toplayout.hide('right',true);
                     break;
                 case 'groups':
-                    var grid = event.target + 'Grid';
+                    grid = event.target + 'Grid';
                     w2ui[grid].url = '/v' + app.protocolVersion + '/' + event.target + '/';
                     console.log('url = ' + w2ui[grid].url);
                     w2ui.toplayout.content('main', w2ui[grid]);
@@ -207,6 +291,7 @@ function buildPageElements() {
         },
     }));
 
+
     //------------------------------------------------------------------------
     //          peopleGrid
     //------------------------------------------------------------------------
@@ -214,14 +299,21 @@ function buildPageElements() {
         name: 'peopleGrid',
         url: '/v1/people',
         show: {
-            header: false,
-            toolbar: true,
-            footer: true,
-            lineNumbers: false,
-            selectColumn: false,
-            expandColumn: false
+            toolbar         : true,
+            footer          : true,
+            toolbarAdd      : true,   // indicates if toolbar add new button is visible
+            toolbarDelete   : false,   // indicates if toolbar delete button is visible
+            toolbarSave     : false,   // indicates if toolbar save button is visible
+            selectColumn    : false,
+            expandColumn    : false,
+            toolbarEdit     : false,
+            toolbarSearch   : false,
+            toolbarInput    : true,
+            searchAll       : false,
+            toolbarReload   : true,
+            toolbarColumns  : true,
         },
-        columns: [
+         columns: [
             {field: 'PID',          caption: 'PID',           size: '100px', sortable: true, hidden: true},
             {field: 'Status',       caption: 'Status',        size: '40px',  sortable: true, hidden: false},
             {field: 'OptOutDate',   caption: 'OptOutDate',    size: '145px', sortable: true, hidden: false},
@@ -244,7 +336,104 @@ function buildPageElements() {
             {field: 'MailStop',     caption: 'MailStop',      size: '100px', sortable: true, hidden: false},
             {field: 'LastModTime',  caption: 'LastModTime',   size: '100px', sortable: true, hidden: true},
         ],
+        onClick: function(event) {
+            event.onComplete = function (event) {
+                var rec = w2ui.peopleGrid.get(event.recid);
+                //w2ui.personForm.record = initializePersonRecord();
+                w2ui.personForm.recid = rec.PID;
+                setToForm('personForm', '/v1/person/' + rec.PID, 500);
+            };
+        },
+        onAdd: function (/*event*/) {
+            // Always create epoch assessment
+            var f = w2ui.personForm;
+            f.record = initializePersonRecord();
+            f.recid = 0;
+            f.refresh();
+            setToForm('personForm', '/v1/person/0',500);
+        },
     });
+    //------------------------------------------------------------------------
+    //          Person Form
+    //------------------------------------------------------------------------
+    $().w2form({
+        name: 'personForm',
+        style: 'border: 0px; background-color: transparent;',
+        header: 'Person Detail',
+        url: '/v1/person',
+        formURL: '/html/formperson.html',
+        fields: [
+            { field: 'recid', type: 'int', required: false },
+            { field: 'PID', type: 'text', required: false },
+            { field: 'FirstName', type: 'text', required: false },
+            { field: 'MiddleName', type: 'text', required: false },
+            { field: 'LastName', type: 'text', required: false },
+            { field: 'PreferredName', type: 'text', required: false },
+            { field: 'JobTitle', type: 'text', required: false },
+            { field: 'OfficePhone', type: 'text', required: false },
+            { field: 'OfficeFax', type: 'text', required: false },
+            { field: 'Email1', type: 'email', required: true },
+            { field: 'Email2', type: 'email', required: false },
+            { field: 'MailAddress', type: 'text', required: false },
+            { field: 'MailAddress2', type: 'text', required: false },
+            { field: 'MailCity', type: 'text', required: false },
+            { field: 'MailState', type: 'text', required: false },
+            { field: 'MailPostalCode', type: 'text', required: false },
+            { field: 'MailCountry', type: 'text', required: false },
+            { field: 'RoomNumber', type: 'text', required: false },
+            { field: 'MailStop', type: 'text', required: false },
+            { field: 'Status', type: 'int', required: false },
+            { field: 'OptOutDate', type: 'date', required: false },
+            { field: 'LastModTime', type: 'text', required: false },
+            { field: 'LastModBy', type: 'text', required: false },
+        ],
+        toolbar: {
+            items: [
+                { id: 'btnNotes', type: 'button', icon: 'fa fa-sticky-note-o' },
+                { id: 'bt3', type: 'spacer' },
+                { id: 'btnClose', type: 'button', icon: 'fa fa-times' },
+            ],
+            onClick: function (event) {
+                if (event.target == 'btnClose') {
+                            w2ui.toplayout.hide('right',true);
+                            w2ui.peopleGrid.render();
+                }
+            },
+        },
+        actions: {
+            save: function () {
+                this.save({}, function (data) {
+                    if (data.status == 'error') {
+                        console.log('ERROR: '+ data.message);
+                        return;
+                    }
+                    w2ui.toplayout.hide('right',true);
+                    w2ui.peopleGrid.reload();
+                });
+
+            },
+            delete: function() {
+                var request={cmd:"delete",selected: [w2ui.personForm.record.PID]};
+                $.post('/v1/person/'+w2ui.personForm.record.PID, JSON.stringify(request))
+                .done(function(data) {
+                    if (typeof data == 'string') {  // it's weird, a successful data add gets parsed as an object, an error message does not
+                        var msg = JSON.parse(data);
+                        w2ui.personForm.error(msg.message);
+                        return;
+                    }
+                    if (data.status != 'success') {
+                        w2ui.personForm.error(data.message);
+                    }
+                });
+                w2ui.toplayout.hide('right',true);
+                w2ui.peopleGrid.reload();
+            },
+            reset: function() {
+                var f = w2ui.asmInstForm;
+                console.log('reset: ASMID = ' + f.record.ASMID );
+            }
+        },
+   });
 
     //------------------------------------------------------------------------
     //          groupsGrid
@@ -415,9 +604,8 @@ function buildPageElements() {
 
 }
 
-
-
 function finishInitialization() {
+    defineDateFmts();
     buildPageElements();
 }
 
@@ -432,7 +620,7 @@ function handleData(data,status) {
         console.log( '**** YIPES! ****  status on /v1/ping/ = ' + status);
     }
     finishInitialization();
-    w2ui.toplayout.load('main','/html/dashboard.html')    
+    w2ui.toplayout.load('main','/html/dashboard.html');
 }
 
 $(function () {
