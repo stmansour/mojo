@@ -17,6 +17,7 @@ import (
 type Info struct {
 	From        string // email address of sender
 	QName       string // query name
+	GroupName   string // group name
 	Subject     string // message title
 	MsgFName    string // message file
 	AttachFName string // name of attachment file
@@ -33,6 +34,7 @@ type Info struct {
 
 // BuildQuery creates a sql query from the JSON data
 // stored in the supplied queryname
+//-----------------------------------------------------------------------------
 func BuildQuery(queryname string) (string, error) {
 	q, err := db.GetQueryByName(queryname)
 	if err != nil {
@@ -61,6 +63,7 @@ type pageData struct {
 // @return
 //	template.HTML = the body of the message
 //  error         = any error that occured; nil on success
+//-----------------------------------------------------------------------------
 func GeneratePageHTML(fname, hostname string, p *db.Person, t *template.Template) (template.HTML, error) {
 	funcname := "GeneratePageHTML"
 	hostname = strings.TrimSuffix(hostname, "/") // remove last char if it is a slash.  it makes the Sprintf statement below easier to read.
@@ -77,11 +80,25 @@ func GeneratePageHTML(fname, hostname string, p *db.Person, t *template.Template
 }
 
 // Sendmail is a routine to send an email message to a list of
-// email addresses identified by the query.
+// email addresses identified by the query or the groupname.
+// QName and GroupName are checked as follows. If QName exists
+// it will be used.  If QName is nil or has len() == 0 then
+// GroupName will be used.
+//
+// INPUTS:
+//  gname - name of group
+//  si    - sendmail information
+//
+// RETURNS
+//  error - any errors encountered
+//-----------------------------------------------------------------------------
 func Sendmail(si *Info) error {
 	funcname := "Sendmail"
+	var q string
+
 	util.Ulog("MojoSendmail: Send message to %s\n", si.QName)
 	util.Ulog("\t QName       = %s\n", si.QName)
+	util.Ulog("\t GroupName   = %s\n", si.GroupName)
 	util.Ulog("\t From        = %s\n", si.From)
 	util.Ulog("\t Subject     = %s\n", si.Subject)
 	util.Ulog("\t MsgFName    = %s\n", si.MsgFName)
@@ -115,17 +132,34 @@ func Sendmail(si *Info) error {
 		m.Attach(si.AttachFName)
 	}
 
-	q, err := BuildQuery(si.QName)
-	if err != nil {
-		e := fmt.Errorf("%s: Error getting database query: %s", funcname, err.Error())
-		util.Ulog(e.Error() + "\n")
-		return e
+	//----------------------------------------
+	// Set the basic query
+	//----------------------------------------
+	if len(si.QName) > 0 {
+		q, err = BuildQuery(si.QName)
+		if err != nil {
+			e := fmt.Errorf("%s: Error getting database query: %s", funcname, err.Error())
+			util.Ulog(e.Error() + "\n")
+			return e
+		}
+	} else if len(si.GroupName) > 0 {
+		g, err := db.GetGroupByName(si.GroupName)
+		if err != nil {
+			return err
+		}
+		q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d)", g.GID)
+	} else {
+		return fmt.Errorf("No group name or query name was supplied")
 	}
+
+	//----------------------------------------
+	// Append limit and offset as needed...
+	//----------------------------------------
 	if si.Limit > 0 {
 		q += fmt.Sprintf(" LIMIT %d", si.Limit)
-	}
-	if si.Offset > 0 {
-		q += fmt.Sprintf(" OFFSET %d", si.Offset)
+		if si.Offset > 0 {
+			q += fmt.Sprintf(" OFFSET %d", si.Offset)
+		}
 	}
 
 	fmt.Printf("query is:\n%s\n", q)

@@ -225,7 +225,7 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 
 	order := "PID ASC"                                                   // default ORDER
 	q := fmt.Sprintf("SELECT %s FROM People ", db.DB.DBFields["People"]) // the fields we want
-	qw := fmt.Sprintf("")                                                // don't need WHERE clause on this query
+	qw := fmt.Sprintf("")
 	if len(qw) > 0 {
 		q += "WHERE " + qw
 	}

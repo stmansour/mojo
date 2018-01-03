@@ -1,11 +1,30 @@
 How To Use Mojo
 
-To initialize all the queryies and required groups:
+1. Add your message / images / attachments to the campaigns directory
+   in ./test/mailsend/campaigns
+
+2. Update the group of people as needed. That could mean (a) rescanning
+   the FAA contacts or (b) importing a csv file.  Store the csv file in
+   the same campaign directory.  To import a csv use the following:
+
+   Remove the column header information if it exists -- save it to another file.
+
+   cat xyz.csv | ../../../../../tmp/mojo/charnorm | sort -f | uniq > guniq.csv
+
+   Now that the sorting is finished add the column names as appropriate, and add
+   another line below the column names with the fields that they map to in Mojo.
+
+
+To initialize all the queries and required groups:
 	./mailsend -setup
 
 To import a csv file use a command like this:
 
     ./mojocsv -g groupname -o -cg -f xyz.csv
+
+    example:
+
+    ./mojocsv -g ibguests20180102 -o -cg -f guniq.csv
 
 where
 
@@ -16,6 +35,9 @@ where
 
     example:
     ./mojocsv -g ibguests20171206 -cg -f prevgest.csv
+
+3. Validate the email addresses in the group you'll send to:
+
 
 
 CSV File Format

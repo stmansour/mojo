@@ -22,6 +22,7 @@ var App struct {
 	MsgFile       string
 	AttachFile    string
 	QueryName     string
+	GroupName     string
 	MojoHost      string // domain and port for mojosrv:   http://example.domain.com:8275/
 	db            *sql.DB
 	DBName        string
@@ -51,6 +52,7 @@ var App struct {
 // address will not be placed on the Amazon SES suppression list as one
 // normally would when an email hard bounces. The bounce response that
 // you receive from the mailbox simulator is compliant with RFC 3464.
+//-----------------------------------------------------------------------------
 func SendBouncedEmailTest() error {
 	return SendEmailTest("bounce@simulator.amazonses.com")
 }
@@ -64,6 +66,7 @@ func SendBouncedEmailTest() error {
 // notification, depending on how you set up your system. The complaint
 // response that you receive from the mailbox simulator is compliant with
 // RFC 5965.
+//-----------------------------------------------------------------------------
 func SendComplaintEmailTest() error {
 	return SendEmailTest("complaint@simulator.amazonses.com")
 }
@@ -77,6 +80,7 @@ func SendComplaintEmailTest() error {
 // about how to set up your system to receive OOTO responses, follow the same
 // instructions for setting up how Amazon SES sends you notifications in
 // Monitoring Using Amazon SES Notifications.
+//-----------------------------------------------------------------------------
 func SendOOOEmailTest() error {
 	return SendEmailTest("ooto@simulator.amazonses.com")
 }
@@ -84,11 +88,13 @@ func SendOOOEmailTest() error {
 // SendSuppressionListEmailTest sends a test email. Amazon SES treats your
 // email as a hard bounce because the address you are sending to is on the
 // Amazon SES suppression list.
+//-----------------------------------------------------------------------------
 func SendSuppressionListEmailTest() error {
 	return SendEmailTest("suppressionlist@simulator.amazonses.com")
 }
 
 // SendEmailTest is a routine to send an email message to the supplied address.
+//-----------------------------------------------------------------------------
 func SendEmailTest(addr string) error {
 	m := gomail.NewMessage()
 	m.SetHeader("From", "sman@stevemansour.com")
@@ -110,6 +116,7 @@ func SendEmailTest(addr string) error {
 
 // AddPersonToGroup creates a PGroup record for the specified pid,gid pair
 // if it does not already exist.
+//-----------------------------------------------------------------------------
 func AddPersonToGroup(pid, gid int64) error {
 	// see if they already exist...
 	_, err := db.GetPGroup(pid, gid)
@@ -138,6 +145,7 @@ func AddPersonToGroup(pid, gid int64) error {
 // RETURNS
 //  pid of the person if error is nil
 //  any error encountered
+//-----------------------------------------------------------------------------
 func SavePerson(pnew *db.Person) (int64, error) {
 	var pid int64
 	p1, err := db.GetPersonByName(pnew.FirstName, pnew.MiddleName, pnew.LastName)
@@ -400,9 +408,10 @@ func readCommandLineArgs() {
 	dbnmPtr := flag.String("N", "mojo", "database name")
 	mPtr := flag.String("b", "testmsg.html", "filename containing the html message to send")
 	aPtr := flag.String("a", "", "filename of attachment")
-	qPtr := flag.String("q", "MojoTest", "name of the query to send messages to")
+	qPtr := flag.String("q", "", "name of the query to send messages to; overrides group if supplied")
 	hPtr := flag.String("h", db.MojoDBConfig.MojoWebAddr, "name of host and port for mojosrv")
 	vPtr := flag.String("validate", "", "validate the email addresses of everyone in the group name provided, then exit")
+	gPtr := flag.String("group", "", "group name to send mail to; overridden by -q if it is supplied")
 	qcPtr := flag.Bool("count", false, "returns the count of target addresses in the query, then exits.")
 	soPtr := flag.Bool("setup", false, "just run the setup, do not send email")
 	bPTR := flag.Bool("bounce", false, "just send a message to bounce@simulator.amazonses.com")
@@ -412,7 +421,7 @@ func readCommandLineArgs() {
 	subjPtr := flag.String("subject", "Test Message", "Email subject line.")
 	fromPtr := flag.String("from", "sman@accordinterests.com", "Message sender.")
 	fixPtr := flag.Bool("fix", false, "Scan db for known errors, fix them wherever possible, then exit.")
-	offsetPtr := flag.Int("offset", 0, "ignore if 0, otherwise use as query OFFSET")
+	offsetPtr := flag.Int("offset", 0, "ignore if 0 or if -limit is not supplied, otherwise use as query OFFSET")
 	limitPtr := flag.Int("limit", 0, "ignore if 0, otherwise use as query LIMIT")
 	dbs := flag.Bool("debugsend", false, "print email addresses for recipients but don't send")
 
@@ -437,6 +446,7 @@ func readCommandLineArgs() {
 	App.Offset = *offsetPtr
 	App.Limit = *limitPtr
 	App.DebugSend = *dbs
+	App.GroupName = *gPtr
 }
 
 func main() {
@@ -495,6 +505,7 @@ func main() {
 	si := mailsend.Info{
 		From:        App.From,
 		QName:       App.QueryName,
+		GroupName:   App.GroupName,
 		Subject:     App.Subject,
 		MsgFName:    App.MsgFile,
 		AttachFName: App.AttachFile,
