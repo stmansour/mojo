@@ -8,6 +8,7 @@ import (
 	"mojo/util"
 	"rentroll/rlib"
 	"strings"
+	"time"
 
 	"gopkg.in/gomail.v2"
 )
@@ -236,11 +237,24 @@ func Sendmail(si *Info) error {
 		if si.DebugSend {
 			fmt.Printf("%s: Send to %s\n", funcname, p.Email1)
 		} else {
+			retrycount := 0
+		RETRYSEND:
 			err = d.DialAndSend(m)
 			if err != nil {
 				util.Ulog("%s: Error on DialAndSend = %s\n", funcname, err.Error())
-				util.Ulog("%s: Error occurred while sending to person %d, address: %s\n", funcname, p.PID, p.Email1)
-				return err
+				util.Ulog("%s: Error occurred while sending to %s %s (PID = %d), email address: %s\n", funcname, p.FirstName, p.LastName, p.PID, p.Email1)
+				if retrycount < 3 {
+					retrycount++ // let's try it again with another dialer (I have seen a lot of EOF errors)
+					d = gomail.NewDialer(si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
+					util.Ulog("%s: retrying with new dialer.  retry count = %d\n", funcname, retrycount)
+					time.Sleep(500 * time.Millisecond) // wait half a second and try again
+					goto RETRYSEND
+				} else {
+					util.Ulog("Maximum retries reached.  Exiting early.\n")
+					logResults(si, bad, optout, bounced, complaint)
+					util.Ulog("*** Exited before sending all messages due to errors ***\n")
+					return err // retry didn't help.  Time to bail out
+				}
 			}
 		}
 		si.SentCount++ // update the si.SentCount only after adding the record
@@ -249,7 +263,12 @@ func Sendmail(si *Info) error {
 			util.Console("%s: Processing query %s, SentCount = %d\n", funcname, si.QName, si.SentCount)
 		}
 	}
+	logResults(si, bad, optout, bounced, complaint)
+	return nil
+}
 
+func logResults(si *Info, bad, optout, bounced, complaint int) {
+	funcname := "Sendmail"
 	util.Ulog("%s: Finished query %s\n", funcname, si.QName)
 	util.Ulog("%s: Messages successfully sent:                 %5d\n", funcname, si.SentCount)
 	util.Ulog("%s: Users skipped due to invalid email address: %5d\n", funcname, bad)
@@ -257,5 +276,4 @@ func Sendmail(si *Info) error {
 	util.Ulog("%s: Users skipped due to prior bounced message: %5d\n", funcname, bounced)
 	util.Ulog("%s: Users skipped due to prior complaint:       %5d\n", funcname, complaint)
 	util.Ulog("%s: TOTAL USERS PROCESSED.......................%5d\n", funcname, si.SentCount+bad+optout+bounced+complaint)
-	return nil
 }
