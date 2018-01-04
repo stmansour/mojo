@@ -148,7 +148,7 @@ func Sendmail(si *Info) error {
 		if err != nil {
 			return err
 		}
-		q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d)", g.GID)
+		q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d) WHERE People.Status=0", g.GID)
 	} else {
 		return fmt.Errorf("No group name or query name was supplied")
 	}
