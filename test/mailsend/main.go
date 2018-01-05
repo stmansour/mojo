@@ -42,6 +42,7 @@ var App struct {
 	Offset        int                      // if 0, ignore, if nonzero then use as query OFFSET
 	Limit         int                      // if 0, ignore, if nonzero then use as query LIMIT
 	DebugSend     bool                     // print email addresses where send would have gone but don't send
+	WorkerCount   int                      // number of go routines to use to send the email; parallelization
 }
 
 // SendBouncedEmailTest sends an email message that bounces.  For testing.
@@ -188,16 +189,20 @@ func SavePerson(pnew *db.Person) (int64, error) {
 }
 
 func resetUserStatus(p1 *db.Person) {
-	p, err := db.GetPersonByEmail(p1.Email1, p1.Email2)
+	// util.Console("Entered resetUserStatus - person with email: %s\n", p1.Email1)
+	p, err := db.GetPersonByEmail(p1.Email1)
 	if err != nil {
-		util.UlogAndPrint("Error from db.GetPersonByEmail( %s, %s ):  %s \n", p1.Email1, p1.Email2, err.Error())
+		util.UlogAndPrint("Error from db.GetPersonByEmail( %s ):  %s \n", p1.Email1, err.Error())
 		return
 	}
+	// util.Console("Found person: %s %s   Status = %d\n", p.FirstName, p.LastName, p.Status)
 	p.Status = db.NORMAL
+	// util.Console("Updated status to %d\n", p.Status)
 	if err = db.UpdatePerson(&p); err != nil {
 		util.UlogAndPrint("Error from db.UpdatePerson( %s ):  %s \n", p.Email1, err.Error())
 		return
 	}
+	// util.Console("Update successful\n")
 }
 
 func createGroup(name, descr string, ppa *[]db.Person) {
@@ -242,6 +247,7 @@ func createGroup(name, descr string, ppa *[]db.Person) {
 			util.UlogAndPrint("Error updating group: %s\n", err.Error())
 		}
 		AddPersonToGroup(pid, gid)
+		// util.Console("Reset user status for %s %s\n", pa[i].FirstName, pa[i].LastName)
 		resetUserStatus(&pa[i]) // reset their status
 	}
 
@@ -423,6 +429,7 @@ func readCommandLineArgs() {
 	fixPtr := flag.Bool("fix", false, "Scan db for known errors, fix them wherever possible, then exit.")
 	offsetPtr := flag.Int("offset", 0, "ignore if 0 or if -limit is not supplied, otherwise use as query OFFSET")
 	limitPtr := flag.Int("limit", 0, "ignore if 0, otherwise use as query LIMIT")
+	workerPtr := flag.Int("workers", 5, "number of workers to use to send email")
 	dbs := flag.Bool("debugsend", false, "print email addresses for recipients but don't send")
 
 	flag.Parse()
@@ -447,6 +454,7 @@ func readCommandLineArgs() {
 	App.Limit = *limitPtr
 	App.DebugSend = *dbs
 	App.GroupName = *gPtr
+	App.WorkerCount = *workerPtr
 }
 
 func main() {
@@ -517,6 +525,7 @@ func main() {
 		Offset:      App.Offset,
 		Limit:       App.Limit,
 		DebugSend:   App.DebugSend,
+		WorkerCount: App.WorkerCount,
 	}
 	// fmt.Printf("SMTP Info: host:port = %s:%d, login = %s, pass = %s\n", si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
 	if App.SetupOnly {

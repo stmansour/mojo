@@ -174,9 +174,9 @@ func GetPerson(id int64) (Person, error) {
 	return readPerson(DB.Prepstmt.GetPerson.QueryRow(id))
 }
 
-// GetPersonByEmail reads a Person the structure for the supplied id
-func GetPersonByEmail(s1, s2 string) (Person, error) {
-	return readPerson(DB.Prepstmt.GetPersonByEmail.QueryRow(s1, s2))
+// GetPersonByEmail reads a Person the structure for the supplied email addr
+func GetPersonByEmail(s1 string) (Person, error) {
+	return readPerson(DB.Prepstmt.GetPersonByEmail.QueryRow(s1))
 }
 
 // ReadPersonFromRows uses the supplied sql.Rows struct to read a Person record

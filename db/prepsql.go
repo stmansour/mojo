@@ -50,7 +50,7 @@ func BuildPreparedStatements() {
 	s1, s2, s3 = GenSQLInsertAndUpdateStrings(flds)
 	DB.Prepstmt.GetPerson, err = DB.Db.Prepare("SELECT " + flds + " FROM People WHERE PID=?")
 	util.ErrCheck(err)
-	DB.Prepstmt.GetPersonByEmail, err = DB.Db.Prepare("SELECT " + flds + " FROM People WHERE Email1=? OR Email2=?")
+	DB.Prepstmt.GetPersonByEmail, err = DB.Db.Prepare("SELECT " + flds + " FROM People WHERE Email1=?")
 	util.ErrCheck(err)
 	DB.Prepstmt.GetPersonByName, err = DB.Db.Prepare("SELECT " + flds + " FROM People WHERE FirstName=? AND MiddleName=? AND LastName=?")
 	util.ErrCheck(err)

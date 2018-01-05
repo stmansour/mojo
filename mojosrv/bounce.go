@@ -63,7 +63,7 @@ type AwsBounceNotification struct {
 // supplied value.
 func ChangePersonStatus(s string, status int64) error {
 	util.Console("Entered ChangePersonStatus: looking for %s\n", s)
-	p, err := db.GetPersonByEmail(s, s)
+	p, err := db.GetPersonByEmail(s)
 	if err != nil {
 		util.Console("Error with GetPersonByEmail(%s): %s\n", s, err.Error())
 		util.Ulog("ChangePersonStatus: error getting Person with Email = %s\n", s)

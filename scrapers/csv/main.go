@@ -287,7 +287,7 @@ func MapAndImport(fname string) {
 		var dup db.Person
 		var err error
 		createdPerson := false
-		dup, err = db.GetPersonByEmail(a.Email1, a.Email1)
+		dup, err = db.GetPersonByEmail(a.Email1)
 		if err != nil {
 			if !util.IsSQLNoResultsError(err) {
 				log.Fatalf("Error searching for person with email address %s: %s\n", a.Email1, err.Error())
