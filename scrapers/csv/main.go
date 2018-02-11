@@ -127,8 +127,10 @@ func main() {
 		fmt.Printf("You must enter -f filename.csv\n")
 		os.Exit(1)
 	}
+	fmt.Printf("               skipOutput = %t\n", App.skipOutput)
+	fmt.Printf("                GroupName = %s\n", App.GroupName)
+	fmt.Printf("Create group if necessary = %t\n", App.CreateGroup)
 	MapAndImport(App.fname)
-
 }
 
 func readCommandLineArgs() {
@@ -139,7 +141,7 @@ func readCommandLineArgs() {
 	gPtr := flag.String("g", "", "Add people to this group")
 	cgPtr := flag.Bool("cg", false, "Create the group in from -g if necessary")
 	gdPtr := flag.String("d", "", "Group description for create (optional)")
-	soPtr := flag.Bool("o", false, "Inhibit start/stop times and duration")
+	soPtr := flag.Bool("o", false, "Setting this option causes the output to be inhibited")
 	flag.Parse()
 	App.debug = *dbgPtr
 	App.DBName = *dbnmPtr
@@ -190,10 +192,10 @@ func MapAndImport(fname string) {
 		}
 		fldmap = append(fldmap, k)
 	}
-	// util.Console("fldmap[]:\n")
+	util.Console("fldmap[]:\n")
 	count := 0
 	for i := 0; i < len(fldmap); i++ {
-		// util.Console("%d. %d\n", i, fldmap[i])
+		util.Console("%d. %d\n", i, fldmap[i])
 		if fldmap[i] > 0 {
 			count++
 		}
@@ -216,6 +218,7 @@ func MapAndImport(fname string) {
 	if nil != err {
 		log.Fatalf("MapAndImport: error updating group: %s\n", App.GroupName)
 	}
+	util.Console("UPDATED App.Group.DtStart = %s\n", App.Group.DtStart.Format(util.DATETIMEINPFMT))
 
 	//-------------------------------------------------------------
 	// Now that we know the mapping, go through the data and
@@ -365,6 +368,7 @@ func MapAndImport(fname string) {
 	if nil != err {
 		log.Fatalf("MapAndImport: error updating group: %s\n", App.GroupName)
 	}
+	util.Console("UPDATED App.Group.DtStop = %s\n", App.Group.DtStop.Format(util.DATETIMEINPFMT))
 
 	//-------------------------------------------------------------
 	// Print out the stats...

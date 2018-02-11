@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
-	"mojo/util"
 	"os"
 )
 
@@ -33,7 +32,19 @@ func main() {
 	// Loop over all lines in the file and print them.
 	for scanner.Scan() {
 		line := scanner.Text()
-		line = util.NonASCIIToASCII(line)
-		fmt.Println(line)
+		// line = util.NonASCIIToASCII(line)
+		b := []byte(line)
+		lenb := len(b)
+		lenbm1 := lenb - 1
+		c := make([]byte, 0)
+		for i := 0; i < len(b); i++ {
+			if b[i] == 0xc3 && i < lenbm1 {
+				c = append(c, 'a')
+				i++
+			} else {
+				c = append(c, b[i])
+			}
+		}
+		fmt.Println(string(c))
 	}
 }

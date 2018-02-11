@@ -22,10 +22,6 @@ clean:
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package: msgbody
-	@find . -name "fail" -exec rm -r "{}" \;
-	@touch fail
-	cp msgbody ${BINDIR}/
-	@rm -f fail
 	@echo "*** ${THISDIR}: completed package ***"
 
 
