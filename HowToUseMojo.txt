@@ -42,7 +42,11 @@ How To Use Mojo
         example:
         ./mojocsv -g ibguests20171206 -cg -f prevgest.csv
 
-3.  Validate the email addresses in the group you'll send to:
+3.  Validate the email addresses in the group you'll send to and make any
+    fixes necessary:
+
+        ./mailsend -validate ibguests20180212
+
     
 4.  To test the send capability, send a message to MojoTest (the group
     or the query).

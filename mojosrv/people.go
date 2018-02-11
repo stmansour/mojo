@@ -225,7 +225,11 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 
 	order := "PID ASC"                                                   // default ORDER
 	q := fmt.Sprintf("SELECT %s FROM People ", db.DB.DBFields["People"]) // the fields we want
-	qw := fmt.Sprintf("")
+	qw := ""
+	if len(d.wsSearchReq.Search) > 0 {
+		v := d.wsSearchReq.Search[0].Value
+		qw = fmt.Sprintf("FirstName LIKE \"%%%s%%\" OR LastName LIKE \"%%%s%%\" OR Email1 LIKE \"%%%s%%\"", v, v, v)
+	}
 	if len(qw) > 0 {
 		q += "WHERE " + qw
 	}
