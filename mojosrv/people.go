@@ -387,8 +387,10 @@ func PersonUpdate(p *PersonGrid, d *ServiceData) error {
 		return fmt.Errorf("Invalid email address: %s", p.Email1)
 	}
 
-	if !util.ValidEmailAddress(p.Email2) {
-		return fmt.Errorf("Invalid email address: %s", p.Email2)
+	if len(p.Email2) > 0 {
+		if !util.ValidEmailAddress(p.Email2) {
+			return fmt.Errorf("Invalid email address: %s", p.Email2)
+		}
 	}
 
 	pt.FirstName = p.FirstName
