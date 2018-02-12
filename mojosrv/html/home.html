@@ -35,6 +35,7 @@ var app = {
     bgyellow: 'background-color: yellow;',
     stdfmt: 'font-family: "Open Sans","Roboto",sans-serif; font-size: 8pt; border: 1px solid #dfdfdf; border-spacing:0px; padding: 3px; color: #777777;',
     gid: 0, // last selected group id
+    groupFilter: "",
 };
 
 function openInNewTab(url) {
@@ -291,6 +292,7 @@ function buildPageElements() {
         },
     }));
 
+    // var oneShotGroupFilterELFlag = 0; // flag to set the event listener
 
     //------------------------------------------------------------------------
     //          peopleGrid
@@ -344,6 +346,9 @@ function buildPageElements() {
                 setToForm('personForm', '/v1/person/' + rec.PID, 500);
             };
         },
+        onRequest: function(event) {
+            w2ui.peopleGrid.postData = {groupName: app.groupFilter};
+        },
         onAdd: function (/*event*/) {
             // Always create epoch assessment
             var f = w2ui.personForm;
@@ -352,7 +357,28 @@ function buildPageElements() {
             f.refresh();
             setToForm('personForm', '/v1/person/0',500);
         },
+        onRefresh: function(/*event*/) {
+            document.getElementById('mojoGroupFilter').value = app.groupFilter;
+        },
+        onLoad: function(/*event*/) {
+            document.getElementById('mojoGroupFilter').value = app.groupFilter;
+        },
+        onSearch: function(event) {
+            console.log('onSearch event fired. event = ' + event);
+        }
     });
+
+    w2ui.peopleGrid.toolbar.add(
+        [
+            { type: 'break', id: 'break1' },
+            { type: 'html', id: 'groupName', 
+              html: 'Group: <input type="text" id="mojoGroupFilter" value=""' +
+                    'onkeypress="if (event.keyCode == 13) groupFilterSubmit();"' +
+                    'value="'+app.groupFilter+'"'+
+                    '>' },
+        ]
+    );
+
     //------------------------------------------------------------------------
     //          Person Form
     //------------------------------------------------------------------------
@@ -604,9 +630,21 @@ function buildPageElements() {
 
 }
 
+// groupFilterSubmit is called when the user presses the Enter key while
+// in the Group: input control in the People grid toolbar.
+//
+//--------------------------------------------------------------------------
+function groupFilterSubmit() {
+    var groupName = document.getElementById('mojoGroupFilter');
+    app.groupFilter = groupName.value;
+    w2ui.peopleGrid.request('get');
+}
+
+
 function finishInitialization() {
     defineDateFmts();
     buildPageElements();
+ 
 }
 
 function handleData(data,status) {
@@ -624,7 +662,8 @@ function handleData(data,status) {
 }
 
 $(function () {
-    $.get('/v1/ping/' + app.language + '/' + app.template)
+    // $.get('/v1/ping/' + app.language + '/' + app.template)
+    $.get('/v1/ping')
     .done(handleData)
     .fail( function() {
         console.log('Error getting /v1/ping');

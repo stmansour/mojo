@@ -6,6 +6,7 @@ import (
 	"mojo/db"
 	"mojo/util"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -218,13 +219,39 @@ func SvcPeopleStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcSearchHandlerPeople"
 	util.Console("Entered %s\n", funcname)
-	var (
-		g   PersonSearchResponse
-		err error
-	)
 
-	order := "PID ASC"                                                   // default ORDER
-	q := fmt.Sprintf("SELECT %s FROM People ", db.DB.DBFields["People"]) // the fields we want
+	var g PersonSearchResponse
+	var err error
+	var GID = int64(0)
+
+	if len(d.wsSearchReq.GroupName) > 0 {
+		util.Console("GROUP NAME = %s\n", d.wsSearchReq.GroupName)
+
+		//---------------------------------------------------------------------
+		// if the group name is valid, we want a query like this one:
+		// SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=GID
+		//---------------------------------------------------------------------
+		egrp, err := db.GetGroupByName(d.wsSearchReq.GroupName)
+		if err != nil {
+			util.Console("Error from db.GetGroupByName: %s\n", err.Error())
+			SvcGridErrorReturn(w, err)
+			return
+		}
+		GID = egrp.GID
+	}
+
+	s1 := db.DB.DBFields["People"] // comma separated list
+	sa := strings.Split(s1, ",")
+	for i := 0; i < len(sa); i++ {
+		sa[i] = "People." + sa[i] // remove any ambiguity after the join
+	}
+	flds := strings.Join(sa, ",")
+
+	q := fmt.Sprintf("SELECT %s FROM People ", flds) // the fields we want
+	if GID > 0 {
+		q += fmt.Sprintf("INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d ", GID)
+	}
+
 	qw := ""
 	if len(d.wsSearchReq.Search) > 0 {
 		v := d.wsSearchReq.Search[0].Value
@@ -233,7 +260,9 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 	if len(qw) > 0 {
 		q += "WHERE " + qw
 	}
+
 	q += " ORDER BY "
+	order := "PID ASC" // default ORDER
 	if len(d.wsSearchReq.Sort) > 0 {
 		for i := 0; i < len(d.wsSearchReq.Sort); i++ {
 			if i > 0 {
@@ -248,13 +277,15 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 	// now set up the offset and limit
 	q += fmt.Sprintf(" LIMIT %d OFFSET %d", d.wsSearchReq.Limit, d.wsSearchReq.Offset)
 	util.Console("rowcount query conditions: %s\ndb query = %s\n", qw, q)
-
 	g.Total, err = db.GetRowCount("People", qw)
 	if err != nil {
 		util.Console("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
 		return
 	}
+
+	util.Console("\nQuery = %s\n\n", q)
+
 	rows, err := db.DB.Db.Query(q)
 	if err != nil {
 		util.Console("Error from DB Query: %s\n", err.Error())

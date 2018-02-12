@@ -415,7 +415,7 @@ func sender(id int, si *Info) {
 	// Now just loop:  take work from the master, send status upon completion, and repeat
 	//--------------------------------------------------------------------------------------
 	for {
-		util.Console("worker %d looking for work\n", id)
+		// util.Console("worker %d looking for work\n", id)
 		<-si.readyWorker          // wait for work
 		si.readyWorkerAck <- id   // tell send mail our id and that we're ready for data
 		p, ok := <-si.dataChannel // wait for the person struct
@@ -424,7 +424,7 @@ func sender(id int, si *Info) {
 			return
 		}
 
-		util.Console("worker %d will be working PID = %d\n", id, p.PID)
+		// util.Console("worker %d will be working PID = %d\n", id, p.PID)
 
 		m.SetHeader("To", p.Email1)
 		s, err := GeneratePageHTML(si.MsgFName, si.Hostname, &p, t)
@@ -455,7 +455,7 @@ func sender(id int, si *Info) {
 				continue
 			}
 		}
-		util.Console("Worker %d completed mail to PID %d\n", id, p.PID)
+		// util.Console("Worker %d completed mail to PID %d\n", id, p.PID)
 		si.sendStatus <- sendStatus{id: id, status: 0} // indicate no problems
 	}
 }

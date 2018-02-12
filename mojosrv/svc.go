@@ -51,6 +51,7 @@ type WebGridSearchRequestJSON struct {
 	SearchLogic string      `json:"searchLogic"` // OR | AND
 	Search      []GenSearch `json:"search"`      // what fields and what values
 	Sort        []ColSort   `json:"sort"`        // sort criteria
+	GroupName   string      `json:"groupName"`   // filter on this group name
 }
 
 // WebGridSearchRequest is a struct suitable for describing a webservice operation.
@@ -62,6 +63,7 @@ type WebGridSearchRequest struct {
 	SearchLogic string      `json:"searchLogic"` // OR | AND
 	Search      []GenSearch `json:"search"`      // what fields and what values
 	Sort        []ColSort   `json:"sort"`        // sort criteria
+	GroupName   string      `json:"groupName"`   // filter on this group name
 }
 
 // WebFormRequest is a struct suitable for describing a webservice operation.
@@ -258,6 +260,7 @@ func SvcGetInt64(s, errmsg string, w http.ResponseWriter) (int64, error) {
 // is a string that will be used in the error message if the requested position had an
 // error during conversion to int64. So in the example above, pos 3 is the RID, so
 // errmsg would probably be set to "RID"
+//-----------------------------------------------------------------------------
 func SvcExtractIDFromURI(uri, errmsg string, pos int, w http.ResponseWriter) (int64, error) {
 	var ID = int64(0)
 	var err error
@@ -275,6 +278,8 @@ func SvcExtractIDFromURI(uri, errmsg string, pos int, w http.ResponseWriter) (in
 	return ID, err
 }
 
+// getPostData parses the posted data from the client and stores in d
+//-----------------------------------------------------------------------------
 func getPOSTdata(w http.ResponseWriter, r *http.Request, d *ServiceData) error {
 	funcname := "getPOSTdata"
 	var err error
