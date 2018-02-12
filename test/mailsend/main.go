@@ -429,7 +429,7 @@ func readCommandLineArgs() {
 	fixPtr := flag.Bool("fix", false, "Scan db for known errors, fix them wherever possible, then exit.")
 	offsetPtr := flag.Int("offset", 0, "ignore if 0 or if -limit is not supplied, otherwise use as query OFFSET")
 	limitPtr := flag.Int("limit", 0, "ignore if 0, otherwise use as query LIMIT")
-	workerPtr := flag.Int("workers", 5, "number of workers to use to send email")
+	workerPtr := flag.Int("workers", 1, "number of workers to use to send email")
 	dbs := flag.Bool("debugsend", false, "print email addresses for recipients but don't send")
 
 	flag.Parse()
