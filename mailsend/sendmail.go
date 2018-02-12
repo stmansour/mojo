@@ -298,7 +298,9 @@ func Sendmail(si *Info) error {
 				break // workers are not responding
 			}
 			si.dataChannel <- p // send this person to worker [id]
-			util.Console("PID = %d passed to worker %d\n", p.PID, id)
+			if false {          // turn on if debugging
+				util.Console("PID = %d passed to worker %d\n", p.PID, id)
+			}
 			inprogress++ // another worker is now busy
 		}
 		si.SentCount++ // update the si.SentCount only after adding the record
@@ -326,7 +328,9 @@ func Sendmail(si *Info) error {
 			err = fmt.Errorf("sendmail: worker routines are unresponsive") // if we haven't heard from these guys in maxWaitTime sec, then we are in trouble
 			goto LOGEXIT
 		case x := <-si.sendStatus:
-			util.Console("worker %d sends status = %d\n", x.id, x.status)
+			if false {
+				util.Console("worker %d sends status = %d\n", x.id, x.status)
+			}
 			inprogress-- // worker x.id is now available
 		}
 	}
