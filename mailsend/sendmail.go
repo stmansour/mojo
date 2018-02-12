@@ -158,6 +158,19 @@ func Sendmail(si *Info) error {
 			return err
 		}
 		q = fmt.Sprintf("SELECT People.* FROM People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d) WHERE People.Status=0", g.GID)
+
+		//----------------------------------------------------------------------
+		// When we send based on a group name, we show stats...
+		//----------------------------------------------------------------------
+		grp, err := GetGroupStats(g.GID)
+		util.Ulog("\t ----------------------\n")
+		util.Ulog("\t Statistics Before Sending:\n")
+		util.Ulog("\t MemberCount:      = %d\n", grp.MemberCount)
+		util.Ulog("\t MailToCount:      = %d\n", grp.MailToCount)
+		util.Ulog("\t OptOutCount:      = %d\n", grp.OptOutCount)
+		util.Ulog("\t BouncedCount:     = %d\n", grp.BouncedCount)
+		util.Ulog("\t ComplaintCount:   = %d\n", grp.ComplaintCount)
+		util.Ulog("\t SuppressedCount:  = %d\n", grp.SuppressedCount)
 	} else {
 		return fmt.Errorf("No group name or query name was supplied")
 	}
