@@ -12,6 +12,8 @@ How To Use Mojo
 
         ""   ->  "
         ^" *([^,]+), *([^"]+)",(.*)    -->   "\1","\2","\3"
+
+        Save to g.csv
     
         LC_ALL=c sort -f -u g.csv > g1.csv
         LC_CTYPE=C && LANG=C && uniq g1.csv > g2.csv
@@ -24,13 +26,28 @@ How To Use Mojo
     To initialize all the queries and required groups:
     	./mailsend -setup
 
+    Before importing the csv file into memory, look for the common errors
+    in email addresses.  Examples:
+
+        josephinnbolen@gmail       fix is to append ".com"
+        Getatcheckin               set it to ""
+        tony.burometto@faagov      set it to faa.gov
+        john.d'elisa@faa.gov       remove '
+        Noemail.com                set it to ""
+        yomkippor77msn.com         should be @msn.com
+        Ryan.t.baldwain@.com       no way to know, set it to blank ""
+
+    The script ./tools/bashtools/fixcommon.sh will correct many of the
+    issues.  It expects its input to come from g2.csv and will send its 
+    output to g3.csv.
+
     To import a csv file use a command like this:
 
         ./mojocsv -g groupname -cg -f xyz.csv
 
         example:
 
-        ./mojocsv -g ibguests20180102 -cg -f guniq.csv
+        ./mojocsv -g ibguests20180326 -cg -f g3.csv
 
     where
 
@@ -45,8 +62,13 @@ How To Use Mojo
 3.  Validate the email addresses in the group you'll send to and make any
     fixes necessary:
 
-        ./mailsend -validate ibguests20180212
+        ./mailsend -validate ibguests20180326
 
+    This will produce a list of invalid addresses.  You can copy the PID column
+    and create a quick query and edit the remaining in MySQLWorkbench.  The query
+    will be something like this:
+
+        SELECT * FROM People WHERE PID IN (328, 767, ...blablabla)
     
 4.  To test the send capability, send a message to MojoTest (the group
     or the query).

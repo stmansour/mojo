@@ -18,7 +18,7 @@ config.json:
 
 clean:
 	go clean
-	rm -f csv conf*.json *.log
+	rm -f csv conf*.json *.log g.csv g[0-9].csv
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package:

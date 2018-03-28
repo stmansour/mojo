@@ -16,7 +16,7 @@ package: mojowatchdog
 	touch fail
 	cp ${TOOL} ${TOP}/tmp/mojo/
 	@echo "*** Packaging completed in admin/${THISDIR} ***"
-	rm -f fail
+	@rm -f fail
 
 test:
 	@echo "*** Testing completed in admin/${THISDIR} ***"
