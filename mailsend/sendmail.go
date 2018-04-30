@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	maxWaitTime = 5 // time in seconds
+	maxWaitTime = 30 // time in seconds
 )
 
 type sendStatus struct {
@@ -285,7 +285,9 @@ func Sendmail(si *Info) error {
 				case <-time.After(time.Second * maxWaitTime):
 					noResponse = true
 				case x := <-si.sendStatus:
-					util.Console("worker %d sends status = %d\n", x.id, x.status)
+					if x.status != 0 {
+						util.Ulog("worker %d sends status = %d\n", x.id, x.status)
+					}
 					inprogress-- // worker x.id is now available
 				}
 				if noResponse {
