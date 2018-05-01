@@ -16,3 +16,6 @@ test:
 	for dir in $(DIRS); do make -C $$dir test;done
 
 all: clean admin
+secure:
+	for dir in $(DIRS); do make -C $${dir} secure;done
+	@rm -f config.json confdev.json confprod.json

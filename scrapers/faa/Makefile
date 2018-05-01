@@ -43,3 +43,5 @@ update:
 	@./faa
 
 all: clean faa package test
+secure:
+	@rm -f config.json confdev.json confprod.json

@@ -50,3 +50,5 @@ test:
 	@echo "*** ${THISDIR}: completed test ***"
 
 all: clean mailsend package
+secure:
+	@rm -f config.json confdev.json confprod.json

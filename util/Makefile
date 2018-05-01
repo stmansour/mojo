@@ -29,3 +29,5 @@ package:
 	@echo "*** util completed package ***"
 
 all: clean util
+secure:
+	@rm -f config.json confdev.json confprod.json

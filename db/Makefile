@@ -32,3 +32,6 @@ package:
 	@echo "*** ${THISDIR}: completed package ***"
 
 all: clean db package
+secure:
+	for dir in $(DIRS); do make -C $${dir} secure;done
+	@rm -f config.json confdev.json confprod.json

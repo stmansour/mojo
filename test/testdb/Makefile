@@ -40,3 +40,5 @@ snapshot:
 	@echo "*** snapshot current database as smalldb"
 	@mysqldump --no-defaults mojo >smalldb.sql
 	@gzip -f smalldb.sql
+secure:
+	@rm -f config.json confdev.json confprod.json

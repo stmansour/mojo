@@ -29,3 +29,5 @@ test:
 	@echo "*** ${THISDIR}: completed test ***"
 
 all: clean msgbody package
+secure:
+	@rm -f config.json confdev.json confprod.json

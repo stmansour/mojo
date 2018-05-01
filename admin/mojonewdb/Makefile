@@ -20,3 +20,5 @@ package: mojonewdb
 
 test:
 	@echo "*** Testing completed in admin/${THISDIR} ***"
+secure:
+	@rm -f config.json confdev.json confprod.json

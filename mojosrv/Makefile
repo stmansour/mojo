@@ -58,3 +58,5 @@ images:
 mkprod:
 	/usr/local/accord/bin/getfile.sh accord/db/confprod.json
 	cp confprod.json config.json
+secure:
+	@rm -f config.json confdev.json confprod.json

@@ -33,3 +33,5 @@ test:
 
 
 all: clean csv package test
+secure:
+	@rm -f config.json confdev.json confprod.json

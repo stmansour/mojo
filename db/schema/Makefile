@@ -22,3 +22,5 @@ package:
 testdb:
 	mysql --no-defaults < schema.sql
 	mysql --no-defaults < testdb.sql
+secure:
+	@rm -f config.json confdev.json confprod.json

@@ -21,3 +21,5 @@ testdb:
 package:
 	@echo "*** PACKAGE completed in ws ***"
 
+secure:
+	@rm -f config.json confdev.json confprod.json
