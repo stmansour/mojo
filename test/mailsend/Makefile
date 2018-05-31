@@ -25,7 +25,7 @@ package: mailsend
 	@find . -name "fail" -exec rm -r "{}" \;
 	@touch fail
 	cp mailsend ${BINDIR}/mailsend
-	cp testmsg.html mscript.sh resetdb.sh ${BINDIR}/
+	cp testmsg.html resetdb.sh ${BINDIR}/
 	@rm -f fail
 	@echo "*** ${THISDIR}: completed package ***"
 

@@ -1,7 +1,11 @@
 How To Use Mojo
 
 1.  Add your message / images / attachments to the campaigns directory
-    in ./test/mailsend/campaigns
+    in ./test/mailsend/campaigns. Under the campaigns directory, go to
+    the appropriate company (for example, isola) then create a directory
+    for the date the campaign will run. Example 2018-05-31 for May 31,
+    2018. Put all the files associated with the campaign into this
+    directory.
 
 2.  Update the group of people as needed. That could mean (a) rescanning
     the FAA contacts or (b) importing a csv file.  Store the csv file in
@@ -10,24 +14,53 @@ How To Use Mojo
     Fix up the supplied csv file. Most of the time the csv file supplied has
     issues.  Do some global changes first, and save to g.csv
 
+    (a) Remove consecutive quote marks
+    
         ""   ->  "
+    
+    (b) Properly quote every line
+        (ensure that regular expressions are turned on)
+       
         ^" *([^,]+), *([^"]+)",(.*)    -->   "\1","\2","\3"
 
-        Save to g.csv
+        If there are extra fields that we don't need, remove the commas
+        in the source.  For example:
+
+            "Abagire, Edward",amy.brummett@faa.gov,,,
+
+        must be changed to
+
+            "Abagire, Edward",amy.brummett@faa.gov
+
+        so 
+
+            ,,,$  -> [nothing; blank]
+
+    (c) Save to g.csv
     
+    (d) Make sure that environment variables are set correctly then
+        run the csv through sort and uniq to remove duplicates.
+
         LC_ALL=c sort -f -u g.csv > g1.csv
         LC_CTYPE=C && LANG=C && uniq g1.csv > g2.csv
     
-    Update g2.csv. Typically the columns will be:
+    (e) Update g2.csv so that it can be imported into mojo.
+        Typically the columns definitions on lines 1 & 2 will be:
 
-        "LastName",FirstName,Email1
+        LastName,FirstName,Email1
+
+        CSV File Format
+        The first row should be the column titles of all the data below
+        The second row should be the name of the Mojo DB Person field
+        to which it maps.
 
 
-    To initialize all the queries and required groups:
-    	./mailsend -setup
+        To initialize all the queries and required groups:
 
-    Before importing the csv file into memory, look for the common errors
-    in email addresses.  Examples:
+    	../../../../../mailsend -setup
+
+    (f) Before importing the csv file into memory, look for the common
+        errors in email addresses.  Examples:
 
         josephinnbolen@gmail       fix is to append ".com"
         Getatcheckin               set it to ""
@@ -37,17 +70,24 @@ How To Use Mojo
         yomkippor77msn.com         should be @msn.com
         Ryan.t.baldwain@.com       no way to know, set it to blank ""
 
-    The script ./tools/bashtools/fixcommon.sh will correct many of the
-    issues.  It expects its input to come from g2.csv and will send its 
-    output to g3.csv.
+    (g) The script ./tools/bashtools/fixcommon.sh will correct many
+        of the issues.  It expects its input to come from g2.csv and
+        will send its output to g3.csv.
 
-    To import a csv file use a command like this:
+            ../../../../../tools/bashtools/fixcommon.sh
 
-        ./mojocsv -g groupname -cg -f xyz.csv
+    (h) To import a csv file use a command like the one below. It
+        will create the group for the import:
 
-        example:
+            ./mojocsv -g groupname -cg -f xyz.csv
 
-        ./mojocsv -g ibguests20180326 -cg -f g3.csv
+        example run from an Isola Bella campaign directory:
+
+            ../../../../../tmp/mojo/mojocsv -g ibguests20180531 -cg -f g3.csv
+
+        on a production system:
+
+            ../../../mojocsv -g ibguests20180531 -cg -f g3.csv
 
     where
 
@@ -56,28 +96,55 @@ How To Use Mojo
         -o means don't print the time statistics associated with this import
         -f is followed by the csv file to import
 
-        example:
-        ./mojocsv -g ibguests20171206 -cg -f prevgest.csv
-
 3.  Validate the email addresses in the group you'll send to and make any
     fixes necessary:
 
-        ./mailsend -validate ibguests20180326
+        ../../../../../tmp/mojo/mailsend -validate ibguests20180531
 
     This will produce a list of invalid addresses.  You can copy the PID column
     and create a quick query and edit the remaining in MySQLWorkbench.  The query
     will be something like this:
 
         SELECT * FROM People WHERE PID IN (328, 767, ...blablabla)
-    
-4.  To test the send capability, send a message to MojoTest (the group
-    or the query).
-    
-    ./mailsend -from x@y.com -b msg.html -subject "Test Message" -group MojoTest
-    
 
-CSV File Format
-	The first row should be the column titles of all the data below
-	The secont row should be the name of the Mojo DB Person field to which it maps.
+4.  Update the following files
 
+        msend.sh
+        msg.html
+        plsapprove.html
+
+    then install them on both production machines in the campaign directory.
+
+        Steves-MacBook-Pro-2:2018-05-31 sman$ smcp msend.sh dir3:~/
+        Steves-MacBook-Pro-2:2018-05-31 sman$ smcp msend.sh dir4:~/
+        Steves-MacBook-Pro-2:2018-05-31 sman$ smcp msg.html dir3:~/
+        Steves-MacBook-Pro-2:2018-05-31 sman$ smcp msg.html dir4:~/
+        Steves-MacBook-Pro-2:2018-05-31 sman$ smcp plsapprove.html dir3:~/
+        Steves-MacBook-Pro-2:2018-05-31 sman$ smcp plsapprove.html dir4:~/
+
+    then on dir3 and dir4 from the campaigns/... directory
+
+        [ec2-user@ip-172-31-56-225 2018-05-31]$ mv ~/msg.html .
+        [ec2-user@ip-172-31-56-225 2018-05-31]$ mv ~/msend.sh .
+        cp msend.sh ../../../
+
+
+5.  First, run mailsend with the setup option so that all the test users
+    will have their status cleared if they had previously opted out.
+
+        ./mailsend -setup
+
+6.  Test the send capability, send a message to MojoTest (the group
+    or the query). Update the msend.sh script from the campaigns directory
+    and uncomment the lines that send the message to the MojoTest group.
+    Then simply execute msend.sh
+    
+7.  If everything looks correct then update msend.sh again. Comment out
+    the lines that send to MojoTest. Uncomment the lines that send to 
+    AccordTest.  Then execute msend.sh
+
+8.  After approval from Michelle, uncomment the line that sends the
+    message to the entire group and run msend.sh again.
+
+9.  Log into the Amazon AWS SES console and monitor the stats.
 
