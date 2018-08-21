@@ -6,7 +6,7 @@ BINDIR=${TOP}/tmp/mojo
 THISDIR="mojosrv"
 COUNTOL=${TOP}/tools/bashtools/countol.sh
 
-mojosrv: ver.go *.go webdoc config.json
+mojosrv: ver.go *.go config.json
 	@find . -name "fail" -exec rm -r "{}" \;
 	@touch fail
 	@${COUNTOL} "go vet"
