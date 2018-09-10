@@ -326,7 +326,7 @@ func Sendmail(si *Info) error {
 	}
 
 	if noResponse {
-		err = fmt.Errorf("sendmail: worker routines are unresponsive")
+		err = fmt.Errorf("sendmail: worker routines are unresponsive [A1]")
 		goto LOGEXIT
 	}
 
@@ -340,7 +340,7 @@ func Sendmail(si *Info) error {
 		//--------------------------------------------------
 		select {
 		case <-time.After(time.Second * maxWaitTime):
-			err = fmt.Errorf("sendmail: worker routines are unresponsive") // if we haven't heard from these guys in maxWaitTime sec, then we are in trouble
+			err = fmt.Errorf("sendmail: worker routines are unresponsive [A2]") // if we haven't heard from these guys in maxWaitTime sec, then we are in trouble
 			goto LOGEXIT
 		case x := <-si.sendStatus:
 			if false {
@@ -358,7 +358,7 @@ func Sendmail(si *Info) error {
 	for i := 0; i >= si.WorkerCount; {
 		select {
 		case <-time.After(time.Second * maxWaitTime):
-			err = fmt.Errorf("sendmail: worker routines are unresponsive") // if we haven't heard from these guys in maxWaitTime sec, then we are in trouble
+			err = fmt.Errorf("sendmail: worker routines are unresponsive [A3]") // if we haven't heard from these guys in maxWaitTime sec, then we are in trouble
 			goto LOGEXIT
 		case <-si.readyWorker:
 			var p = db.Person{PID: 0} // just being explicit about PID=0
