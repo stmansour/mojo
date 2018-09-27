@@ -148,3 +148,11 @@ How To Use Mojo
 
 9.  Log into the Amazon AWS SES console and monitor the stats.
 
+10. IF YOU NEED TO RESEND A MESSAGE TO A FEW PEOPLE because their email
+    addresses were incorrect, you can use the -pid option on mailsend.
+    *  First, fix the email addresses in the database and make sure
+       that the FLAGS are cleared.
+    *  Next, make a quick list of the PIDs of the people you want to
+       send to.
+    *  use the -pid option on mailsend to list the PIDs of the
+       recipients, no spaces.  Ex:  -pid 7366,8829,29922

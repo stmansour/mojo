@@ -10,6 +10,8 @@ import (
 	"mojo/mailsend"
 	"mojo/util"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"gopkg.in/gomail.v2"
@@ -31,6 +33,7 @@ var App struct {
 	SetupOnly     bool
 	Subject       string                   // subject line of the email message
 	From          string                   // email from address
+	PIDs          []int64                  // array of PIDs to send to
 	QueryCount    bool                     // if true, just print the solution set count for the query and exit
 	Bounce        bool                     // if true, just print the solution set count for the query and exit
 	Complaint     bool                     // if true, just print the solution set count for the query and exit
@@ -418,6 +421,7 @@ func readCommandLineArgs() {
 	hPtr := flag.String("h", db.MojoDBConfig.MojoWebAddr, "name of host and port for mojosrv")
 	vPtr := flag.String("validate", "", "validate the email addresses of everyone in the group name provided, then exit")
 	gPtr := flag.String("group", "", "group name to send mail to; overridden by -q if it is supplied")
+	pids := flag.String("pids", "", "comma separated list of PIDs to send to, overrides -p and -q, ex: -pids 764,5263,3452")
 	qcPtr := flag.Bool("count", false, "returns the count of target addresses in the query, then exits.")
 	soPtr := flag.Bool("setup", false, "just run the setup, do not send email")
 	bPTR := flag.Bool("bounce", false, "just send a message to bounce@simulator.amazonses.com")
@@ -455,6 +459,18 @@ func readCommandLineArgs() {
 	App.DebugSend = *dbs
 	App.GroupName = *gPtr
 	App.WorkerCount = *workerPtr
+
+	if len(*pids) > 0 {
+		sa := strings.Split(*pids, ",")
+		for i := 0; i < len(sa); i++ {
+			x, err := strconv.ParseInt(sa[i], 10, 64)
+			if err != nil {
+				panic(err)
+			}
+			App.PIDs = append(App.PIDs, x)
+			fmt.Printf("parsed: %d\n", x)
+		}
+	}
 }
 
 func main() {
@@ -573,10 +589,18 @@ func main() {
 	// util.Console("P2.6 App.QueryName = %s, si.QName =%s\n", App.QueryName, si.QName)
 	if len(App.ValidateGroup) > 0 {
 		fmt.Printf("Validating email addresses for group: %s\n", App.ValidateGroup)
-		err := mailsend.ValidateGroupEmailAddresses(App.ValidateGroup)
+		err = mailsend.ValidateGroupEmailAddresses(App.ValidateGroup)
 		if err != nil {
 			fmt.Printf("mailsend.ValidateGroupEmailAddresses:  err = %s\n", err)
 			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
+	if len(App.PIDs) > 0 {
+		fmt.Printf("Sending to PID list\n")
+		if err = mailsend.SendToPIDs(App.PIDs, &si); err != nil {
+			fmt.Printf("Error from SendToPIDs = %s\n", err.Error())
 		}
 		os.Exit(0)
 	}

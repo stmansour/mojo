@@ -172,7 +172,12 @@ func MapAndImport(fname string) {
 	//  First thing to do is establish the mapping between the
 	//  columns and mojo's people definition
 	//-------------------------------------------------------------
+	// util.Console("Entering MapAndImport: fname = %s\n", fname)
 	t := util.LoadCSV(fname)
+	if len(t) < 3 {
+		fmt.Printf("FATAL: only read %d lines from %s\n", len(t), fname)
+		os.Exit(1)
+	}
 	fldmap := []int{}                       // maps the column number of the input csv to the field number of mojo's Person
 	inputFields := t[0]                     // we actually just ignore these
 	mapToFields := t[1]                     // this one holds the info we need

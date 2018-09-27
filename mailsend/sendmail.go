@@ -94,6 +94,51 @@ func GeneratePageHTML(fname, hostname string, p *db.Person, t *template.Template
 	return template.HTML(sb.String()), nil
 }
 
+// InhibitEmailSend checks the email address and flags of a person.
+// If we inhibit due to optout, bounce, or complaint the appropriate total is
+// incremented.
+//
+// INPUTS:
+//    p           the person to check
+//    optout    = pointer to optout total. Incremented if flag indicates opt out
+//    bounced   = pointer to bounce total. Incremented if flag indicates the email address has bounced
+//    complaint = pointer to complaint total. Incremented if flag indicates person complained previously
+//
+// RETURNS:
+//    true  = do not send email to this person
+//    false = no problems, proceed with the email
+//------------------------------------------------------------------------------
+func InhibitEmailSend(p *db.Person, optout, bounced, complaint *int, si *Info) bool {
+	funcname := "InhibitEmailSend"
+	if len(p.Email1) == 0 {
+		if si.DebugSend {
+			fmt.Printf("%s: no email address for user: %d - %s %s\n", funcname, p.PID, p.FirstName, p.LastName)
+		}
+		return true
+	}
+
+	switch p.Status {
+	case db.NORMAL:
+		// do nothing
+	case db.OPTOUT:
+		(*optout)++
+		util.Ulog("%s: Email not sent to user %d, %s, due to prior: OPT OUT\n", funcname, p.PID, p.Email1)
+		return true
+	case db.BOUNCED:
+		(*bounced)++
+		util.Ulog("%s: Email not sent to user %d, %s, due to prior: BOUNCED MESSAGE\n", funcname, p.PID, p.Email1)
+		return true
+	case db.COMPLAINT:
+		(*complaint)++
+		util.Ulog("%s: Email not sent to user %d, %s, due to prior: COMPLAINT\n", funcname, p.PID, p.Email1)
+		return true
+	case db.SUPPRESSED:
+		util.Ulog("%s: Email not sent to user %d, %s, due to prior: SUPPRESSION\n", funcname, p.PID, p.Email1)
+		return true
+	}
+	return false // looks OK, no checks failed
+}
+
 // Sendmail is a routine to send an email message to a list of
 // email addresses identified by the query or the groupname.
 // QName and GroupName are checked as follows. If QName exists
@@ -228,30 +273,7 @@ func Sendmail(si *Info) error {
 			return err
 		}
 
-		if len(p.Email1) == 0 {
-			if si.DebugSend {
-				fmt.Printf("%s: no email address for user: %d - %s %s\n", funcname, p.PID, p.FirstName, p.LastName)
-			}
-			continue
-		}
-
-		switch p.Status {
-		case db.NORMAL:
-			// do nothing
-		case db.OPTOUT:
-			optout++
-			util.Ulog("%s: Email not sent to user %d, %s, due to prior: OPT OUT\n", funcname, p.PID, p.Email1)
-			continue
-		case db.BOUNCED:
-			bounced++
-			util.Ulog("%s: Email not sent to user %d, %s, due to prior: BOUNCED MESSAGE\n", funcname, p.PID, p.Email1)
-			continue
-		case db.COMPLAINT:
-			complaint++
-			util.Ulog("%s: Email not sent to user %d, %s, due to prior: COMPLAINT\n", funcname, p.PID, p.Email1)
-			continue
-		case db.SUPPRESSED:
-			util.Ulog("%s: Email not sent to user %d, %s, due to prior: SUPPRESSION\n", funcname, p.PID, p.Email1)
+		if InhibitEmailSend(&p, &optout, &bounced, &complaint, si) {
 			continue
 		}
 
@@ -396,18 +418,21 @@ func logResults(si *Info, bad, optout, bounced, complaint int) {
 	util.Ulog("%s: TOTAL USERS PROCESSED.......................%5d\n", funcname, si.SentCount+bad+optout+bounced+complaint)
 }
 
-// sender is the go routine used to send a message.  It communicates with
-// the sendmail function via the channels provided in si
-//
-// INPUTS:
-//  id = index number of the worker
-//  si = sendmail information
-//-----------------------------------------------------------------------------
-func sender(id int, si *Info) {
-	funcname := "sendmail.sender"
-	d := gomail.NewDialer(si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
+func initMessage(si *Info) *gomail.Message {
+	// static portions of the message
+	m := gomail.NewMessage()
+	m.SetHeader("From", si.From)
+	m.SetHeader("Subject", si.Subject)
 
-	// template for email
+	if len(si.AttachFName) > 0 {
+		m.Attach(si.AttachFName)
+	}
+
+	return m
+}
+
+func getMessageTemplate(si *Info) (*template.Template, error) {
+	funcname := "getMessageTemplate"
 	var tname string
 	sa := strings.Split(si.MsgFName, "/")
 	if len(sa) > 0 {
@@ -418,17 +443,28 @@ func sender(id int, si *Info) {
 	if nil != err {
 		util.Console("%s: error loading template: %v\n", funcname, err)
 		util.Ulog("%s: error loading template: %v\n", funcname, err)
+		return t, err
+	}
+	return t, nil
+}
+
+// sender is the go routine used to send a message.  It communicates with
+// the sendmail function via the channels provided in si
+//
+// INPUTS:
+//  id = index number of the worker
+//  si = sendmail information
+//-----------------------------------------------------------------------------
+func sender(id int, si *Info) {
+	funcname := "sendmail.sender"
+	d := gomail.NewDialer(si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
+	t, err := getMessageTemplate(si)
+	if err != nil {
+		util.Console("%s: error loading template: %v\n", funcname, err)
+		util.Ulog("%s: error loading template: %v\n", funcname, err)
 		return
 	}
-
-	// static portions of the message
-	m := gomail.NewMessage()
-	m.SetHeader("From", si.From)
-	m.SetHeader("Subject", si.Subject)
-
-	if len(si.AttachFName) > 0 {
-		m.Attach(si.AttachFName)
-	}
+	m := initMessage(si)
 
 	//--------------------------------------------------------------------------------------
 	// Now just loop:  take work from the master, send status upon completion, and repeat
@@ -444,37 +480,95 @@ func sender(id int, si *Info) {
 		}
 
 		// util.Console("worker %d will be working PID = %d\n", id, p.PID)
+		st := MessageSend(&p, m, d, si, t)
+		// util.Console("Worker %d completed mail to PID %d\n", id, p.PID)
+		si.sendStatus <- sendStatus{id: id, status: st} // indicate no problems
+	}
+}
 
-		m.SetHeader("To", p.Email1)
-		s, err := GeneratePageHTML(si.MsgFName, si.Hostname, &p, t)
+// MessageSend encapsulates the code to send a message to a person from the db.
+//
+// INPUTS:
+//    p   pointer to the Person struct
+//    m   pointer to the gomail struct to use
+//    d   the gomail dialer
+//    si  context info
+//    t   html document template
+//
+// RETURNS:
+//    status int with meanings as follows:
+//    0 = no errors
+//    1 = maximum number of retries reached, could not send message
+//    2 = error generating the page from the template and data
+//------------------------------------------------------------------------------
+func MessageSend(p *db.Person, m *gomail.Message, d *gomail.Dialer, si *Info, t *template.Template) int {
+	funcname := "MessageSend"
+	m.SetHeader("To", p.Email1)
+	s, err := GeneratePageHTML(si.MsgFName, si.Hostname, p, t)
+	if err != nil {
+		util.Ulog("%s: Error generating message page person with address: %s\n", funcname, p.Email1)
+		return 2
+	}
+	m.SetBody("text/html", string(s))
+
+	retrycount := 0
+RETRYSEND:
+	err = d.DialAndSend(m)
+	if err != nil {
+		util.Ulog("%s: Error on DialAndSend = %s\n", funcname, err.Error())
+		util.Ulog("%s: Error occurred while sending to %s %s (PID = %d), email address: %s\n", funcname, p.FirstName, p.LastName, p.PID, p.Email1)
+		if retrycount < 3 {
+			retrycount++ // let's try it again with another dialer (I have seen a lot of EOF errors)
+			d = gomail.NewDialer(si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
+			util.Ulog("%s: retrying with new dialer.  retry count = %d\n", funcname, retrycount)
+			time.Sleep(500 * time.Millisecond) // wait half a second and try again
+			goto RETRYSEND
+		} else {
+			util.Ulog("Maximum retries reached.  Exiting early.\n")
+			util.Ulog("*** Exited before sending all messages due to errors ***\n")
+			return 1
+		}
+	}
+	return 0 // no issues
+}
+
+// SendToPIDs sends the email described in si to the list of PIDs in pids.
+//
+// INPUTS:
+//    si - standard send info
+//  pids - list of Person IDs that are to receive the message
+//
+// RETURNS:
+//    any error encountered
+//-----------------------------------------------------------------------------
+func SendToPIDs(pids []int64, si *Info) error {
+	funcname := "SendToPIDs"
+	var optout, bounced, complaint int
+	d := gomail.NewDialer(si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
+	t, err := getMessageTemplate(si)
+	if err != nil {
+		return err
+	}
+	m := initMessage(si)
+
+	for i := 0; i < len(pids); i++ {
+		p, err := db.GetPerson(pids[i])
 		if err != nil {
-			util.Ulog("%s: Error generating message page person with address: %s\n", funcname, p.Email1)
-			si.sendStatus <- sendStatus{id: id, status: 2}
+			return err
+		}
+		if InhibitEmailSend(&p, &optout, &bounced, &complaint, si) {
 			continue
 		}
-		m.SetBody("text/html", string(s))
-
-		retrycount := 0
-	RETRYSEND:
-		err = d.DialAndSend(m)
-		if err != nil {
-			util.Ulog("%s: Error on DialAndSend = %s\n", funcname, err.Error())
-			util.Ulog("%s: Error occurred while sending to %s %s (PID = %d), email address: %s\n", funcname, p.FirstName, p.LastName, p.PID, p.Email1)
-			if retrycount < 3 {
-				retrycount++ // let's try it again with another dialer (I have seen a lot of EOF errors)
-				d = gomail.NewDialer(si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
-				util.Ulog("%s: retrying with new dialer.  retry count = %d\n", funcname, retrycount)
-				time.Sleep(500 * time.Millisecond) // wait half a second and try again
-				goto RETRYSEND
-			} else {
-				util.Ulog("Maximum retries reached.  Exiting early.\n")
-				util.Ulog("*** Exited before sending all messages due to errors ***\n")
-				status := sendStatus{id: id, status: 1} // set status to indicate problems
-				si.sendStatus <- status                 // retry didn't help.  Time to bail out
-				continue
-			}
+		if !util.ValidEmailAddress(p.Email1) {
+			fmt.Printf("invalid email address: %s\n", p.Email1)
+			continue
 		}
-		// util.Console("Worker %d completed mail to PID %d\n", id, p.PID)
-		si.sendStatus <- sendStatus{id: id, status: 0} // indicate no problems
+		if si.DebugSend {
+			fmt.Printf("%s: Send to %s\n", funcname, p.Email1)
+		} else {
+			MessageSend(&p, m, d, si, t)
+		}
+
 	}
+	return nil
 }
