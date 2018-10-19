@@ -543,6 +543,7 @@ RETRYSEND:
 //-----------------------------------------------------------------------------
 func SendToPIDs(pids []int64, si *Info) error {
 	funcname := "SendToPIDs"
+	// util.Console("Entered %s\n", funcname)
 	var optout, bounced, complaint int
 	d := gomail.NewDialer(si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)
 	t, err := getMessageTemplate(si)
