@@ -15,13 +15,20 @@ How To Use Mojo
     issues.  Do some global changes first, and save to g.csv
 
     (a) Remove consecutive quote marks
-    
+
         ""   ->  "
-    
+        """  ->  "
+
     (b) Properly quote every line
         (ensure that regular expressions are turned on)
-       
+
         ^" *([^,]+), *([^"]+)",(.*)    -->   "\1","\2","\3"
+                                        OR   "$1","$2","$3"    if you're using Atom
+
+        sublime example:
+        set to regular expressions (.*)
+        Find:     ^" *([^,]+), *([^"]+)",(.*)
+        Replace:  "\1","\2","\3"
 
         If there are extra fields that we don't need, remove the commas
         in the source.  For example:
@@ -32,18 +39,18 @@ How To Use Mojo
 
             "Abagire, Edward",amy.brummett@faa.gov
 
-        so 
+        so
 
             ,,,$  -> [nothing; blank]
 
     (c) Save to g.csv
-    
+
     (d) Make sure that environment variables are set correctly then
         run the csv through sort and uniq to remove duplicates.
 
         LC_ALL=c sort -f -u g.csv > g1.csv
         LC_CTYPE=C && LANG=C && uniq g1.csv > g2.csv
-    
+
     (e) Update g2.csv so that it can be imported into mojo.
         Typically the columns definitions on lines 1 & 2 will be:
 
@@ -81,7 +88,8 @@ How To Use Mojo
 
             ./mojocsv -g groupname -cg -f xyz.csv
 
-        example run from an Isola Bella campaign directory:
+        example run from an Isola Bella campaign directory (change the name
+        of the group to be whatever is appropriate):
 
             ../../../../../tmp/mojo/mojocsv -g ibguests20180531 -cg -f g3.csv
 
@@ -138,9 +146,9 @@ How To Use Mojo
     or the query). Update the msend.sh script from the campaigns directory
     and uncomment the lines that send the message to the MojoTest group.
     Then simply execute msend.sh
-    
+
 7.  If everything looks correct then update msend.sh again. Comment out
-    the lines that send to MojoTest. Uncomment the lines that send to 
+    the lines that send to MojoTest. Uncomment the lines that send to
     AccordTest.  Then execute msend.sh
 
 8.  After approval from Michelle, uncomment the line that sends the
