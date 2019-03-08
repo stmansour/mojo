@@ -1,0 +1,9 @@
+SELECT People.* FROM People INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=2 WHERE People.Status=0
+
+ # The basic join
+ select RentalAgreement.RAID,RentStart,RentStop,RentalAgreementPayors.TCID from RentalAgreement
+    inner join RentalAgreementPayors on RentalAgreement.RAID=RentalAgreementPayors.RAID and RentalAgreement.BID=1;
+
+# Basic join Plus date range taken into account
+select RentalAgreement.RAID,RentStart,RentStop,RentalAgreementPayors.TCID from RentalAgreement
+    inner join RentalAgreementPayors on RentalAgreement.RAID=RentalAgreementPayors.RAID and RentalAgreement.BID=1 and RentalAgreement.AgreementStart<="2017-04-17" and RentalAgreement.AgreementStop>"2017-04-17";

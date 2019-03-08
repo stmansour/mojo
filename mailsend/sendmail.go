@@ -77,7 +77,7 @@ type pageData struct {
 //
 // @return
 //	template.HTML = the body of the message
-//  error         = any error that occured; nil on success
+//  error         = any error that occurred; nil on success
 //-----------------------------------------------------------------------------
 func GeneratePageHTML(fname, hostname string, p *db.Person, t *template.Template) (template.HTML, error) {
 	funcname := "GeneratePageHTML"
@@ -208,6 +208,9 @@ func Sendmail(si *Info) error {
 		// When we send based on a group name, we show stats...
 		//----------------------------------------------------------------------
 		grp, err := GetGroupStats(g.GID)
+		if err != nil {
+			return fmt.Errorf("GetGroupStats error: %s", err.Error())
+		}
 		util.Ulog("\t ----------------------\n")
 		util.Ulog("\t Statistics Before Sending:\n")
 		util.Ulog("\t MemberCount:      = %d\n", grp.MemberCount)
