@@ -34,7 +34,7 @@ clean:
 	rm -f mojosrv ver.go tmp *.log *.json
 	@echo "*** ${THISDIR}: completed clean ***"
 
-package:
+package: webdoc
 	@find . -name "fail" -exec rm -r "{}" \;
 	@touch fail
 	mkdir -p ${BINDIR}
