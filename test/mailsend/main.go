@@ -379,10 +379,10 @@ var pa2 = []db.Person{
 	pa1[3],
 	pa1[4],
 	{FirstName: "Joe", MiddleName: "G", LastName: "Mansour", JobTitle: "Principal, Accord Interests", OfficePhone: "323-512-0111 X303", Email1: "jgm@accordinterests.com", MailAddress: "11719 Bee Cave Road", MailAddress2: "Suite 301", MailCity: "Austin", MailState: "TX", MailPostalCode: "78738", MailCountry: "USA", Status: 0},
-	// {FirstName: "Melissa", MiddleName: "", LastName: "Wheeler", JobTitle: "General Manager, Isola Bella", OfficePhone: "405.721.2194 x205", Email1: "mwheeler@myisolabella.com", MailAddress: "8309 NW 140th St", MailAddress2: "", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73142", MailCountry: "USA", Status: 0},
-	{FirstName: "Michelle", MiddleName: "", LastName: "Falls", JobTitle: "Concierge", OfficePhone: "405.721.2194 x2014", Email1: "mfalls@myisolabella.com", MailAddress: "8309 NW 140th St", MailAddress2: "", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73142", MailCountry: "USA", Status: 0},
+	{FirstName: "Melissa", MiddleName: "", LastName: "Wheeler", JobTitle: "General Manager, Isola Bella", OfficePhone: "405.721.2194 x205", Email1: "mwheeler@accordinterests.com.com", MailAddress: "8309 NW 140th St", MailAddress2: "", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73142", MailCountry: "USA", Status: 0},
+	//	{FirstName: "Michelle", MiddleName: "", LastName: "Falls", JobTitle: "Concierge", OfficePhone: "405.721.2194 x2014", Email1: "mfalls@myisolabella.com", MailAddress: "8309 NW 140th St", MailAddress2: "", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73142", MailCountry: "USA", Status: 0},
 	// {FirstName: "Brittney", MiddleName: "", LastName: "Graham", JobTitle: "Manager", OfficePhone: "405.721.2194", Email1: "bgraham@myisolabella.com", MailAddress: "6608 Lyrewood Ln", MailAddress2: "Apt 24", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73132", MailCountry: "USA", Status: 0},
-	{FirstName: "Kristy", MiddleName: "", LastName: "Koon", JobTitle: "Serviced Apt Sales", OfficePhone: "405.721.2194", Email1: "kkoon@myisolabella.com", MailAddress: "10407 SE 23rd", MailAddress2: "Apt 24", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73130", MailCountry: "USA", Status: 0},
+	//	{FirstName: "Kristy", MiddleName: "", LastName: "Koon", JobTitle: "Serviced Apt Sales", OfficePhone: "405.721.2194", Email1: "kkoon@myisolabella.com", MailAddress: "10407 SE 23rd", MailAddress2: "Apt 24", MailCity: "Oklahoma City", MailState: "OK", MailPostalCode: "73130", MailCountry: "USA", Status: 0},
 }
 
 var pa3 = []db.Person{
@@ -490,7 +490,7 @@ func main() {
 	//----------------------------------------------
 	App.LogFile, err = os.OpenFile("mailsend.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
-		util.UlogAndPrint("main", err.Error())
+		util.UlogAndPrint("main: %s\n", err.Error())
 	}
 	defer App.LogFile.Close()
 	log.SetOutput(App.LogFile)
