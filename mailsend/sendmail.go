@@ -257,6 +257,7 @@ func Sendmail(si *Info) error {
 	}
 	util.Console("Workers started\n")
 
+	var lastPerson db.Person
 	si.SentCount = 0
 	good := 0           // number of valid email addresses
 	bad := 0            // number of invalid email addresses
@@ -275,6 +276,7 @@ func Sendmail(si *Info) error {
 			util.Ulog("%s: Error with ReadPersonFromRows: %s\n", funcname, err.Error())
 			return err
 		}
+		lastPerson = p // keep track of the last person read
 
 		if InhibitEmailSend(&p, &optout, &bounced, &complaint, si) {
 			continue
@@ -346,7 +348,7 @@ func Sendmail(si *Info) error {
 		si.SentCount++ // update the si.SentCount only after adding the record
 
 		if si.SentCount%25 == 0 {
-			util.Console("%s: Processing query %s, SentCount = %d\n", funcname, si.QName, si.SentCount)
+			util.Console("%s: Processing query %s, SentCount = %d.  PID last dispatched = %d (%s %s)\n", funcname, si.QName, si.SentCount, p.PID, p.FirstName, p.LastName)
 		}
 	}
 
@@ -396,7 +398,7 @@ func Sendmail(si *Info) error {
 	err = nil // all is well
 
 LOGEXIT:
-	logResults(si, bad, optout, bounced, complaint)
+	logResults(si, bad, optout, bounced, complaint, &lastPerson)
 	return err
 }
 
@@ -410,7 +412,7 @@ LOGEXIT:
 // RETURNS
 //  <nothing>
 //-----------------------------------------------------------------------------
-func logResults(si *Info, bad, optout, bounced, complaint int) {
+func logResults(si *Info, bad, optout, bounced, complaint int, p *db.Person) {
 	funcname := "Sendmail"
 	util.Ulog("%s: Finished query %s\n", funcname, si.QName)
 	util.Ulog("%s: Messages successfully sent:                 %5d\n", funcname, si.SentCount)
@@ -419,6 +421,7 @@ func logResults(si *Info, bad, optout, bounced, complaint int) {
 	util.Ulog("%s: Users skipped due to prior bounced message: %5d\n", funcname, bounced)
 	util.Ulog("%s: Users skipped due to prior complaint:       %5d\n", funcname, complaint)
 	util.Ulog("%s: TOTAL USERS PROCESSED.......................%5d\n", funcname, si.SentCount+bad+optout+bounced+complaint)
+	util.Ulog("\n\n%s: Last person read from DB: PID=%d, email=%s, first/last name = %s %s\n", funcname, p.PID, p.Email1, p.FirstName, p.LastName)
 }
 
 func initMessage(si *Info) *gomail.Message {
