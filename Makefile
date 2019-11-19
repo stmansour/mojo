@@ -1,4 +1,5 @@
 DIRS = util db scrapers mailsend admin mojosrv tools test
+DIST=./tmp
 RELDIR = ./tmp/mojo
 TOP=.
 
@@ -32,6 +33,18 @@ all: clean mojo test stats
 try: clean mojo package smalldb
 
 build: clean mojo package
+
+tarzip:
+	cd ${DIST};if [ -f ./mojo/config.json ]; then mv ./rentroll/config.json .; fi
+	cd ${DIST};rm -f mojo.tar*;tar czf mojo.tar.gz mojo
+	cd ${DIST};if [ -f ./config.json ]; then mv ./config.json ./mojo/config.json; fi
+
+snapshot: tarzip
+	cd ${DIST}; /usr/local/accord/bin/snapshot.sh mojo.tar.gz
+
+release:
+	/usr/local/accord/bin/release.sh mojo
+
 
 stats:
 	@echo "GO SOURCE CODE STATISTICS"
