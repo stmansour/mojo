@@ -35,7 +35,7 @@ try: clean mojo package smalldb
 build: clean mojo package
 
 tarzip:
-	cd ${DIST};if [ -f ./mojo/config.json ]; then mv ./rentroll/config.json .; fi
+	cd ${DIST};if [ -f ./mojo/config.json ]; then mv ./mojo/config.json .; fi
 	cd ${DIST};rm -f mojo.tar*;tar czf mojo.tar.gz mojo
 	cd ${DIST};if [ -f ./config.json ]; then mv ./config.json ./mojo/config.json; fi
 
