@@ -316,7 +316,7 @@ function buildPageElements() {
             toolbarColumns  : true,
         },
          columns: [
-            {field: 'PID',          caption: 'PID',           size: '100px', sortable: true, hidden: true},
+            {field: 'PID',          caption: 'PID',           size:  '60px', sortable: true, hidden: true},
             {field: 'Status',       caption: 'Status',        size: '100px', sortable: true, hidden: false,
                     render: function (record, index, col_index) {
                                 return getStatusString(this.getCellValue(index, col_index));
@@ -380,8 +380,17 @@ function buildPageElements() {
                     'onkeypress="if (event.keyCode == 13) groupFilterSubmit();"' +
                     'value="'+app.groupFilter+'"'+
                     '>' },
-        ]
+        ],
     );
+
+    w2ui.peopleGrid.toolbar.on('refresh', function(event) {
+        event.onComplete = function () {
+            var x = document.getElementById('mojoGroupFilter');
+            if (x != null) {
+                x.value = app.groupFilter;    
+            }
+        }
+    });
 
     //------------------------------------------------------------------------
     //          Person Form
