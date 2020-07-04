@@ -217,7 +217,7 @@ function buildPageElements() {
         onClick: function (event) {
             console.log('target = ' + event.target);
             switch(event.target) {
-                case "moduleMenu:Directory":      
+                case "moduleMenu:Directory":
                     window.location.href = 'https://directory.airoller.com/';
                     break;
                 case "moduleMenu:RentRoll":
@@ -229,7 +229,7 @@ function buildPageElements() {
                     w2ui.newsLayout.load('main', '/html/news.html', 'flip-down');
                     w2ui.toptoolbar.set('msgButton', {icon: 'fa fa-newspaper-o'});
                     break;
-                case "menuButton:Webdocs": openInNewTab('/doc/docs.html'); break; 
+                case "menuButton:Webdocs": openInNewTab('/doc/docs.html'); break;
             }
         },
     }));
@@ -264,7 +264,7 @@ function buildPageElements() {
             console.log('event.target = ' + event.target);
             switch(event.target) {
                 case 'dashboard':
-                    w2ui.toplayout.load('main','/html/dashboard.html'); 
+                    w2ui.toplayout.load('main','/html/dashboard.html');
                     w2ui.toplayout.hide('right',true);
                     break;
                 case 'query':
@@ -317,10 +317,14 @@ function buildPageElements() {
         },
          columns: [
             {field: 'PID',          caption: 'PID',           size: '100px', sortable: true, hidden: true},
-            {field: 'Status',       caption: 'Status',        size: '40px',  sortable: true, hidden: false},
-            {field: 'OptOutDate',   caption: 'OptOutDate',    size: '145px', sortable: true, hidden: false},
+            {field: 'Status',       caption: 'Status',        size: '100px', sortable: true, hidden: false,
+                    render: function (record, index, col_index) {
+                                return getStatusString(this.getCellValue(index, col_index));
+                            }
+            },
+            {field: 'OptOutDate',   caption: 'OptOutDate',    size:  '80px', sortable: true, hidden: false},
             {field: 'Email1',       caption: 'Email1',        size: '200px', sortable: true, hidden: false},
-            {field: 'Email2',       caption: 'Email2',        size: '200px', sortable: true, hidden: false},
+            {field: 'Email2',       caption: 'Email2',        size:  '40px', sortable: true, hidden: false},
             {field: 'FirstName',    caption: 'FirstName',     size: '100px', sortable: true, hidden: false},
             {field: 'MiddleName',   caption: 'MiddleName',    size: '50px',  sortable: true, hidden: false},
             {field: 'LastName',     caption: 'LastName',      size: '100px', sortable: true, hidden: false},
@@ -331,8 +335,8 @@ function buildPageElements() {
             {field: 'MailAddress',  caption: 'MailAddress',   size: '100px', sortable: true, hidden: false},
             {field: 'MailAddress2', caption: 'MailAddress2',  size: '100px', sortable: true, hidden: true},
             {field: 'MailCity',     caption: 'MailCity',      size: '100px', sortable: true, hidden: false},
-            {field: 'MailState',    caption: 'MailState',     size: '50px',  sortable: true, hidden: false},
-            {field: 'MailPostalCode',caption:'MailPostalCode',size: '50px',  sortable: true, hidden: false},
+            {field: 'MailState',    caption: 'MailState',     size:  '50px', sortable: true, hidden: false},
+            {field: 'MailPostalCode',caption:'MailPostalCode',size:  '50px', sortable: true, hidden: false},
             {field: 'MailCountry',  caption: 'MailCountry',   size: '100px', sortable: true, hidden: true},
             {field: 'RoomNumber',   caption: 'RoomNumber',    size: '100px', sortable: true, hidden: false},
             {field: 'MailStop',     caption: 'MailStop',      size: '100px', sortable: true, hidden: false},
@@ -371,7 +375,7 @@ function buildPageElements() {
     w2ui.peopleGrid.toolbar.add(
         [
             { type: 'break', id: 'break1' },
-            { type: 'html', id: 'groupName', 
+            { type: 'html', id: 'groupName',
                     html: 'Group: <input type="text" id="mojoGroupFilter" value=""' +
                     'onkeypress="if (event.keyCode == 13) groupFilterSubmit();"' +
                     'value="'+app.groupFilter+'"'+
@@ -501,11 +505,11 @@ function buildPageElements() {
                                     console.log('Response to groupcount: ' + msg.status);
                                     return;
                                 }
-                                document.getElementById('mojoGroupName').innerHTML = '' + msg.record.GroupName; 
-                                document.getElementById('mojoLastScrapeStart').innerHTML = '' + msg.record.LastScrapeStart; 
-                                document.getElementById('mojoLastScrapeStop').innerHTML = '' + msg.record.LastScrapeStop; 
-                                document.getElementById('mojoMemberCount').innerHTML = '' + msg.record.MemberCount; 
-                                document.getElementById('mojoMailToCount').innerHTML = '' + msg.record.MailToCount; 
+                                document.getElementById('mojoGroupName').innerHTML = '' + msg.record.GroupName;
+                                document.getElementById('mojoLastScrapeStart').innerHTML = '' + msg.record.LastScrapeStart;
+                                document.getElementById('mojoLastScrapeStop').innerHTML = '' + msg.record.LastScrapeStop;
+                                document.getElementById('mojoMemberCount').innerHTML = '' + msg.record.MemberCount;
+                                document.getElementById('mojoMailToCount').innerHTML = '' + msg.record.MailToCount;
                                 document.getElementById('mojoOptOutCount').innerHTML = '' + msg.record.OptOutCount;
                                 document.getElementById('mojoBouncedCount').innerHTML = '' + msg.record.BouncedCount;
                                 document.getElementById('mojoComplaintCount').innerHTML = '' + msg.record.ComplaintCount;
@@ -637,6 +641,7 @@ function buildPageElements() {
 function groupFilterSubmit() {
     var groupName = document.getElementById('mojoGroupFilter');
     app.groupFilter = groupName.value;
+    w2ui.peopleGrid.postData.groupName = groupName.value;
     w2ui.peopleGrid.request('get');
 }
 
@@ -644,7 +649,7 @@ function groupFilterSubmit() {
 function finishInitialization() {
     defineDateFmts();
     buildPageElements();
- 
+
 }
 
 function handleData(data,status) {
@@ -659,6 +664,16 @@ function handleData(data,status) {
     }
     finishInitialization();
     w2ui.toplayout.load('main','/html/dashboard.html');
+}
+
+function getStatusString(x) {
+    switch (x) {
+        case 0: return "";
+        case 1: return "opt out";
+        case 2: return "bounced";
+        case 3: return "complaint";
+        default: return "?";
+    }
 }
 
 $(function () {

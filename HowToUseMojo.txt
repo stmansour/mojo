@@ -162,5 +162,5 @@ How To Use Mojo
        that the FLAGS are cleared.
     *  Next, make a quick list of the PIDs of the people you want to
        send to.
-    *  use the -pid option on mailsend to list the PIDs of the
-       recipients, no spaces.  Ex:  -pid 7366,8829,29922
+    *  use the -pids option on mailsend to list the PIDs of the
+       recipients, no spaces.  Ex:  -pids 7366,8829,29922

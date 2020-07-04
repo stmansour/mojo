@@ -143,7 +143,7 @@ func SvcPeopleCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		err error
 	)
 
-	g.Record.Count, err = db.GetRowCount("People", "")
+	g.Record.Count, err = db.GetRowCount("People", "", "")
 	if err != nil {
 		util.Console("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
@@ -191,7 +191,7 @@ func SvcPeopleStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	}
 
 	for i := 0; i < len(m); i++ {
-		*m[i].Count, err = db.GetRowCount("People", m[i].Where)
+		*m[i].Count, err = db.GetRowCount("People", "", m[i].Where)
 		if err != nil {
 			util.Console("Error from db.GetRowCount: i = %d, err: %s\n", i, err.Error())
 			SvcGridErrorReturn(w, err)
@@ -223,6 +223,7 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 	var g PersonSearchResponse
 	var err error
 	var GID = int64(0)
+	var joins string
 
 	if len(d.wsSearchReq.GroupName) > 0 {
 		util.Console("GROUP NAME = %s\n", d.wsSearchReq.GroupName)
@@ -249,7 +250,8 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 
 	q := fmt.Sprintf("SELECT %s FROM People ", flds) // the fields we want
 	if GID > 0 {
-		q += fmt.Sprintf("INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d ", GID)
+		joins = fmt.Sprintf("INNER JOIN PGroup ON PGroup.PID=People.PID AND PGroup.GID=%d ", GID)
+		q += joins
 	}
 
 	qw := ""
@@ -277,7 +279,7 @@ func SvcSearchHandlerPeople(w http.ResponseWriter, r *http.Request, d *ServiceDa
 	// now set up the offset and limit
 	q += fmt.Sprintf(" LIMIT %d OFFSET %d", d.wsSearchReq.Limit, d.wsSearchReq.Offset)
 	util.Console("rowcount query conditions: %s\ndb query = %s\n", qw, q)
-	g.Total, err = db.GetRowCount("People", qw)
+	g.Total, err = db.GetRowCount("People", joins, qw)
 	if err != nil {
 		util.Console("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)

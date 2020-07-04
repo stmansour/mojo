@@ -117,7 +117,7 @@ func SvcGroupsCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		err error
 	)
 
-	g.Record.Count, err = db.GetRowCount("EGroup", "")
+	g.Record.Count, err = db.GetRowCount("EGroup", "", "")
 	if err != nil {
 		util.Console("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
@@ -169,7 +169,7 @@ func SvcSearchHandlerGroups(w http.ResponseWriter, r *http.Request, d *ServiceDa
 	q += fmt.Sprintf(" LIMIT %d OFFSET %d", d.wsSearchReq.Limit, d.wsSearchReq.Offset)
 	util.Console("rowcount query conditions: %s\ndb query = %s\n", qw, q)
 
-	g.Total, err = db.GetRowCount("EGroup", qw)
+	g.Total, err = db.GetRowCount("EGroup", "", qw)
 	if err != nil {
 		util.Console("Error from db.GetRowCount: %s\n", err.Error())
 		SvcGridErrorReturn(w, err)
