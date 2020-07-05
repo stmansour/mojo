@@ -9,6 +9,7 @@
 
 TOOLSDIR=${TOP}/tools
 BASHDIR=${TOOLSDIR}/bashtools
+TOP=../..
 
 #############################################################################
 # Set default values
@@ -98,6 +99,11 @@ OPTIONS
 	    use this option if you're sure the output is correct. This option
 	    can be a huge time saver, but use it with caution. All .gold files
 	    are maintained in the ./${GOLD}/ directory.
+
+	-t  testname
+		Run only the single test named testname.
+		The tests are conventionally named as a single lower case letter
+		(a-z), though this is not a requirement.
 EOF
 }
 
@@ -136,13 +142,13 @@ tdir() {
 
 
 #############################################################################
-# domojotest()  
-#    The purpose of this routine is to call rrloadcsv with the 
+# domojotest()
+#    The purpose of this routine is to call rrloadcsv with the
 #     parameters supplied in $2 and send its output to a file
 #     named $1. After trrloadcsv completes, the output in $1 will
 #     be compared with the output in gold/$1.gold.  If there are
-#     no diffs, then the test passes.  If there are diffs, then 
-#     it terminates execution of the script after doing 
+#     no diffs, then the test passes.  If there are diffs, then
+#     it terminates execution of the script after doing
 #     the following:
 #
 #        (a) Displays the diffs
@@ -174,8 +180,8 @@ tdir() {
 #            and you've validated in some other way that everything is
 #            working after such a change.  By convention, all of my
 #            "function.sh" scripts use the -o option to set FORCEGOOD
-#            to 1.    
-#                  
+#            to 1.
+#
 #	Parameters:
 # 		$1 = base file name
 #		$2 = app options to reproduce
@@ -219,7 +225,7 @@ dorrtest () {
 			exit 1
 		fi
 	else
-		echo 
+		echo
 	fi
 }
 
@@ -268,13 +274,13 @@ EOF
 			exit 1
 		fi
 	else
-		echo 
+		echo
 	fi
 }
 
 ##########################################################################
 # logcheck()
-#   Compares log to log.gold 
+#   Compares log to log.gold
 #   Date related fields are detected with a regular expression and changed
 #   to "current time".  More filters may be needed depending on what goes
 #   into the logfile.
@@ -297,9 +303,9 @@ logcheck() {
 		declare -a out_filters=(
 			's/^Date\/Time:.*/current time/'
 			's/^Test completed:.*/current time/'
-			's/(20[1-4][0-9]\/[0-1][0-9]\/[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9] )(.*)/$2/'	
-			's/(20[1-4][0-9]\/[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9] )(.*)/$2/'	
-			's/(20[1-4][0-9]-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9] )(.*)/$2/'	
+			's/(20[1-4][0-9]\/[0-1][0-9]\/[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9] )(.*)/$2/'
+			's/(20[1-4][0-9]\/[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9] )(.*)/$2/'
+			's/(20[1-4][0-9]-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9] )(.*)/$2/'
 		)
 		cp ${GOLD}/${LOGFILE}.gold ll.g
 		cp log llog
@@ -330,7 +336,7 @@ logcheck() {
 
 ##########################################################################
 # genericlogcheck()
-#   Compares the supplied file $1 to gold/$1.gold 
+#   Compares the supplied file $1 to gold/$1.gold
 #	Parameters:
 # 		$1 = base file name
 #		$2 = app options to reproduce
@@ -360,7 +366,7 @@ genericlogcheck() {
 			exit 1
 		fi
 	else
-		echo 
+		echo
 	fi
 }
 
@@ -368,7 +374,7 @@ genericlogcheck() {
 # startMojoServer()
 #	Kills any currently running instances of the server
 #   then starts it up again.  The port is set to the
-#   default port of 8270.  If you set MOJOPORT prior 
+#   default port of 8270.  If you set MOJOPORT prior
 #   to including base.sh to override the port number
 #########################################################
 startMojoServer () {
@@ -454,7 +460,7 @@ dojsonPOST () {
 			exit 1
 		fi
 	else
-		echo 
+		echo
 	fi
 	rm -f qqx qqy
 }
@@ -525,7 +531,7 @@ dojsonAwsPOST () {
 			exit 1
 		fi
 	else
-		echo 
+		echo
 	fi
 	rm -f qqx qqy
 }
@@ -593,7 +599,7 @@ dojsonGET () {
 			exit 1
 		fi
 	else
-		echo 
+		echo
 	fi
 	rm -f qqx qqy
 }
@@ -660,7 +666,7 @@ doHtmlGET () {
 			exit 1
 		fi
 	else
-		echo 
+		echo
 	fi
 	rm -f qqx qqy
 }
@@ -669,7 +675,7 @@ doHtmlGET () {
 #  Handle command line options...
 #--------------------------------------------------------------------------
 tdir
-while getopts "cfmornR:" o; do
+while getopts "cfmornt:R:" o; do
 	echo "o = ${o}"
 	case "${o}" in
 		c | C)
@@ -691,6 +697,9 @@ while getopts "cfmornR:" o; do
 			;;
 		o)	FORCEGOOD=1
 			echo "OUTPUT OF THIS RUN IS SAVED AS *.GOLD"
+			;;
+		t) SINGLETEST="${OPTARG}"
+			echo "SINGLETEST set to ${SINGLETEST}"
 			;;
 		*) 	usage
 			exit 1

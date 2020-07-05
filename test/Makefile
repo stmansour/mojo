@@ -1,4 +1,4 @@
-DIRS = ws mailsend msgbody
+DIRS = ws mailsend msgbody import
 
 db:
 	cd mailsend;make
@@ -30,6 +30,7 @@ package:
 	for dir in $(DIRS); do make -C $$dir package;done
 	cd mailsend;make package
 	@echo "*** PACKAGE completed in test ***"
+
 secure:
 	for dir in $(DIRS); do make -C $${dir} secure;done
 	@rm -f config.json confdev.json confprod.json
