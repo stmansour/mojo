@@ -139,7 +139,8 @@ func doExport() {
 }
 
 func exportHandle(p db.Person) {
-	s := fmt.Sprintf("%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q\n",
+	s := fmt.Sprintf("%d,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q\n",
+		p.Status,
 		p.FirstName,
 		p.MiddleName,
 		p.LastName,
@@ -164,6 +165,7 @@ func exportHandle(p db.Person) {
 
 func exportHeader() {
 	var cols = []string{
+		"ReceiveStatus",
 		"FirstName",
 		"MiddleName",
 		"LastName",
