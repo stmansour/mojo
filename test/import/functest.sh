@@ -73,7 +73,7 @@ fi
 #
 #  Expected Results:
 #   1.  MiddleName should be added to PID 1: "BillyBob". This should result
-#       in Entry Updates = 1.
+#       in Updated Entries = 1.
 #------------------------------------------------------------------------------
 TFILES="a"
 echo "SINGLETEST, TFILES = ${SINGLETEST}${TFILES}"
@@ -81,9 +81,9 @@ if [ "${SINGLETEST}${TFILES}" = "${TFILES}" -o "${SINGLETEST}${TFILES}" = "${TFI
 	TESTNAME="Update Missing Info"
 	TESTCOUNT=1
 	${BINDIR}/mojocsv -g "${GRP}" -cg -f xa.csv > "x${TFILES}"
-	RES=$(grep "Entry Updates:" xa | sed 's/Entry Updates: *//')
+	RES=$(grep "Updated Entries:" xa | sed 's/Updated Entries: *//')
 	PF="fail"
-	if [ ${RES} = "1" ]; then
+	if [ "${RES}" = "1" ]; then
 		PF="pass"
 	fi
 	echo "Test ${TFILES}:  ${PF}"
@@ -109,9 +109,9 @@ if [ "${SINGLETEST}${TFILES}" = "${TFILES}" -o "${SINGLETEST}${TFILES}" = "${TFI
 	TESTNAME="Skip DB Write If No Change"
 	TESTCOUNT=1
 	${BINDIR}/mojocsv -g "${GRP}" -cg -f xa.csv > "x${TFILES}"
-	RES=$(grep "Entry Updates:" x${TFILES} | sed 's/Entry Updates: *//')
+	RES=$(grep "Updated Entries:" x${TFILES} | sed 's/Updated Entries: *//')
 	PF="fail"
-	if [ ${RES} = "0" ]; then
+	if [ "${RES}" = "0" ]; then
 		PF="pass"
 	fi
 	echo "Test ${TFILES}:  ${PF}"
@@ -140,9 +140,9 @@ if [ "${SINGLETEST}${TFILES}" = "${TFILES}" -o "${SINGLETEST}${TFILES}" = "${TFI
 	TESTNAME="Blank Info Does Not Overwrite"
 	TESTCOUNT=1
 	${BINDIR}/mojocsv -g "${GRP}" -cg -f xa.csv > "x${TFILES}"
-	RES=$(grep "Entry Updates:" xa | sed 's/Entry Updates: *//')
+	RES=$(grep "Updated Entries:" xa | sed 's/Updated Entries: *//')
 	PF="fail"
-	if [ ${RES} != "1" ]; then
+	if [ "${RES}" != "1" ]; then
 		PF="fail"
 		echo "Test ${TFILES}: ${PF} -- did not add MiddleName for initial condition"
 		exit 1
@@ -152,8 +152,8 @@ if [ "${SINGLETEST}${TFILES}" = "${TFILES}" -o "${SINGLETEST}${TFILES}" = "${TFI
 	#-----------------------------------------------------------
 	((TESTCOUNT++))
 	${BINDIR}/mojocsv -g "${GRP}" -cg -f xc.csv > "x${TFILES}"
-	RES=$(grep "Entry Updates:" x${TFILES} | sed 's/Entry Updates: *//')
-	if [ ${RES} = "0" ]; then
+	RES=$(grep "Updated Entries:" x${TFILES} | sed 's/Updated Entries: *//')
+	if [ "${RES}" = "0" ]; then
 		PF="pass"
 	fi
 	showResults
@@ -180,9 +180,9 @@ if [ "${SINGLETEST}${TFILES}" = "${TFILES}" -o "${SINGLETEST}${TFILES}" = "${TFI
 	TESTNAME="Updated Info Overwrites"
 	TESTCOUNT=1
 	${BINDIR}/mojocsv -g "${GRP}" -cg -f xa.csv > "x${TFILES}"
-	RES=$(grep "Entry Updates:" xa | sed 's/Entry Updates: *//')
+	RES=$(grep "Updated Entries:" xa | sed 's/Updated Entries: *//')
 	PF="fail"
-	if [ ${RES} != "1" ]; then
+	if [ "${RES}" != "1" ]; then
 		PF="fail"
 		echo "Test ${TFILES}: ${PF} -- did not add MiddleName for initial condition"
 		exit 1
@@ -192,8 +192,8 @@ if [ "${SINGLETEST}${TFILES}" = "${TFILES}" -o "${SINGLETEST}${TFILES}" = "${TFI
 	#-----------------------------------------------------------
 	((TESTCOUNT++))
 	${BINDIR}/mojocsv -g "${GRP}" -cg -f xd.csv > "x${TFILES}"
-	RES=$(grep "Entry Updates:" x${TFILES} | sed 's/Entry Updates: *//')
-	if [ ${RES} = "1" ]; then
+	RES=$(grep "Updated Entries:" x${TFILES} | sed 's/Updated Entries: *//')
+	if [ "${RES}" = "1" ]; then
 		PF="pass"
 	fi
 	echo "Test ${TFILES}:  ${PF}"

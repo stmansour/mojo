@@ -1,4 +1,4 @@
-DIRS=mojonewdb watchdog
+DIRS=mojonewdb watchdog export
 
 admin:
 	for dir in $(DIRS); do make -C $$dir;done

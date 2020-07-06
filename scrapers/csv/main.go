@@ -228,7 +228,7 @@ func MapAndImport(fname string) {
 	if nil != err {
 		log.Fatalf("MapAndImport: error updating group: %s\n", App.GroupName)
 	}
-	util.Console("UPDATED App.Group.DtStart = %s\n", App.Group.DtStart.Format(util.DATETIMEINPFMT))
+	// util.Console("UPDATED App.Group.DtStart = %s\n", App.Group.DtStart.Format(util.DATETIMEINPFMT))
 
 	//-------------------------------------------------------------
 	// Now that we know the mapping, go through the data and
@@ -237,7 +237,7 @@ func MapAndImport(fname string) {
 	matches := 0
 	newEntries := 0
 	updatedEntries := 0
-	updates := 0
+	dbops := 0
 	groupDefUpdates := 0
 
 	flt := float64(len(t))
@@ -294,7 +294,7 @@ func MapAndImport(fname string) {
 		if len(a.Email1) == 0 && len(a.Email2) == 0 {
 			// util.Console("no email address found for this entry, skipping to next person\n")
 		}
-		util.Console("Processing person:  Firstname = %q, MiddleName = %q, LastName = %q  email = %q)\n", a.FirstName, a.MiddleName, a.LastName, a.Email1)
+		// util.Console("Processing person:  Firstname = %q, MiddleName = %q, LastName = %q  email = %q)\n", a.FirstName, a.MiddleName, a.LastName, a.Email1)
 
 		//---------------------------------------------
 		// Do we already have this person?
@@ -323,11 +323,11 @@ func MapAndImport(fname string) {
 			}
 			PID = a.PID // now add this person to the group
 			newEntries++
-			updates++
+			dbops++
 			createdPerson = true //mark that it
 		} else {
 			matches++
-			util.Console("%s FOUND, PID = %d\n", a.Email1, dup.PID)
+			// util.Console("%s FOUND, PID = %d\n", a.Email1, dup.PID)
 			//----------------------------------------------------------------
 			// EXISTING ENTRY
 			//----------------------------------------------------------------
@@ -343,8 +343,8 @@ func MapAndImport(fname string) {
 				chgs++
 			}
 
-			util.Console("a.MiddleName = %s\n", a.MiddleName)
-			util.Console("newdup.MiddleName = %s\n", newdup.MiddleName)
+			// util.Console("a.MiddleName = %s\n", a.MiddleName)
+			// util.Console("newdup.MiddleName = %s\n", newdup.MiddleName)
 			if len(a.MiddleName) > 0 && newdup.MiddleName != a.MiddleName {
 				newdup.MiddleName = a.MiddleName
 				util.Console("CONDITIONS MET!,  newdup.MiddleName = %s\n", newdup.MiddleName)
@@ -411,12 +411,12 @@ func MapAndImport(fname string) {
 				chgs++
 			}
 			if chgs > 0 {
-				util.Console("CSV information contains updates that will be applied to PID = %d\n", newdup.PID)
+				// util.Console("CSV information contains updates that will be applied to PID = %d\n", newdup.PID)
 				if err = db.UpdatePerson(&newdup); err != nil { // no: insert the person
 					log.Fatalf("Error updating Person.UID = %d: %s\n", newdup.PID, err.Error())
 				}
 				updatedEntries++
-				updates++
+				dbops++
 			}
 			PID = dup.PID // yes: just add the person to this group
 		}
@@ -431,11 +431,11 @@ func MapAndImport(fname string) {
 				if !util.IsSQLNoResultsError(err) {
 					log.Fatalf("Error getting person group: %s\n", err.Error())
 				} else {
-					util.Console("At point P1 - PID=%d IS NOT already a member of group %d.  addToGroup = %t\n", PID, GID, addToGroup)
+					// util.Console("At point P1 - PID=%d IS NOT already a member of group %d.  addToGroup = %t\n", PID, GID, addToGroup)
 				}
 			} else {
 				addToGroup = false // this person is already a member of the group
-				util.Console("At point P1 - PID=%d IS already a member of group %d.  addToGroup = %t\n", PID, GID, addToGroup)
+				// util.Console("At point P1 - PID=%d IS already a member of group %d.  addToGroup = %t\n", PID, GID, addToGroup)
 			}
 		}
 
@@ -452,7 +452,7 @@ func MapAndImport(fname string) {
 				fmt.Printf("Error inserting Person into group: %s\n", err.Error())
 				os.Exit(1)
 			}
-			updates++
+			dbops++
 		}
 
 		//----------------------------------------------------------
@@ -476,12 +476,12 @@ func MapAndImport(fname string) {
 		log.Fatalf("MapAndImport: error updating group: %s\n", App.GroupName)
 	}
 	groupDefUpdates++
-	util.Console("UPDATED App.Group.DtStop = %s\n", App.Group.DtStop.Format(util.DATETIMEINPFMT))
+	// util.Console("UPDATED App.Group.DtStop = %s\n", App.Group.DtStop.Format(util.DATETIMEINPFMT))
 
 	//-------------------------------------------------------------
 	// Print out the stats...
 	//-------------------------------------------------------------
-	fmt.Printf("Import Complete\n")
+	fmt.Printf("\n\nImport Complete\n")
 	if !App.skipOutput {
 		fmt.Printf("Start time:        %s\n", App.Group.DtStart.In(db.DB.Zone).Format(util.DATETIMEINPFMT))
 		fmt.Printf("Stop time:         %s\n", App.Group.DtStop.In(db.DB.Zone).Format(util.DATETIMEINPFMT))
@@ -490,6 +490,6 @@ func MapAndImport(fname string) {
 		fmt.Printf("New Entries:       %6d\n", newEntries)
 		fmt.Printf("Updated Entries:   %6d\n", updatedEntries)
 		fmt.Printf("GroupDefs updated: %6d\n", groupDefUpdates)
-		fmt.Printf("Entry Updates:     %6d\n", updates)
+		fmt.Printf("DB Operations:     %6d\n", dbops)
 	}
 }
