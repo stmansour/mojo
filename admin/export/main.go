@@ -96,7 +96,7 @@ func doExport() {
 			return
 		}
 		GID = egrp.GID
-		util.Console("GID = %d\n", GID)
+		// util.Console("GID = %d\n", GID)
 	}
 
 	s1 := db.DB.DBFields["People"] // comma separated list
@@ -139,8 +139,7 @@ func doExport() {
 }
 
 func exportHandle(p db.Person) {
-	s := fmt.Sprintf("%d,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%d,%s\n",
-		p.PID,
+	s := fmt.Sprintf("%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q,%q\n",
 		p.FirstName,
 		p.MiddleName,
 		p.LastName,
@@ -158,15 +157,13 @@ func exportHandle(p db.Person) {
 		p.MailCountry,
 		p.RoomNumber,
 		p.MailStop,
-		p.Status,
-		p.OptOutDate.Format(util.DATEINPFMT),
+		//p.OptOutDate.Format(util.DATEINPFMT),
 	)
 	fmt.Print(s)
 }
 
 func exportHeader() {
 	var cols = []string{
-		"PID",
 		"FirstName",
 		"MiddleName",
 		"LastName",
@@ -184,8 +181,6 @@ func exportHeader() {
 		"MailCountry",
 		"RoomNumber",
 		"MailStop",
-		"Status",
-		"OptOutDate",
 	}
 	for i := 0; i < len(cols); i++ {
 		fmt.Printf("%q", cols[i])

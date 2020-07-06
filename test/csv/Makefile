@@ -18,6 +18,10 @@ test:
 
 smalldb: testdb
 
+db:
+	${TOP}/tmp/mojo/mojonewdb
+	${TOP}/tmp/mojo/mojocsv -g smanmusic -cg -f smanmusic.csv
+
 testdb:
 	cd ../testdb;make smalldb
 
