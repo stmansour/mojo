@@ -541,8 +541,8 @@ RETRYSEND:
 // SendToPIDs sends the email described in si to the list of PIDs in pids.
 //
 // INPUTS:
-//    si - standard send info
 //  pids - list of Person IDs that are to receive the message
+//    si - standard send info
 //
 // RETURNS:
 //    any error encountered
@@ -578,4 +578,52 @@ func SendToPIDs(pids []int64, si *Info) error {
 
 	}
 	return nil
+}
+
+// SendToEmailAddresses sends the email described in si to the list of
+// email addresses in mailto
+//
+// INPUTS:
+//  mailto - standard send info
+//  si - send info
+//
+// RETURNS:
+//    any error encountered
+//-----------------------------------------------------------------------------
+func SendToEmailAddresses(mailto string, si *Info) error {
+	funcname := "SendToEmailAddresses"
+	// parse the mailto string and find the individuals...
+	sa := strings.Split(mailto, ",")
+	if len(sa) < 1 {
+		return fmt.Errorf("%s: No email addresses found in %q", funcname, mailto)
+	}
+	s := ""
+	l := 0
+	for i := 0; i < len(sa); i++ {
+		if l > 0 {
+			s += ","
+		}
+		s += fmt.Sprintf("%q", sa[i])
+		l++
+	}
+	q := "SELECT PID FROM People WHERE Email1 in (" + s + ");"
+	util.Console("%s: q = %s\n", funcname, q)
+	rows, err := db.DB.Db.Query(q)
+	if err != nil {
+		util.Console("%s: DB Query: %s\n", funcname, err.Error())
+		return err
+	}
+	defer rows.Close()
+
+	var pids []int64
+	var pid int64
+	for rows.Next() {
+		if err := rows.Scan(&pid); err != nil {
+			util.Console("%s.  Error reading Person: %s\n", funcname, err.Error())
+		}
+		pids = append(pids, pid)
+	}
+	util.Console("%s: len(pids) = %d\n", funcname, len(pids))
+
+	return SendToPIDs(pids, si)
 }

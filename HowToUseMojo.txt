@@ -164,3 +164,6 @@ How To Use Mojo
        send to.
     *  use the -pids option on mailsend to list the PIDs of the
        recipients, no spaces.  Ex:  -pids 7366,8829,29922
+    *  or you can use the mailto option to list the email addresses of
+       the people you want to send the message to.  Example:
+       -mailto sman@stevemansour.com,stmansour@gmail.com,sman@accordinterests.com

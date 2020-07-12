@@ -34,6 +34,7 @@ var App struct {
 	Subject       string                   // subject line of the email message
 	From          string                   // email from address
 	PIDs          []int64                  // array of PIDs to send to
+	Mailto        string                   // comma sep list of mailto addresses.
 	QueryCount    bool                     // if true, just print the solution set count for the query and exit
 	Bounce        bool                     // if true, just print the solution set count for the query and exit
 	Complaint     bool                     // if true, just print the solution set count for the query and exit
@@ -422,6 +423,7 @@ func readCommandLineArgs() {
 	vPtr := flag.String("validate", "", "validate the email addresses of everyone in the group name provided, then exit")
 	gPtr := flag.String("group", "", "group name to send mail to; overridden by -q if it is supplied")
 	pids := flag.String("pids", "", "comma separated list of PIDs to send to, overrides -p and -q, ex: -pids 764,5263,3452")
+	mailto := flag.String("mailto", "", "comma separated list of email addresses to send to, overrides -p and -q, ex: -mailto bill@x.com,sally@y.org,suzie@pig.edu")
 	qcPtr := flag.Bool("count", false, "returns the count of target addresses in the query, then exits.")
 	soPtr := flag.Bool("setup", false, "just run the setup, do not send email")
 	bPTR := flag.Bool("bounce", false, "just send a message to bounce@simulator.amazonses.com")
@@ -445,6 +447,7 @@ func readCommandLineArgs() {
 	App.DBName = *dbnmPtr
 	App.DBUser = *dbuPtr
 	App.MsgFile = *mPtr
+	App.Mailto = *mailto
 	App.AttachFile = *aPtr
 	App.QueryName = *qPtr
 	App.SetupOnly = *soPtr
@@ -593,6 +596,14 @@ func main() {
 		if err != nil {
 			fmt.Printf("mailsend.ValidateGroupEmailAddresses:  err = %s\n", err)
 			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
+	if len(App.Mailto) > 0 {
+		fmt.Printf("Sending to specified list of email addresses\n")
+		if err = mailsend.SendToEmailAddresses(App.Mailto, &si); err != nil {
+			fmt.Printf("Error from SendToEmailAddresses = %s\n", err.Error())
 		}
 		os.Exit(0)
 	}
