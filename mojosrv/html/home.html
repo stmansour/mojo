@@ -94,6 +94,13 @@ function initializePersonRecord() {
     return rec;
 }
 
+function showForm(f, width) {
+    w2ui.toplayout.content('right', f);
+    w2ui.toplayout.sizeTo('right', width);
+    w2ui.toplayout.render();
+    w2ui.toplayout.show('right', true);
+}
+
 //-----------------------------------------------------------------------------
 // setToForm -  enable form sform in toplayout.  Also, set the forms url and
 //              request data from the server
@@ -113,11 +120,6 @@ function setToForm(sform, url, width) {
         return false;
     }
 
-    // var g = w2ui[app.active_grid];
-    // if (!g) {
-    //     return false;
-    // }
-
     f.url = url;
     if (typeof f.tabs != "undefined"){
         if (typeof f.tabs.name == "string") {
@@ -126,10 +128,7 @@ function setToForm(sform, url, width) {
     }
 
     f.reload();
-    w2ui.toplayout.content('right', f);
-    w2ui.toplayout.sizeTo('right', width);
-    w2ui.toplayout.render();
-    w2ui.toplayout.show('right', true);
+    showForm(f,width)
 }
 
 
@@ -347,7 +346,11 @@ function buildPageElements() {
                 var rec = w2ui.peopleGrid.get(event.recid);
                 //w2ui.personForm.record = initializePersonRecord();
                 w2ui.personForm.recid = rec.PID;
-                setToForm('personForm', '/v1/person/' + rec.PID, 500);
+                w2ui.personForm.url = '/v1/person/' + rec.PID;
+                w2ui.personForm.reload();
+                w2ui.personGroupsGrid.url = '/v1/pgroup/' + rec.PID;
+                w2ui.personGroupsGrid.reload();
+                showForm(w2ui.personFormLayout, 500);
             };
         },
         onRequest: function(event) {
@@ -387,10 +390,44 @@ function buildPageElements() {
         event.onComplete = function () {
             var x = document.getElementById('mojoGroupFilter');
             if (x != null) {
-                x.value = app.groupFilter;    
+                x.value = app.groupFilter;
             }
         }
     });
+
+
+    //------------------------------------------------------------------------
+    // personFormLayout
+    //
+    //  top    = personForm
+    //  main   = personGroupsGrid
+    //  bottom = personFormBtns
+    //------------------------------------------------------------------------
+    $().w2layout({
+        name: 'personFormLayout',
+        padding: 0,
+        panels: [
+            { type: 'left',    size: 0,     hidden: true,  content: 'left'    },
+            { type: 'top',     size: '67%', hidden: false, content: 'top',    resizable: true, style: app.pstyle },
+            { type: 'main',    size: '33%', hidden: false,  content: 'main',   resizable: true, style: app.pstyle },
+            { type: 'preview', size: 0,     hidden: true,  content: 'preview' },
+            { type: 'bottom',  size: '65px',hidden: false,  content: 'bottom', resizable: false, style: app.pstyle },
+            { type: 'right',   size: 0,     hidden: true,  content: 'right',  resizable: true, style: app.pstyle }
+        ]
+    });
+
+    //---------------------------------------------------------------------------------
+    // finishPersonForm - load the layout properly.
+    //  top    = personForm
+    //  main   = personGroupsGrid
+    //  bottom = personFormBtns
+    //---------------------------------------------------------------------------------
+    window.finishPersonForm = function () {
+        w2ui.personFormLayout.content('top', w2ui.personForm);
+        w2ui.personFormLayout.content('main', w2ui.personGroupsGrid);
+        w2ui.personFormLayout.content('bottom', w2ui.personFormBtns);
+    };
+
 
     //------------------------------------------------------------------------
     //          Person Form
@@ -425,6 +462,7 @@ function buildPageElements() {
             { field: 'OptOutDate', type: 'date', required: false },
             { field: 'LastModTime', type: 'text', required: false },
             { field: 'LastModBy', type: 'text', required: false },
+            { field: 'addToGroup', type: 'enum', required: false },
         ],
         toolbar: {
             items: [
@@ -439,9 +477,71 @@ function buildPageElements() {
                 }
             },
         },
+    });
+
+    //------------------------------------------------------------------------
+    //    personGroupsGrid
+    //
+    //                top    = resUpdateForm
+    //    >>>>>>>>>   main   = personGroupsGrid    <<<<<<<<<<<
+    //                bottom = personFormBtns
+    //------------------------------------------------------------------------
+    $().w2grid({
+        name: 'personGroupsGrid',
+        url: '/v1/pgroup',
+        header: 'Group Membership',
+        multiSelect: false,
+        show: {
+            toolbar         : false,
+            footer          : false,
+            header          : false,
+            toolbarAdd      : false,   // indicates if toolbar add new button is visible
+            toolbarDelete   : false,   // indicates if toolbar delete button is visible
+            toolbarSave     : false,   // indicates if toolbar save button is visible
+            selectColumn    : false,
+            expandColumn    : false,
+            toolbarEdit     : false,
+            toolbarSearch   : false,
+            toolbarInput    : false,
+            searchAll       : false,
+            toolbarReload   : false,
+            toolbarColumns  : false,
+        },
+        columns: [
+            {field: 'recid',     caption: 'recid', size: '40px',  hidden: true,  sortable: true },
+            {field: 'GID',       caption: 'GID',   size: '50px', hidden: false,  sortable: true },
+            {field: 'GroupName', caption: 'Group', size: '350px', hidden: false, sortable: true },
+        ],
+        onClick: function(event) {
+            event.onComplete = function () {
+                var rec = w2ui.personGroupsGrid.get(event.recid);
+            };
+        },
+        onRequest: function(/*event*/) {
+            // w2ui.expenseGrid.postData = {searchDtStart: app.D1, searchDtStop: app.D2};
+        },
+        onRefresh: function(event) {
+            event.onComplete = function() {
+            };
+        }
+    });
+
+    //------------------------------------------------------------------------
+    //    personFormBtns
+    //
+    //                top    = resUpdateForm
+    //                main   = personGroupsGrid
+    //    >>>>>>>>>   bottom = personFormBtns      <<<<<<<<<
+    //------------------------------------------------------------------------
+    $().w2form({
+        name: 'personFormBtns',
+        style: 'border: 0px; background-color: transparent;',
+        formURL: '/html/formpersonbtns.html',
+        url: '',
+        fields: [],
         actions: {
             save: function () {
-                this.save({}, function (data) {
+                w2ui.personForm.save({}, function (data) {
                     if (data.status == 'error') {
                         console.log('ERROR: '+ data.message);
                         return;
@@ -449,6 +549,8 @@ function buildPageElements() {
                     w2ui.toplayout.hide('right',true);
                     w2ui.peopleGrid.reload();
                 });
+            },
+            saveadd: function() {
 
             },
             delete: function() {
@@ -467,12 +569,9 @@ function buildPageElements() {
                 w2ui.toplayout.hide('right',true);
                 w2ui.peopleGrid.reload();
             },
-            reset: function() {
-                var f = w2ui.asmInstForm;
-                console.log('reset: ASMID = ' + f.record.ASMID );
-            }
         },
-   });
+    });
+
 
     //------------------------------------------------------------------------
     //          groupsGrid
@@ -654,11 +753,10 @@ function groupFilterSubmit() {
     w2ui.peopleGrid.request('get');
 }
 
-
 function finishInitialization() {
     defineDateFmts();
     buildPageElements();
-
+    finishPersonForm();
 }
 
 function handleData(data,status) {
@@ -686,13 +784,13 @@ function getStatusString(x) {
 }
 
 $(function () {
-    // $.get('/v1/ping/' + app.language + '/' + app.template)
-    $.get('/v1/ping')
-    .done(handleData)
-    .fail( function() {
-        console.log('Error getting /v1/ping');
-     });
-}
+        // $.get('/v1/ping/' + app.language + '/' + app.template)
+        $.get('/v1/ping')
+        .done(handleData)
+        .fail( function() {
+            console.log('Error getting /v1/ping');
+         });
+    }
 );
 
 </script>

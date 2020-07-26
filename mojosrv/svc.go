@@ -129,6 +129,7 @@ var Svcs = []ServiceHandler{
 	{"groupcount", false, true, SvcGroupsCount},
 	{"groupstats", false, false, GetGroupStats},
 	{"optout", false, false, SvcOptOut},
+	{"pgroup", false, true, SvcHandlerPGroup},
 	{"people", false, true, SvcSearchHandlerPeople},
 	{"peoplecount", false, true, SvcPeopleCount},
 	{"peoplestats", false, true, SvcPeopleStats},

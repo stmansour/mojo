@@ -8,7 +8,6 @@ clean:
 	rm -f testreport.txt
 	for dir in $(DIRS); do make -C $$dir clean;done
 	cd ./testdb;make clean
-	cd ./mailsend;make clean
 	@echo "*** CLEAN completed in test ***"
 
 test:
@@ -28,7 +27,6 @@ test:
 
 package:
 	for dir in $(DIRS); do make -C $$dir package;done
-	cd mailsend;make package
 	@echo "*** PACKAGE completed in test ***"
 
 secure:

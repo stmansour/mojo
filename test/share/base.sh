@@ -141,6 +141,77 @@ tdir() {
 }
 
 
+
+#------------------------------------------------------------------------------
+#  encodeURI encodes data so that it can be passed in a URI.  It
+#      does essentially what Javascript's encodeURI does.
+#
+#  INPUTS
+#  $1  The string to encode
+#
+#  RETURNS
+#      the return value is the encoded string.
+#
+#  USAGE:
+#      data=$(encodeURI "4%2F1%2F2019")
+#------------------------------------------------------------------------------
+encodeURI() {
+  local string="${1}"
+  local strlen=${#string}
+  local encoded=""
+  local pos c o
+
+  for (( pos=0 ; pos<strlen ; pos++ )); do
+     c=${string:$pos:1}
+     case "$c" in
+        [-_.~a-zA-Z0-9] ) o="${c}" ;;
+        * )               printf -v o '%%%02x' "'$c"
+     esac
+     encoded+="${o}"
+  done
+  echo "${encoded}"
+}
+
+#------------------------------------------------------------------------------
+#  encodeRequest is just like encodeURI except that it saves the output
+#      into a file named "request"
+#
+#  INPUTS
+#  $1  The string to encode
+#
+#  RETURNS
+#      nothing, but the encoded string will be in a file named "request"
+#------------------------------------------------------------------------------
+encodeRequest() {
+  local string="${1}"
+  local strlen=${#string}
+  local encoded=""
+  local pos c o
+
+  for (( pos=0 ; pos<strlen ; pos++ )); do
+     c=${string:$pos:1}
+     case "$c" in
+        [-_.~a-zA-Z0-9] ) o="${c}" ;;
+        * )               printf -v o '%%%02x' "'$c"
+     esac
+     encoded+="${o}"
+  done
+  echo "${encoded}" > request
+}
+
+#############################################################################
+# incStep()
+#   Description:
+#		Increment the STEP variable.  It is encapsulated here because
+#       there may be additional steps to perform in the future.
+#
+#   Params:
+#       none
+#############################################################################
+incStep() {
+	((STEP++))
+}
+
 #############################################################################
 # domojotest()
 #    The purpose of this routine is to call rrloadcsv with the
@@ -411,6 +482,7 @@ dojsonPOST () {
 	printf "PHASE %2s  %3s  %s... " ${TESTCOUNT} $3 $4
 	CMD="curl -s -X POST ${1} -H \"Content-Type: application/json\" -d @${2}"
 	${CMD} >rawcmdout; cat rawcmdout | python -m json.tool >${3} 2>>${LOGFILE}
+	incStep
 
 	if [ "${FORCEGOOD}" = "1" ]; then
 		cp ${3} ${GOLD}/${3}.gold
@@ -482,6 +554,7 @@ dojsonAwsPOST () {
 	CMD="curl -s -X POST ${1} -H \"X-Amz-Sns-Message-Type: ${5}\" -d @${2}"
 	HDR="X-Amz-Sns-Message-Type: ${5}"
 	curl -s -X POST ${1} -H "${HDR}" -d @${2} | python -m json.tool >${3} 2>>${LOGFILE}
+	incStep
 
 	if [ "${FORCEGOOD}" = "1" ]; then
 		cp ${3} ${GOLD}/${3}.gold
@@ -550,6 +623,7 @@ dojsonGET () {
 	printf "PHASE %2s  %3s  %s... " ${TESTCOUNT} ${2} ${3}
 	CMD="curl -s \"${1}\""
 	curl -s "${1}" | python -m json.tool >${2} 2>>${LOGFILE}
+	incStep
 
 	if [ "${FORCEGOOD}" = "1" ]; then
 		cp ${2} ${GOLD}/${2}.gold
@@ -617,6 +691,7 @@ doHtmlGET () {
 	printf "PHASE %2s  %3s  %s... " ${TESTCOUNT} ${2} ${3}
 	CMD="curl -s \"${1}\""
 	curl -s "${1}" >${2} 2>>${LOGFILE}
+	incStep
 
 	if [ "${FORCEGOOD}" = "1" ]; then
 		cp ${2} ${GOLD}/${2}.gold
