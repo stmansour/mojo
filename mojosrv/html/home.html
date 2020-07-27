@@ -362,7 +362,9 @@ function buildPageElements() {
             f.record = initializePersonRecord();
             f.recid = 0;
             f.refresh();
-            setToForm('personForm', '/v1/person/0',500);
+            w2ui.personGroupsGrid.url = '';  // no group associations at this time
+            w2ui.personGroupsGrid.clear(); // remove anything that might be in there
+            showForm(w2ui.personFormLayout,500);
         },
         onRefresh: function(/*event*/) {
             document.getElementById('mojoGroupFilter').value = app.groupFilter;
@@ -492,13 +494,13 @@ function buildPageElements() {
         header: 'Group Membership',
         multiSelect: false,
         show: {
-            toolbar         : false,
+            toolbar         : true,
             footer          : false,
             header          : false,
             toolbarAdd      : false,   // indicates if toolbar add new button is visible
-            toolbarDelete   : false,   // indicates if toolbar delete button is visible
+            toolbarDelete   : true,   // indicates if toolbar delete button is visible
             toolbarSave     : false,   // indicates if toolbar save button is visible
-            selectColumn    : false,
+            selectColumn    : true,
             expandColumn    : false,
             toolbarEdit     : false,
             toolbarSearch   : false,
@@ -509,6 +511,7 @@ function buildPageElements() {
         },
         columns: [
             {field: 'recid',     caption: 'recid', size: '40px',  hidden: true,  sortable: true },
+            {field: 'Member',    caption: '',      size: '50px', hidden: false,  sortable: true },
             {field: 'GID',       caption: 'GID',   size: '50px', hidden: false,  sortable: true },
             {field: 'GroupName', caption: 'Group', size: '350px', hidden: false, sortable: true },
         ],
