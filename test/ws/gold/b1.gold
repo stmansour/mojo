@@ -1,0 +1,46 @@
+{
+    "records": [
+        {
+            "GID": 4,
+            "GroupDescription": "Steve + Amazon test + Accord accounts",
+            "GroupName": "AccordTest",
+            "LastModBy": 0,
+            "LastModTime": "2020-07-27T16:41:02Z",
+            "recid": 4
+        },
+        {
+            "GID": 3,
+            "GroupDescription": "Steve + Amazon test accounts",
+            "GroupName": "AmazonTest",
+            "LastModBy": 0,
+            "LastModTime": "2020-07-27T16:41:02Z",
+            "recid": 3
+        },
+        {
+            "GID": 1,
+            "GroupDescription": "Employees of the Federal Aviation Administration",
+            "GroupName": "FAA",
+            "LastModBy": 0,
+            "LastModTime": "2017-05-01T17:15:02Z",
+            "recid": 1
+        },
+        {
+            "GID": 2,
+            "GroupDescription": "Steve-only test group",
+            "GroupName": "MojoTest",
+            "LastModBy": 0,
+            "LastModTime": "2020-07-27T16:41:02Z",
+            "recid": 2
+        },
+        {
+            "GID": 5,
+            "GroupDescription": "Steve + Joe accounts",
+            "GroupName": "SteveJoe",
+            "LastModBy": 0,
+            "LastModTime": "2020-07-27T16:41:02Z",
+            "recid": 5
+        }
+    ],
+    "status": "success",
+    "total": 5
+}

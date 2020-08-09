@@ -453,6 +453,8 @@ startMojoServer () {
 		stopMojoServer
 		${MOJOBIN}/mojosrv -p ${MOJOPORT} > ${MOJOBIN}/mojolog 2>&1 &
 		sleep 1
+		rm -f mlog
+		ln -s ${MOJOBIN}/mojolog mlog
 	fi
 }
 

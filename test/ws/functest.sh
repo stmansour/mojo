@@ -87,8 +87,9 @@ fi
 #------------------------------------------------------------------------------
 #  TEST b
 #
-#  Validate that commands requiring a session will not operate without
-#  a session cookie
+#  Read the groups associated witht the supplied PID
+#
+#  /v1/pgroup/UID
 #
 #  Scenario:
 #  Search
@@ -101,7 +102,27 @@ TFILES="b"
 STEP=0
 if [ "${SINGLETEST}${TFILES}" = "${TFILES}" -o "${SINGLETEST}${TFILES}" = "${TFILES}${TFILES}" ]; then
     encodeRequest '{"cmd":"get","selected":[],"limit":100,"offset":0}'
+    dojsonPOST "http://localhost:8275/v1/pgroup/12" "request" "${TFILES}${STEP}"  "readGroupMembership"
+
+	encodeRequest '{"cmd":"get","selected":[],"limit":100,"offset":0}'
+    dojsonPOST "http://localhost:8275/v1/groups/" "request" "${TFILES}${STEP}"  "groups"
+
+	# Add Steve to FAA
+	encodeRequest '{"cmd":"save","Groups":[4,3,1,2,5]}'
+    dojsonPOST "http://localhost:8275/v1/groupmembership/12" "request" "${TFILES}${STEP}"  "setGroupMembership-add-GID-1"
+
+	# Read Steve's group memberships and make sure that it contains GID 1
+	encodeRequest '{"cmd":"get","selected":[],"limit":100,"offset":0}'
+    dojsonPOST "http://localhost:8275/v1/pgroup/12" "request" "${TFILES}${STEP}"  "readGroupMembership"
+
+	# Remove Steve from FAA
+	encodeRequest '{"cmd":"save","Groups":[4,3,2,5]}'
+    dojsonPOST "http://localhost:8275/v1/groupmembership/12" "request" "${TFILES}${STEP}"  "setGroupMembership-remove-GID-1"
+
+	# Read Steve's group memberships and make sure that it does not contain GID 1
+	encodeRequest '{"cmd":"get","selected":[],"limit":100,"offset":0}'
     dojsonPOST "http://localhost:8275/v1/pgroup/12" "request" "${TFILES}${STEP}"  "personGroupList"
+
 fi
 
 

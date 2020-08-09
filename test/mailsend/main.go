@@ -119,27 +119,6 @@ func SendEmailTest(addr string) error {
 	return nil
 }
 
-// AddPersonToGroup creates a PGroup record for the specified pid,gid pair
-// if it does not already exist.
-//-----------------------------------------------------------------------------
-func AddPersonToGroup(pid, gid int64) error {
-	// see if they already exist...
-	_, err := db.GetPGroup(pid, gid)
-	if util.IsSQLNoResultsError(err) {
-		var a = db.PGroup{PID: pid, GID: gid}
-		err = db.InsertPGroup(&a)
-		if err != nil {
-			util.Ulog("Error with InsertPGroup: %s\n", err.Error())
-		}
-		return err
-	}
-	if err == nil {
-		return nil // they're already in the group
-	}
-	util.Ulog("Error trying to GetPGroup = %s\n", err.Error())
-	return err
-}
-
 // SavePerson creates a new person in the database with the supplied
 // information. If the person already exists, it updates their info
 // with whatever is in pnew.
@@ -250,7 +229,7 @@ func createGroup(name, descr string, ppa *[]db.Person) {
 		if err != nil {
 			util.UlogAndPrint("Error updating group: %s\n", err.Error())
 		}
-		AddPersonToGroup(pid, gid)
+		mailsend.AddPersonToGroup(pid, gid)
 		// util.Console("Reset user status for %s %s\n", pa[i].FirstName, pa[i].LastName)
 		resetUserStatus(&pa[i]) // reset their status
 	}

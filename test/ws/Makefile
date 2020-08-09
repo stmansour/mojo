@@ -2,7 +2,7 @@ all:
 	@echo "*** Completed in ws ***"
 
 clean:
-	rm -f rawcmdout *.log log llog *.g ./gold/*.g err.txt [a-z] [a-z][a-z0-9] [a-z][0-9][0-9] qq? fail request smalldb.sql
+	rm -f mlog rawcmdout *.log log llog *.g ./gold/*.g err.txt [a-z] [a-z][a-z0-9] [a-z][0-9][0-9] qq? fail request smalldb.sql
 	@echo "*** CLEAN completed in ws ***"
 
 test:
