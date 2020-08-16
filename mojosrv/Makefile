@@ -43,7 +43,7 @@ package: webdoc
 	cp -r doc ${BINDIR}/
 	mkdir -p ${BINDIR}/js
 	cat js/elems/*.js > js/mweb.js
-	cp js/*.js ${BINDIR}/js/
+	cp js/*.js js/*.css ${BINDIR}/js/
 	cp -r html ${BINDIR}/
 	@rm -f fail
 	@echo "*** ${THISDIR}: completed package ***"
