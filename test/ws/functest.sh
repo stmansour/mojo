@@ -123,6 +123,9 @@ if [ "${SINGLETEST}${TFILES}" = "${TFILES}" -o "${SINGLETEST}${TFILES}" = "${TFI
 	encodeRequest '{"cmd":"get","selected":[],"limit":100,"offset":0}'
     dojsonPOST "http://localhost:8275/v1/pgroup/12" "request" "${TFILES}${STEP}"  "personGroupList"
 
+
+	# Test Transactant Typedown
+    dojsonGET "http://localhost:8275/v1/grouptd/?request%3D%7B%22search%22%3A%22te%22%2C%22max%22%3A250%7D" "${TFILES}${STEP}" "GroupTypedown"
 fi
 
 

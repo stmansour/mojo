@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"mojo/util"
@@ -275,6 +276,33 @@ func GetGroup(id int64) (EGroup, error) {
 // GetGroupByName reads a EGroup the structure for the supplied group name
 func GetGroupByName(s string) (EGroup, error) {
 	return ReadGroup(DB.Prepstmt.GetGroupByName.QueryRow(s))
+}
+
+// GetGroupTypedown returns the values needed for typedown controls:
+// input:   ctx
+//            s - string or substring to search for
+//        limit - return no more than this many matches
+// return a slice of Groups and an error.
+func GetGroupTypedown(ctx context.Context, s string, limit int) ([]EGroup, error) {
+	var err error
+	var m []EGroup
+	var rows *sql.Rows
+
+	s = "%" + s + "%"
+	if rows, err = DB.Prepstmt.GetGroupTypedown.Query(s); err != nil {
+		return m, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var t EGroup
+		if err = rows.Scan(&t.GID, &t.GroupName); err != nil {
+			return m, err
+		}
+		m = append(m, t)
+	}
+
+	return m, rows.Err()
 }
 
 // ReadGroups reads one row from the supplied rows struct.

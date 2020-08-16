@@ -125,8 +125,9 @@ var Svcs = []ServiceHandler{
 	{"discon", true, true, SvcDisableConsole},
 	{"encon", true, true, SvcEnableConsole},
 	{"group", false, true, SvcHandlerGroup},
-	{"groups", false, true, SvcSearchHandlerGroups},
 	{"groupcount", false, true, SvcGroupsCount},
+	{"groups", false, true, SvcSearchHandlerGroups},
+	{"grouptd", false, true, SvcGroupTD},
 	{"groupmembership", true, true, SvcHandlerGroupMembership},
 	{"groupstats", false, false, GetGroupStats},
 	{"optout", false, false, SvcOptOut},
@@ -236,6 +237,11 @@ func SvcGridErrorReturn(w http.ResponseWriter, err error) {
 	e.Message = fmt.Sprintf("Error: %s\n", err.Error())
 	b, _ := json.Marshal(e)
 	SvcWrite(w, b)
+}
+
+// SvcErrorReturn calls SvcGridErrorReturn
+func SvcErrorReturn(w http.ResponseWriter, err error) {
+	SvcGridErrorReturn(w, err)
 }
 
 // SvcGetInt64 tries to read an int64 value from the supplied string.

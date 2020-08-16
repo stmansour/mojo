@@ -5,7 +5,7 @@ all:
 	@echo "*** Completed in ${THISDIR} ***"
 
 clean:
-	rm -f *.log log llog *.g ./gold/*.g err.txt [a-z] [a-z][a-z1-9] qq? fail request smalldb.sql rawcmdout
+	rm -f faatechops.csv *.log log llog *.g ./gold/*.g err.txt [a-z] [a-z][a-z1-9] qq? fail request smalldb.sql rawcmdout
 	@echo "*** CLEAN completed in ${THISDIR} ***"
 
 test:

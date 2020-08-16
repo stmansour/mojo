@@ -29,6 +29,20 @@ type PGroupList struct {
 	Records []PGroupItem `json:"records"`
 }
 
+// GroupTypeDown is the struct needed to match names in typedown controls
+type GroupTypeDown struct {
+	Recid     int64 `json:"recid"` // this will hold the RID
+	GID       int64
+	GroupName string
+}
+
+// GroupTypedownResponse is the data structure for the response to a search for people
+type GroupTypedownResponse struct {
+	Status  string          `json:"status"`
+	Total   int64           `json:"total"`
+	Records []GroupTypeDown `json:"records"`
+}
+
 //-------------------------------------------------------------------
 //                         **** SAVE ****
 //-------------------------------------------------------------------
@@ -149,6 +163,39 @@ func SvcHandlerGroupMembership(w http.ResponseWriter, r *http.Request, d *Servic
 	}
 	SvcWriteSuccessResponse(w)
 
+}
+
+// SvcGroupTD handles typedown messages when a person is looking for a group
+// name
+//-----------------------------------------------------------------------------
+func SvcGroupTD(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+	const funcname = "SvcGroupTD"
+	var (
+		g   GroupTypedownResponse
+		m   []db.EGroup
+		err error
+	)
+	util.Console("Entered %s\n", funcname)
+	util.Console("handle typedown: GetGroupTypedown( search=%s, limit=%d\n", d.wsTypeDownReq.Search, d.wsTypeDownReq.Max)
+	m, err = db.GetGroupTypedown(r.Context(), d.wsTypeDownReq.Search, d.wsTypeDownReq.Max)
+	if err != nil {
+		e := fmt.Errorf("Error getting typedown matches: %s", err.Error())
+		SvcErrorReturn(w, e)
+		return
+	}
+
+	for i := 0; i < len(m); i++ {
+		var t GroupTypeDown
+		t.GID = m[i].GID
+		t.Recid = t.GID
+		t.GroupName = m[i].GroupName
+		g.Records = append(g.Records, t)
+	}
+
+	util.Console("GetRentableTypedown returned %d matches\n", len(g.Records))
+	g.Total = int64(len(g.Records))
+	g.Status = "success"
+	SvcWriteResponse(&g, w)
 }
 
 // getPGroupList returns a list of PGroupItems that is the list of groups to

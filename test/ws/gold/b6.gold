@@ -1,0 +1,26 @@
+{
+    "records": [
+        {
+            "GID": 2,
+            "GroupName": "MojoTest",
+            "recid": 2
+        },
+        {
+            "GID": 3,
+            "GroupName": "AmazonTest",
+            "recid": 3
+        },
+        {
+            "GID": 4,
+            "GroupName": "AccordTest",
+            "recid": 4
+        },
+        {
+            "GID": 5,
+            "GroupName": "SteveJoe",
+            "recid": 5
+        }
+    ],
+    "status": "success",
+    "total": 4
+}

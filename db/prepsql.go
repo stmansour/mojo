@@ -19,6 +19,7 @@ type PrepSQL struct {
 	GetGroup                       *sql.Stmt
 	GetGroups                      *sql.Stmt
 	GetGroupByName                 *sql.Stmt
+	GetGroupTypedown               *sql.Stmt
 	InsertGroup                    *sql.Stmt
 	UpdateGroup                    *sql.Stmt
 	DeleteGroup                    *sql.Stmt
@@ -74,6 +75,8 @@ func BuildPreparedStatements() {
 	DB.Prepstmt.GetGroup, err = DB.Db.Prepare("SELECT " + flds + " FROM EGroup WHERE GID=?")
 	util.ErrCheck(err)
 	DB.Prepstmt.GetGroupByName, err = DB.Db.Prepare("SELECT " + flds + " FROM EGroup WHERE GroupName=?")
+	util.ErrCheck(err)
+	DB.Prepstmt.GetGroupTypedown, err = DB.Db.Prepare("SELECT GID,GroupName FROM EGroup WHERE GroupName LIKE ?")
 	util.ErrCheck(err)
 	DB.Prepstmt.InsertGroup, err = DB.Db.Prepare("INSERT INTO EGroup (" + s1 + ") VALUES(" + s2 + ")")
 	util.ErrCheck(err)

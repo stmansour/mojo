@@ -8,4 +8,5 @@ mojosrv/html/images
 mojosrv/js
 mojosrv/conf.json
 mojosrv/doc/
+test/mailsend/campaigns
 

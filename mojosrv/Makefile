@@ -41,8 +41,10 @@ package: webdoc
 	cp mojosrv ${BINDIR}/mojosrv
 	cp config.json ${BINDIR}/
 	cp -r doc ${BINDIR}/
+	mkdir -p ${BINDIR}/js
+	cat js/elems/*.js > js/mweb.js
+	cp js/*.js ${BINDIR}/js/
 	cp -r html ${BINDIR}/
-	if [ -d "./js" ]; then cp -r js ${BINDIR}/; fi
 	@rm -f fail
 	@echo "*** ${THISDIR}: completed package ***"
 
