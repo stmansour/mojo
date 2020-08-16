@@ -5,7 +5,6 @@ test/testdb/bigdb.sql.gz
 test/sendmail/perks.pdf
 mojosrv/html/fa
 mojosrv/html/images
-mojosrv/js
 mojosrv/conf.json
 mojosrv/doc/
 test/mailsend/campaigns
