@@ -31,7 +31,7 @@ ver.go:
 
 clean:
 	go clean
-	rm -f mojosrv ver.go tmp *.log *.json buildno
+	rm -f js/mweb.js mojosrv ver.go tmp *.log *.json buildno
 	@echo "*** ${THISDIR}: completed clean ***"
 
 package: webdoc

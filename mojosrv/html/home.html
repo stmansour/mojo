@@ -190,6 +190,8 @@ function buildPageElements() {
         ]
     }));
 
+    createPersonUI();
+
     //------------------------------------------------------------------------
     //          toptoolbar
     //------------------------------------------------------------------------
@@ -291,146 +293,6 @@ function buildPageElements() {
             }
         },
     }));
-
-    // var oneShotGroupFilterELFlag = 0; // flag to set the event listener
-
-    //------------------------------------------------------------------------
-    //          peopleGrid
-    //------------------------------------------------------------------------
-    $().w2grid({
-        name: 'peopleGrid',
-        url: '/v1/people',
-        show: {
-            toolbar         : true,
-            footer          : true,
-            toolbarAdd      : true,   // indicates if toolbar add new button is visible
-            toolbarDelete   : false,   // indicates if toolbar delete button is visible
-            toolbarSave     : false,   // indicates if toolbar save button is visible
-            selectColumn    : false,
-            expandColumn    : false,
-            toolbarEdit     : false,
-            toolbarSearch   : false,
-            toolbarInput    : true,
-            searchAll       : false,
-            toolbarReload   : true,
-            toolbarColumns  : true,
-        },
-         columns: [
-            {field: 'PID',          caption: 'PID',           size:  '60px', sortable: true, hidden: true},
-            {field: 'Status',       caption: 'Status',        size: '100px', sortable: true, hidden: false,
-                    render: function (record, index, col_index) {
-                                return getStatusString(this.getCellValue(index, col_index));
-                            }
-            },
-            {field: 'OptOutDate',   caption: 'OptOutDate',    size:  '80px', sortable: true, hidden: false},
-            {field: 'Email1',       caption: 'Email1',        size: '200px', sortable: true, hidden: false},
-            {field: 'Email2',       caption: 'Email2',        size:  '40px', sortable: true, hidden: false},
-            {field: 'FirstName',    caption: 'FirstName',     size: '100px', sortable: true, hidden: false},
-            {field: 'MiddleName',   caption: 'MiddleName',    size: '50px',  sortable: true, hidden: false},
-            {field: 'LastName',     caption: 'LastName',      size: '100px', sortable: true, hidden: false},
-            {field: 'PreferredName',caption: 'PreferredName', size: '100px', sortable: true, hidden: true},
-            {field: 'JobTitle',     caption: 'JobTitle',      size: '150px', sortable: true, hidden: false},
-            {field: 'OfficePhone',  caption: 'OfficePhone',   size: '100px', sortable: true, hidden: false},
-            {field: 'OfficeFax',    caption: 'OfficeFax',     size: '100px', sortable: true, hidden: true},
-            {field: 'MailAddress',  caption: 'MailAddress',   size: '100px', sortable: true, hidden: false},
-            {field: 'MailAddress2', caption: 'MailAddress2',  size: '100px', sortable: true, hidden: true},
-            {field: 'MailCity',     caption: 'MailCity',      size: '100px', sortable: true, hidden: false},
-            {field: 'MailState',    caption: 'MailState',     size:  '50px', sortable: true, hidden: false},
-            {field: 'MailPostalCode',caption:'MailPostalCode',size:  '50px', sortable: true, hidden: false},
-            {field: 'MailCountry',  caption: 'MailCountry',   size: '100px', sortable: true, hidden: true},
-            {field: 'RoomNumber',   caption: 'RoomNumber',    size: '100px', sortable: true, hidden: false},
-            {field: 'MailStop',     caption: 'MailStop',      size: '100px', sortable: true, hidden: false},
-            {field: 'LastModTime',  caption: 'LastModTime',   size: '100px', sortable: true, hidden: true},
-        ],
-        onClick: function(event) {
-            event.onComplete = function (event) {
-                var rec = w2ui.peopleGrid.get(event.recid);
-                //w2ui.personForm.record = initializePersonRecord();
-                w2ui.personForm.recid = rec.PID;
-                w2ui.personForm.url = '/v1/person/' + rec.PID;
-                w2ui.personForm.reload();
-                w2ui.personGroupsGrid.url = '/v1/pgroup/' + rec.PID;
-                w2ui.personGroupsGrid.reload();
-                showForm(w2ui.personFormLayout, 500);
-            };
-        },
-        onRequest: function(event) {
-            w2ui.peopleGrid.postData = {groupName: app.groupFilter};
-        },
-        onAdd: function (/*event*/) {
-            // Always create epoch assessment
-            var f = w2ui.personForm;
-            f.record = initializePersonRecord();
-            f.recid = 0;
-            f.refresh();
-            w2ui.personGroupsGrid.url = '';  // no group associations at this time
-            w2ui.personGroupsGrid.clear(); // remove anything that might be in there
-            showForm(w2ui.personFormLayout,500);
-        },
-        onRefresh: function(/*event*/) {
-            document.getElementById('mojoGroupFilter').value = app.groupFilter;
-        },
-        onLoad: function(/*event*/) {
-            document.getElementById('mojoGroupFilter').value = app.groupFilter;
-        },
-        onSearch: function(event) {
-            console.log('onSearch event fired. event = ' + event);
-        }
-    });
-
-    w2ui.peopleGrid.toolbar.add(
-        [
-            { type: 'break', id: 'break1' },
-            { type: 'html', id: 'groupName',
-                    html: 'Group: <input type="text" id="mojoGroupFilter" value=""' +
-                    'onkeypress="if (event.keyCode == 13) groupFilterSubmit();"' +
-                    'value="'+app.groupFilter+'"'+
-                    '>' },
-        ],
-    );
-
-    w2ui.peopleGrid.toolbar.on('refresh', function(event) {
-        event.onComplete = function () {
-            var x = document.getElementById('mojoGroupFilter');
-            if (x != null) {
-                x.value = app.groupFilter;
-            }
-        }
-    });
-
-
-    //------------------------------------------------------------------------
-    // personFormLayout
-    //
-    //  top    = personForm
-    //  main   = personGroupsGrid
-    //  bottom = personFormBtns
-    //------------------------------------------------------------------------
-    $().w2layout({
-        name: 'personFormLayout',
-        padding: 0,
-        panels: [
-            { type: 'left',    size: 0,     hidden: true,  content: 'left'    },
-            { type: 'top',     size: '67%', hidden: false, content: 'top',    resizable: true, style: app.pstyle },
-            { type: 'main',    size: '33%', hidden: false,  content: 'main',   resizable: true, style: app.pstyle },
-            { type: 'preview', size: 0,     hidden: true,  content: 'preview' },
-            { type: 'bottom',  size: '65px',hidden: false,  content: 'bottom', resizable: false, style: app.pstyle },
-            { type: 'right',   size: 0,     hidden: true,  content: 'right',  resizable: true, style: app.pstyle }
-        ]
-    });
-
-    //---------------------------------------------------------------------------------
-    // finishPersonForm - load the layout properly.
-    //  top    = personForm
-    //  main   = personGroupsGrid
-    //  bottom = personFormBtns
-    //---------------------------------------------------------------------------------
-    window.finishPersonForm = function () {
-        w2ui.personFormLayout.content('top', w2ui.personForm);
-        w2ui.personFormLayout.content('main', w2ui.personGroupsGrid);
-        w2ui.personFormLayout.content('bottom', w2ui.personFormBtns);
-    };
-
 
     //------------------------------------------------------------------------
     //          groupsGrid
@@ -597,7 +459,6 @@ function buildPageElements() {
             document.getElementById("AssessmentEpochOrInstance").innerHTML = hdr;
         }
     });
-
 
 }
 
