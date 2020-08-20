@@ -121,6 +121,7 @@ type ServiceHandler struct {
 
 // Svcs is the table of all service handlers
 var Svcs = []ServiceHandler{
+	{"addtogroup", false, true, SvcHandlerATG},
 	{"aws", true, true, SvcHandlerAws},
 	{"discon", true, true, SvcDisableConsole},
 	{"encon", true, true, SvcEnableConsole},

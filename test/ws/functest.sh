@@ -101,31 +101,61 @@ fi
 TFILES="b"
 STEP=0
 if [ "${SINGLETEST}${TFILES}" = "${TFILES}" -o "${SINGLETEST}${TFILES}" = "${TFILES}${TFILES}" ]; then
+	# b0
     encodeRequest '{"cmd":"get","selected":[],"limit":100,"offset":0}'
     dojsonPOST "http://localhost:8275/v1/pgroup/12" "request" "${TFILES}${STEP}"  "readGroupMembership"
 
+	# b1
 	encodeRequest '{"cmd":"get","selected":[],"limit":100,"offset":0}'
     dojsonPOST "http://localhost:8275/v1/groups/" "request" "${TFILES}${STEP}"  "groups"
 
-	# Add Steve to FAA
+	# b2: Add Steve to FAA
 	encodeRequest '{"cmd":"save","Groups":[4,3,1,2,5]}'
     dojsonPOST "http://localhost:8275/v1/groupmembership/12" "request" "${TFILES}${STEP}"  "setGroupMembership-add-GID-1"
 
-	# Read Steve's group memberships and make sure that it contains GID 1
+	# b3: Read Steve's group memberships and make sure that it contains GID 1
 	encodeRequest '{"cmd":"get","selected":[],"limit":100,"offset":0}'
     dojsonPOST "http://localhost:8275/v1/pgroup/12" "request" "${TFILES}${STEP}"  "readGroupMembership"
 
-	# Remove Steve from FAA
+	# b4: Remove Steve from FAA
 	encodeRequest '{"cmd":"save","Groups":[4,3,2,5]}'
     dojsonPOST "http://localhost:8275/v1/groupmembership/12" "request" "${TFILES}${STEP}"  "setGroupMembership-remove-GID-1"
 
-	# Read Steve's group memberships and make sure that it does not contain GID 1
+	# b5: Read Steve's group memberships and make sure that it does not contain GID 1
 	encodeRequest '{"cmd":"get","selected":[],"limit":100,"offset":0}'
     dojsonPOST "http://localhost:8275/v1/pgroup/12" "request" "${TFILES}${STEP}"  "personGroupList"
 
-
-	# Test Transactant Typedown
+	# b6: Test Transactant Typedown
     dojsonGET "http://localhost:8275/v1/grouptd/?request%3D%7B%22search%22%3A%22te%22%2C%22max%22%3A250%7D" "${TFILES}${STEP}" "GroupTypedown"
+
+	# b7: NEW EMAIL bad group:  Test a post to add new email/name as member of group that doesn't exist
+	encodeRequest '{"cmd":"save","name":"Sally Smith","email": "sally@smith.com","group":"smanmusic" }'
+    dojsonPOST "http://localhost:8275/v1/addtogroup" "request" "${TFILES}${STEP}"  "addtogroup"
+
+	# b8: NEW EMAIL bad group:  Test a post to add new email/name as member of an existing group
+	encodeRequest '{"cmd":"save","name":"Sally Smith","email": "sally@smith.com","group":"FAA" }'
+    dojsonPOST "http://localhost:8275/v1/addtogroup" "request" "${TFILES}${STEP}"  "addtogroup"
+
+	# b9: BAD EMAIL ADDR:  Test a post to add new email/name as member of group
+	encodeRequest '{"cmd":"save","name":"Sally Smith","email": "sally@smith","group":"smanmusic" }'
+    dojsonPOST "http://localhost:8275/v1/addtogroup" "request" "${TFILES}${STEP}"  "addtogroup"
+
+	# b10: KNOWN EMAIL, NEW GROUP:
+	encodeRequest '{"cmd":"save","name":"Sally Smith","email": "sally@smith.com","group":"MojoTest" }'
+    dojsonPOST "http://localhost:8275/v1/addtogroup" "request" "${TFILES}${STEP}"  "addtogroup"
+
+	# b11: KNOWN EMAIL, ALREADY GROUP MEMBER:
+	encodeRequest '{"cmd":"save","name":"Sally Smith","email": "sally@smith.com","group":"MojoTest" }'
+    dojsonPOST "http://localhost:8275/v1/addtogroup" "request" "${TFILES}${STEP}"  "addtogroup"
+
+	# b12: MISSING EMAIL
+	encodeRequest '{"cmd":"save","name":"Sally Smith","email": "","group":"MojoTest" }'
+    dojsonPOST "http://localhost:8275/v1/addtogroup" "request" "${TFILES}${STEP}"  "addtogroup"
+
+	# b13: MISSING GROUP
+	encodeRequest '{"cmd":"save","name":"Sally Smith","email": "sally@smith.com","group":"" }'
+    dojsonPOST "http://localhost:8275/v1/addtogroup" "request" "${TFILES}${STEP}"  "addtogroup"
+
 fi
 
 

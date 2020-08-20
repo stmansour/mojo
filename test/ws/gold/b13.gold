@@ -1,0 +1,5 @@
+{
+    "code": 1002,
+    "message": "The group name must be supplied",
+    "status": "error"
+}

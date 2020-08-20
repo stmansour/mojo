@@ -1,0 +1,5 @@
+{
+    "code": 1000,
+    "message": "The email address must be supplied",
+    "status": "error"
+}

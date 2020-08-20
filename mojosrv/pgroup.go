@@ -175,8 +175,8 @@ func SvcGroupTD(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		m   []db.EGroup
 		err error
 	)
-	util.Console("Entered %s\n", funcname)
-	util.Console("handle typedown: GetGroupTypedown( search=%s, limit=%d\n", d.wsTypeDownReq.Search, d.wsTypeDownReq.Max)
+	// util.Console("Entered %s\n", funcname)
+	// util.Console("handle typedown: GetGroupTypedown( search=%s, limit=%d\n", d.wsTypeDownReq.Search, d.wsTypeDownReq.Max)
 	m, err = db.GetGroupTypedown(r.Context(), d.wsTypeDownReq.Search, d.wsTypeDownReq.Max)
 	if err != nil {
 		e := fmt.Errorf("Error getting typedown matches: %s", err.Error())
@@ -192,7 +192,7 @@ func SvcGroupTD(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		g.Records = append(g.Records, t)
 	}
 
-	util.Console("GetRentableTypedown returned %d matches\n", len(g.Records))
+	// util.Console("GetRentableTypedown returned %d matches\n", len(g.Records))
 	g.Total = int64(len(g.Records))
 	g.Status = "success"
 	SvcWriteResponse(&g, w)
@@ -270,4 +270,178 @@ func savePGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 
 func deletePGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 
+}
+
+// atgErrorReturn encapsulate 4 lines of code that is used a lot
+func atgErrorReturn(w http.ResponseWriter, c int64, m string) {
+	var g ATGResponse
+	g.Status = "error"
+	g.Code = c
+	g.Message = m
+	SvcWriteResponse(g, w)
+}
+
+// ATG contains the data from an addToGroup command
+type ATG struct {
+	Cmd   string
+	Name  string
+	Email string
+	Group string
+}
+
+// ATGResponse defines the response to the addtogroup command
+//
+// status   code   message/meaning
+// ------   ----   ------------------------------------------------------------
+// success     1   meaning: this was a new user, successfully added.  X
+// success     2   meaning: existing user, already a member           X
+// success     3   meaning: existing user, added as a member          X
+// error    1000   message: email address required                    X
+// error    1001   message: email address improperly formatted        X
+// error    1002   message: group name must be supplied               X
+// error    1003   message: group could not be found                  X
+// error       0   message: <<a system error>>                        X
+type ATGResponse struct {
+	Status  string `json:"status"`
+	Code    int64  `json:"code"`
+	Message string `json:"message"`
+}
+
+// SvcHandlerATG processes the addToGroup request.
+//
+// /v1/addtogroup/
+//
+//   data =  { cmd: "save", name: "John Doe", email: "j@doe.com", group: "smanmusic" }
+//
+//  If a person by that email address is found, add them to the group if they're not
+//  already a member, then return success, code = 1 (already exists)
+//
+//  If the person by that email address is NOT fond, then create them, add them
+//  to the group and return success, code = 2 (added)
+//
+//  RETURNS:   see comments on ATGResponse definition
+//-----------------------------------------------------------------------------
+func SvcHandlerATG(w http.ResponseWriter, r *http.Request, d *ServiceData) {
+	funcname := "SvcHandlerATG"
+	var a ATG
+	var p db.Person
+	var gg ATGResponse
+	var pg db.EGroup
+
+	err := json.Unmarshal(d.b, &a)
+	if err != nil {
+		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
+		SvcErrorReturn(w, e)
+		return
+	}
+
+	// util.Console("Entered %s\n", funcname)
+	// util.Console("data = %#v\n", a)
+
+	//----------------------------------------------------------
+	// Make sure required parameters are valid.
+	//----------------------------------------------------------
+	// util.Console("A\n")
+	if len(a.Email) == 0 {
+		atgErrorReturn(w, 1000, "The email address must be supplied")
+		return
+	}
+	// util.Console("B\n")
+	if !util.ValidEmailAddress(a.Email) {
+		atgErrorReturn(w, 1001, "The email address is improperly formatted")
+		return
+	}
+
+	// util.Console("C\n")
+	if len(a.Group) == 0 {
+		atgErrorReturn(w, 1002, "The group name must be supplied")
+		return
+	}
+	// util.Console("C.1  look for group: %q\n", a.Group)
+	if pg, err = db.GetGroupByName(a.Group); err != nil || pg.GID == 0 {
+		// util.Console("C.2:  pg.GID = %d\n", pg.GID)
+		if util.IsSQLNoResultsError(err) {
+			atgErrorReturn(w, 1003, "The group could not be found")
+			return
+		}
+	}
+	util.Console("AddPersonToGroupByGroupName: A\n")
+
+	// util.Console("D\n")
+	//----------------------------------------------------------
+	// See if the email address is already in the database
+	//----------------------------------------------------------
+	if p, err = db.GetPersonByEmail(a.Email); err != nil {
+		if !util.IsSQLNoResultsError(err) {
+			atgErrorReturn(w, 0, err.Error())
+			return
+		}
+	}
+	// util.Console("E\n")
+	//----------------------------------------------------------
+	// If the person was not found, add them and add group membership
+	//----------------------------------------------------------
+	if p.PID == 0 {
+		// util.Console("F\n")
+		p.FirstName = a.Name
+		p.Email1 = a.Email
+		if err = db.InsertPerson(&p); err != nil {
+			atgErrorReturn(w, 0, err.Error())
+		}
+		// util.Console("G.  Inserted Person PID = %d, adding to group: %s\n", p.PID, a.Group)
+
+		err = mailsend.AddPersonToGroupByGroupName(p.PID, a.Group)
+		if util.IsSQLNoResultsError(err) {
+			atgErrorReturn(w, 1003, "Group not found")
+			return
+		}
+		if err != nil {
+			atgErrorReturn(w, 0, err.Error())
+			return
+		}
+		// util.Console("J\n")
+		gg.Status = "success"
+		gg.Code = 1
+		SvcWriteResponse(gg, w)
+		return
+	}
+	//----------------------------------------------------------
+	// Get the group membership for this person
+	//----------------------------------------------------------
+	// util.Console("K\n")
+	var g PGroupList
+	if g, err = getPGroupList(w, r, d, p.PID, false); err != nil {
+		SvcGridErrorReturn(w, err)
+		return
+	}
+	// util.Console("L\n")
+	//----------------------------------------------------------
+	// Check to see if they are already a member
+	//----------------------------------------------------------
+	found := false
+	for i := 0; i < len(g.Records); i++ {
+		if g.Records[i].GroupName == a.Group {
+			found = true
+			break
+		}
+	}
+	// util.Console("M\n")
+	//----------------------------------------------------------
+	// If they are not already a member, add them...
+	//----------------------------------------------------------
+	if !found {
+		if err = mailsend.AddPersonToGroup(p.PID, pg.GID); err != nil {
+			atgErrorReturn(w, 0, err.Error())
+			return
+		}
+		gg.Status = "success"
+		gg.Code = 3
+		SvcWriteResponse(gg, w)
+		return
+	}
+	// util.Console("N\n")
+
+	gg.Status = "success"
+	gg.Code = 2
+	SvcWriteResponse(gg, w)
 }

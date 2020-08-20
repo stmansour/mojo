@@ -1,9 +1,24 @@
 package mailsend
 
 import (
+	"fmt"
 	"mojo/db"
 	"mojo/util"
 )
+
+// AddPersonToGroupByGroupName creates a PGroup record for the specified pid,gid pair
+// if it does not already exist.
+//-----------------------------------------------------------------------------
+func AddPersonToGroupByGroupName(pid int64, g string) error {
+	pg, err := db.GetGroupByName(g)
+	if err != nil {
+		return err
+	}
+	if pg.GID == 0 {
+		return fmt.Errorf("Group Not Found: %s", g)
+	}
+	return AddPersonToGroup(pid, pg.GID)
+}
 
 // AddPersonToGroup creates a PGroup record for the specified pid,gid pair
 // if it does not already exist.
