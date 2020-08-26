@@ -365,7 +365,7 @@ func SvcHandlerATG(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 			return
 		}
 	}
-	util.Console("AddPersonToGroupByGroupName: A\n")
+	util.Console("%s: A\n", funcname)
 
 	// util.Console("D\n")
 	//----------------------------------------------------------
