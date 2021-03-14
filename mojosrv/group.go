@@ -20,20 +20,17 @@ type GroupGrid struct {
 	LastModBy        int64
 }
 
+// GroupSave is a struct for saving a group
+type GroupSave struct {
+	Cmd    string    `json:"cmd"`
+	Record GroupGrid `json:"record"`
+}
+
 // GroupSearchResponse is a response string to the search request for Group records
 type GroupSearchResponse struct {
 	Status  string      `json:"status"`
 	Total   int64       `json:"total"`
 	Records []GroupGrid `json:"records"`
-}
-
-// GroupGridSave is the input data format for a Save command
-type GroupGridSave struct {
-	Status   string      `json:"status"`
-	Recid    int64       `json:"recid"`
-	FormName string      `json:"name"`
-	Record   GroupGrid   `json:"record"`
-	Changes  []GroupGrid `json:"changes"`
 }
 
 // GroupGetResponse is the response to a GetGroup request
@@ -72,7 +69,7 @@ type GroupStatResponse struct {
 //      delete
 //-----------------------------------------------------------------------------------
 func SvcHandlerGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
-	util.Console("Entered SvcHandlerGroup\n")
+	util.Console("Entered SvcHandlerGroup:  cmd = %s\n", d.wsSearchReq.Cmd)
 
 	switch d.wsSearchReq.Cmd {
 	case "get":
@@ -128,17 +125,9 @@ func SvcGroupsCount(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	SvcWriteResponse(&g, w)
 }
 
-// SvcSearchHandlerGroups generates a report of all Groups defined business d.BID
-// wsdoc {
-//  @Title  Search Groups
-//	@URL /v1/people/[:GID]
-//  @Method  POST
-//	@Synopsis Search Groups
-//  @Descr  Search all Group and return those that match the Search Logic.
-//  @Descr  The search criteria includes start and stop dates of interest.
-//	@Input WebGridSearchRequest
-//  @Response GroupSearchResponse
-// wsdoc }
+// SvcSearchHandlerGroups gets a list of all groups matching the supplied
+// search criteria.
+//------------------------------------------------------------------------------
 func SvcSearchHandlerGroups(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "SvcSearchHandlerGroups"
 	util.Console("Entered %s\n", funcname)
@@ -238,24 +227,19 @@ func deleteGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	SvcWriteSuccessResponse(w)
 }
 
-// GetGroup returns the requested assessment
-// wsdoc {
-//  @Title  Save Group
-//	@URL /v1/dep/:BUI/:PID
-//  @Method  GET
-//	@Synopsis Update the information on a Group with the supplied data
-//  @Description  This service updates Group :PID with the information supplied. All fields must be supplied.
-//	@Input GroupGridSave
-//  @Response SvcStatusResponse
-// wsdoc }
+// saveGroup - saves the supplied group information, creating the group if needed.
+//
+//--------------------------------------------------------------------------------
 func saveGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	funcname := "saveGroup"
 	util.Console("Entered %s\n", funcname)
 	util.Console("record data = %s\n", d.data)
 
-	var foo GroupGridSave
+	var foo GroupSave
+	var err error
+	var grp db.EGroup
 	data := []byte(d.data)
-	err := json.Unmarshal(data, &foo)
+	err = json.Unmarshal(data, &foo)
 
 	if err != nil {
 		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
@@ -263,26 +247,42 @@ func saveGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		return
 	}
 
-	if len(foo.Changes) == 0 { // This is a new record
-		var a db.EGroup
-		util.MigrateStructVals(&foo.Record, &a) // the variables that don't need special handling
-		util.Console("a = %#v\n", a)
-		util.Console(">>>> NEW PAYMENT TYPE IS BEING ADDED\n")
-		err = db.InsertGroup(&a)
-		if err != nil {
-			e := fmt.Errorf("%s: Error saving Group: %s", funcname, err.Error())
-			SvcGridErrorReturn(w, e)
-			return
-		}
-	} else { // update existing or add new record(s)
-		util.Console("Uh oh - we have not yet implemented this!!!\n")
-		fmt.Fprintf(w, "Have not implemented this function")
-		// if err = JSONchangeParseUtil(d.data, GroupUpdate, d); err != nil {
-		// 	SvcGridErrorReturn(w, err)
-		// 	return
-		// }
+	if foo.Record.GID == 0 {
+		grp, err = db.GetGroupByName(foo.Record.GroupName)
+	} else {
+		grp, err = db.GetGroup(foo.Record.GID)
 	}
-	SvcWriteSuccessResponse(w)
+	if nil != err {
+		if util.IsSQLNoResultsError(err) {
+			grp.GroupName = foo.Record.GroupName
+			grp.DtStart = time.Now()
+			grp.GroupDescription = foo.Record.GroupDescription
+			if err = db.InsertGroup(&grp); err != nil {
+				e := fmt.Errorf("Error inserting group %s: %s", foo.Record.GroupName, err.Error())
+				SvcGridErrorReturn(w, e)
+				return
+			}
+		}
+	} else {
+		chg := false
+		if grp.GroupName != foo.Record.GroupName {
+			chg = true
+			grp.GroupName = foo.Record.GroupName
+		}
+		if grp.GroupDescription != foo.Record.GroupDescription {
+			chg = true
+			grp.GroupDescription = foo.Record.GroupDescription
+		}
+		if chg {
+			if err = db.UpdateGroup(&grp); err != nil {
+				e := fmt.Errorf("Error updating group %s: %s", foo.Record.GroupName, err.Error())
+				SvcGridErrorReturn(w, e)
+				return
+			}
+		}
+	}
+
+	SvcWriteSuccessResponseWithID(w, grp.GID)
 }
 
 // GroupUpdate unmarshals the supplied string. If Recid > 0 it updates the
@@ -370,7 +370,7 @@ func GetGroupStats(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	SvcWriteResponse(&g, w)
 }
 
-// GetGroup returns the requested assessment
+// GetGroup returns the requested group
 // wsdoc {
 //  @Title  Get Group
 //	@URL /v1/getroup/GID

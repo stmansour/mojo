@@ -1,0 +1,11 @@
+{
+    "record": {
+        "GID": 6,
+        "GroupDescription": "A new group for testing",
+        "GroupName": "NewTestGroup",
+        "LastModBy": 0,
+        "LastModTime": "2021-03-14T10:30:18Z",
+        "recid": 0
+    },
+    "status": "success"
+}

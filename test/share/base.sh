@@ -47,6 +47,7 @@ GOLD="./gold"
 SKIPCOMPARE=0
 FORCEGOOD=0
 TESTCOUNT=0
+ASKBEFOREEXIT=0
 
 #############################################################################
 #  This code ensures that mysql does not touch production databases.
@@ -57,14 +58,33 @@ if [ "${UNAME}" == "Darwin" -o "${IAMJENKINS}" == "jenkins" ]; then
 	MYSQLOPTS="--no-defaults"
 fi
 
+#############################################################################
+# pause()
+#   Description:
+#		Ask the user how to proceed.
+#
+#   Params:
+#       none
+#############################################################################
 pause() {
 	echo
 	echo
-	read -p "Press [Enter] to continue,  Q or X to quit..." x
+	read -p "Press [Enter] to continue, M to move ${2} to gold/${2}.gold, Q or X to quit..." x
 	x=$(echo "${x}" | tr "[:upper:]" "[:lower:]")
-	if [ ${x} == "q" -o ${x} == "x" ]; then
+	if [ "${x}" == "q" -o "${x}" == "x" ]; then
+		if [ ${MANAGESERVER} -eq 1 ]; then
+			echo "STOPPING MOJO SERVER"
+			pkill mojosrv
+		fi
 		exit 0
+	elif [[ ${x} == "m" ]]; then
+		echo "********************************************"
+		echo "********************************************"
+		echo "********************************************"
+		echo "cp ${1} gold/${1}.gold"
+		cp ${1} gold/${1}.gold
 	fi
+
 }
 
 app() {
@@ -293,7 +313,15 @@ dorrtest () {
 			echo "Command to reproduce:  ${MOJO} ${2}" >> ${ERRFILE}
 			cat ${ERRFILE}
 			failmsg
-			exit 1
+			if [ "${ASKBEFOREEXIT}" = "1" ]; then
+				pause ${3}
+			else
+				if [ ${MANAGESERVER} -eq 1 ]; then
+					echo "STOPPING MOJO SERVER"
+					pkill mojosrv
+				fi
+				exit 1
+			fi
 		fi
 	else
 		echo
@@ -342,7 +370,15 @@ EOF
 			diff ${GOLD}/${1}.gold ${1} >> ${ERRFILE}
 			cat ${ERRFILE}
 			failmsg
-			exit 1
+			if [ "${ASKBEFOREEXIT}" = "1" ]; then
+				pause ${3}
+			else
+				if [ ${MANAGESERVER} -eq 1 ]; then
+					echo "STOPPING MOJO SERVER"
+					pkill mojosrv
+				fi
+				exit 1
+			fi
 		fi
 	else
 		echo
@@ -370,6 +406,15 @@ logcheck() {
 			echo "Missing file -- Required files for this check: log.gold and log"
 			failmsg
 			exit 1
+			# if [ "${ASKBEFOREEXIT}" = "1" ]; then
+			# 	pause ${3}
+			# else
+			# 	if [ ${MANAGESERVER} -eq 1 ]; then
+			# 		echo "STOPPING MOJO SERVER"
+			# 		pkill mojosrv
+			# 	fi
+			# 	exit 1
+			# fi
 		fi
 		declare -a out_filters=(
 			's/^Date\/Time:.*/current time/'
@@ -398,6 +443,15 @@ logcheck() {
 			cat ${ERRFILE}
 			failmsg
 			exit 1
+			# if [ "${ASKBEFOREEXIT}" = "1" ]; then
+			# 	pause ${3}
+			# else
+			# 	if [ ${MANAGESERVER} -eq 1 ]; then
+			# 		echo "STOPPING MOJO SERVER"
+			# 		pkill mojosrv
+			# 	fi
+			# 	exit 1
+			# fi
 		fi
 	else
 		echo "FINISHED...  but did not check output"
@@ -423,7 +477,15 @@ genericlogcheck() {
 		if [ ! -f ${GOLD}/${1}.gold -o ! -f ${1} ]; then
 			echo "Missing file -- Required files for this check: ${1} and ${GOLD}/${1}.gold"
 			failmsg
-			exit 1
+			if [ "${ASKBEFOREEXIT}" = "1" ]; then
+				pause ${3}
+			else
+				if [ ${MANAGESERVER} -eq 1 ]; then
+					echo "STOPPING MOJO SERVER"
+					pkill mojosrv
+				fi
+				exit 1
+			fi
 		fi
 		UDIFFS=$(diff ${1} gold/${1}.gold | wc -l)
 		if [ ${UDIFFS} -eq 0 ]; then
@@ -527,11 +589,15 @@ dojsonPOST () {
 			echo "Command to reproduce:  ${CMD}" >> ${ERRFILE}
 			cat ${ERRFILE}
 			failmsg
-			if [ ${MANAGESERVER} -eq 1 ]; then
-				echo "STOPPING MOJO SERVER"
-				pkill mojosrv
+			if [ "${ASKBEFOREEXIT}" = "1" ]; then
+				pause ${3}
+			else
+				if [ ${MANAGESERVER} -eq 1 ]; then
+					echo "STOPPING MOJO SERVER"
+					pkill mojosrv
+				fi
+				exit 1
 			fi
-			exit 1
 		fi
 	else
 		echo
@@ -599,11 +665,15 @@ dojsonAwsPOST () {
 			echo "Command to reproduce:  ${CMD}" >> ${ERRFILE}
 			cat ${ERRFILE}
 			failmsg
-			if [ ${MANAGESERVER} -eq 1 ]; then
-				echo "STOPPING MOJO SERVER"
-				pkill mojosrv
+			if [ "${ASKBEFOREEXIT}" = "1" ]; then
+				pause ${3}
+			else
+				if [ ${MANAGESERVER} -eq 1 ]; then
+					echo "STOPPING MOJO SERVER"
+					pkill mojosrv
+				fi
+				exit 1
 			fi
-			exit 1
 		fi
 	else
 		echo
@@ -668,11 +738,15 @@ dojsonGET () {
 			echo "Command to reproduce:  ${CMD}" >> ${ERRFILE}
 			cat ${ERRFILE}
 			failmsg
-			if [ ${MANAGESERVER} -eq 1 ]; then
-				echo "STOPPING MOJO SERVER"
-				pkill mojosrv
+			if [ "${ASKBEFOREEXIT}" = "1" ]; then
+				pause ${3}
+			else
+				if [ ${MANAGESERVER} -eq 1 ]; then
+					echo "STOPPING MOJO SERVER"
+					pkill mojosrv
+				fi
+				exit 1
 			fi
-			exit 1
 		fi
 	else
 		echo
@@ -736,11 +810,15 @@ doHtmlGET () {
 			echo "Command to reproduce:  ${CMD}" >> ${ERRFILE}
 			cat ${ERRFILE}
 			failmsg
-			if [ ${MANAGESERVER} -eq 1 ]; then
-				echo "STOPPING MOJO SERVER"
-				pkill mojosrv
+			if [ "${ASKBEFOREEXIT}" = "1" ]; then
+				pause ${3}
+			else
+				if [ ${MANAGESERVER} -eq 1 ]; then
+					echo "STOPPING MOJO SERVER"
+					pkill mojosrv
+				fi
+				exit 1
 			fi
-			exit 1
 		fi
 	else
 		echo
@@ -752,9 +830,12 @@ doHtmlGET () {
 #  Handle command line options...
 #--------------------------------------------------------------------------
 tdir
-while getopts "cfmornt:R:" o; do
+while getopts "acfmornt:R:" o; do
 	echo "o = ${o}"
 	case "${o}" in
+		a)	ASKBEFOREEXIT=1
+			echo "WILL ASK BEFORE EXITING ON ERROR"
+			;;
 		c | C)
 			SHOWCOMMAND=1
 			echo "SHOWCOMMAND"

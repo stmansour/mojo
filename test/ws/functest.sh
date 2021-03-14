@@ -158,8 +158,45 @@ if [ "${SINGLETEST}${TFILES}" = "${TFILES}" -o "${SINGLETEST}${TFILES}" = "${TFI
 
 fi
 
+#------------------------------------------------------------------------------
+#  TEST c
+#
+#  Save and update groups
+#
+#  /v1/pgroup/UID
+#
+#  Scenario:
+#  Search
+#
+#  Expected Results:
+#   1.
+#   2.
+#------------------------------------------------------------------------------
+TFILES="c"
+STEP=0
+if [ "${SINGLETEST}${TFILES}" = "${TFILES}" -o "${SINGLETEST}${TFILES}" = "${TFILES}${TFILES}" ]; then
+	# c0  CREATE A TEST GROUP
+	OutFile="${TFILES}${STEP}"
+    encodeRequest '{"cmd":"save","record":{"GID":0,"GroupName":"NewTestGroup","GroupDescription":"A new group for testing"}}'
+    dojsonPOST "http://localhost:8275/v1/group/0" "request" "${TFILES}${STEP}"  "Save New Group"
+	GID=$(grep recid "${OutFile}" | sed 's/^[^0-9][^0-9]*//' | sed 's/,//')
+	# echo "GID = ${GID}"
+
+	# c1  Get the newly created group
+    encodeRequest '{"cmd":"get"}'
+    dojsonPOST "http://localhost:8275/v1/group/${GID}" "request" "${TFILES}${STEP}"  "readGroupMembership"
+
+	# c2  Change the name and group description
+    encodeRequest "{\"cmd\":\"save\",\"record\":{\"GID\":6,\"GroupName\":\"UpdatedTestGroup\",\"GroupDescription\":\"An updated group for testing\"}}"
+    dojsonPOST "http://localhost:8275/v1/group/${GID}" "request" "${TFILES}${STEP}"  "Save updates to group"
+
+	# c3  Get the newly created group
+    encodeRequest '{"cmd":"get"}'
+    dojsonPOST "http://localhost:8275/v1/group/${GID}" "request" "${TFILES}${STEP}"  "readGroupMembership"
+
+fi
 
 stopMojoServer
-echo "RENTROLL SERVER STOPPED"
+echo "MOJO SERVER STOPPED"
 
 logcheck
