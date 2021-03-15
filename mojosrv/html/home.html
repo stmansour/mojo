@@ -295,69 +295,6 @@ function buildPageElements() {
     }));
 
     //------------------------------------------------------------------------
-    //          groupsGrid
-    //------------------------------------------------------------------------
-    $().w2grid({
-        name: 'groupsGrid',
-        url: '/v1/groups',
-        show: {
-            header: false,
-            toolbar: true,
-            footer: true,
-            lineNumbers: false,
-            selectColumn: false,
-            expandColumn: false
-        },
-        columns: [
-            {field: 'recid',            caption: 'recid',             size: '10px',  sortable: false, hidden: true},
-            {field: 'GID',              caption: 'GID',               size: '100px', sortable: true, hidden: true},
-            {field: 'GroupName',        caption: 'Group Name',        size: '100px', sortable: true, hidden: false},
-            {field: 'GroupDescription', caption: 'Group Description', size: '300px', sortable: true, hidden: false},
-            {field: 'LastModTime',      caption: 'LastModTime',       size: '100px', sortable: true, hidden: true},
-        ],
-        onClick: function(event) {
-            // var sel = this.getSelection(true);
-            event.onComplete = function() {
-                var sel = w2ui.groupsGrid.getSelection();
-                if (sel.length > 0) {
-                    var ob = w2ui.groupsGrid.get(sel[0]);
-                    if (ob === null ) { return; }
-                    w2ui.toplayout.show('right',true);
-                    w2ui.toplayout.load('right', '/html/groupdetail.html', null, function() {
-                        console.log('>>>>>>>>>> get data for Group: ' + ob.GID);
-                        var gid = ob.GID;
-                        $.get('/v1/groupstats/' + gid)
-                        .done(function(data) {
-                            if (typeof data == 'string') {  // it's weird, a successful data add gets parsed as an object, an error message does not
-                                var msg = JSON.parse(data);
-                                if (msg.status != "success") {
-                                    console.log('Response to groupcount: ' + msg.status);
-                                    return;
-                                }
-                                document.getElementById('mojoGroupName').innerHTML = '' + msg.record.GroupName;
-                                document.getElementById('mojoLastScrapeStart').innerHTML = '' + msg.record.LastScrapeStart;
-                                document.getElementById('mojoLastScrapeStop').innerHTML = '' + msg.record.LastScrapeStop;
-                                document.getElementById('mojoMemberCount').innerHTML = '' + msg.record.MemberCount;
-                                document.getElementById('mojoMailToCount').innerHTML = '' + msg.record.MailToCount;
-                                document.getElementById('mojoOptOutCount').innerHTML = '' + msg.record.OptOutCount;
-                                document.getElementById('mojoBouncedCount').innerHTML = '' + msg.record.BouncedCount;
-                                document.getElementById('mojoComplaintCount').innerHTML = '' + msg.record.ComplaintCount;
-                                document.getElementById('mojoSuppressedCount').innerHTML = '' + msg.record.SuppressedCount;
-                            }
-                        })
-                        .fail(function(data) {
-                            console.log('data = ' + data);
-                        });
-                    });
-                } // else {
-                   // console.log('*** NO SELECTION FOUND ***   So, select index 0');
-                    //this.select(1);
-                //}
-            };
-        },
-    });
-
-    //------------------------------------------------------------------------
     //          queryGrid
     //------------------------------------------------------------------------
     $().w2grid({
@@ -380,85 +317,85 @@ function buildPageElements() {
         ],
     });
 
-    //------------------------------------------------------------------------
-    //          Group Detail
-    //------------------------------------------------------------------------
-    $().w2form({
-        name: 'asmInstForm',
-        style: 'border: 0px; background-color: transparent;',
-        header: app.sAssessment + ' Detail',
-        url: '/v1/asm',
-        fields: [
-            { field: 'recid',         type: 'int',    required: false },
-            { field: 'GID',           type: 'int',    required: false },
-            { field: 'GroupName',     type: 'text',   required: false },
-            { field: 'Last Scrape',   type: 'text',   required: false },
-            { field: 'Total Count',   type: 'w2int',  required: false },
-            { field: 'Opt out',       type: 'w2int',  required:  true },
-            { field: 'Bounced',       type: 'w2int',  required: false },
-            { field: 'Complaint',     type: 'w2int',  required: false },
-            { field: 'LastModTime',   type: 'hidden', required: false },
-            { field: 'LastModBy',     type: 'hidden', required: false },
-        ],
-        toolbar: {
-            items: [
-                { id: 'btnNotes', type: 'button', icon: 'fa fa-sticky-note-o' },
-                { id: 'bt3', type: 'spacer' },
-                { id: 'btnClose', type: 'button', icon: 'fa fa-times' },
-            ],
-            onClick: function (event) {
-                switch(event.target) {
-                case 'btnClose':
-                    w2ui.toplayout.hide('right',true);
-                    break;
-                }
-            },
-        },
-        actions: {
-            save: function () {
-                //var obj = this;
-                var tgrid = w2ui.asmsGrid;
-                var sel = tgrid.getSelection();
-                tgrid.unselect(sel);
-                this.save({}, function (data) {
-                    if (data.status == 'error') {
-                        console.log('ERROR: '+ data.message);
-                        return;
-                    }
-                    w2ui.toplayout.hide('right',true);
-                    tgrid.reload();
-                });
-
-            },
-            reset: function() {
-                var f = w2ui.asmInstForm;
-                console.log('reset: ASMID = ' + f.record.ASMID );
-            }
-        },
-        onRefresh: function(/*event*/) {
-            var f = w2ui.asmInstForm;
-            var r = f.record;
-            f.header = 'Edit ' + app.sAssessment + ' (' + r.ASMID + ')';
-            // r.epoch = app.epochInstance[  (r.RentCycle !== 'Norecur' && r.PASMID === 0) ? 0 : 1 ];
-            if (!String.prototype.format) {
-                String.prototype.format = function() {
-                    var args = arguments;
-                    return this.replace(/{(\d+)}/g, function(match, number) {
-                        return typeof args[number] != 'undefined'? args[number] : match;
-                    });
-                };
-            }
-            var hdr = '';
-            if (r.RentCycle !== 'Norecur' && r.PASMID === 0) {
-                // EPOCH
-                hdr = 'This is an epoch assessment, it defines a recurring series of assessment instances.';
-            } else {
-                // INSTANCE has 3 variables: ParentASM, RentCycle, Proration
-                hdr = app.asmInstanceHeader.format(''+r.PASMID, r.RentCycle, r.ProrationCycle);
-            }
-            document.getElementById("AssessmentEpochOrInstance").innerHTML = hdr;
-        }
-    });
+//     //------------------------------------------------------------------------
+//     //          Group Detail
+//     //------------------------------------------------------------------------
+//     $().w2form({
+//         name: 'asmInstForm',
+//         style: 'border: 0px; background-color: transparent;',
+//         header: app.sAssessment + ' Detail',
+//         url: '/v1/asm',
+//         fields: [
+//             { field: 'recid',         type: 'int',    required: false },
+//             { field: 'GID',           type: 'int',    required: false },
+//             { field: 'GroupName',     type: 'text',   required: false },
+//             { field: 'Last Scrape',   type: 'text',   required: false },
+//             { field: 'Total Count',   type: 'w2int',  required: false },
+//             { field: 'Opt out',       type: 'w2int',  required:  true },
+//             { field: 'Bounced',       type: 'w2int',  required: false },
+//             { field: 'Complaint',     type: 'w2int',  required: false },
+//             { field: 'LastModTime',   type: 'hidden', required: false },
+//             { field: 'LastModBy',     type: 'hidden', required: false },
+//         ],
+//         toolbar: {
+//             items: [
+//                 { id: 'btnNotes', type: 'button', icon: 'fa fa-sticky-note-o' },
+//                 { id: 'bt3', type: 'spacer' },
+//                 { id: 'btnClose', type: 'button', icon: 'fa fa-times' },
+//             ],
+//             onClick: function (event) {
+//                 switch(event.target) {
+//                 case 'btnClose':
+//                     w2ui.toplayout.hide('right',true);
+//                     break;
+//                 }
+//             },
+//         },
+//         actions: {
+//             save: function () {
+//                 //var obj = this;
+//                 var tgrid = w2ui.asmsGrid;
+//                 var sel = tgrid.getSelection();
+//                 tgrid.unselect(sel);
+//                 this.save({}, function (data) {
+//                     if (data.status == 'error') {
+//                         console.log('ERROR: '+ data.message);
+//                         return;
+//                     }
+//                     w2ui.toplayout.hide('right',true);
+//                     tgrid.reload();
+//                 });
+//
+//             },
+//             reset: function() {
+//                 var f = w2ui.asmInstForm;
+//                 console.log('reset: ASMID = ' + f.record.ASMID );
+//             }
+//         },
+//         onRefresh: function(/*event*/) {
+//             var f = w2ui.asmInstForm;
+//             var r = f.record;
+//             f.header = 'Edit ' + app.sAssessment + ' (' + r.ASMID + ')';
+//             // r.epoch = app.epochInstance[  (r.RentCycle !== 'Norecur' && r.PASMID === 0) ? 0 : 1 ];
+//             if (!String.prototype.format) {
+//                 String.prototype.format = function() {
+//                     var args = arguments;
+//                     return this.replace(/{(\d+)}/g, function(match, number) {
+//                         return typeof args[number] != 'undefined'? args[number] : match;
+//                     });
+//                 };
+//             }
+//             var hdr = '';
+//             if (r.RentCycle !== 'Norecur' && r.PASMID === 0) {
+//                 // EPOCH
+//                 hdr = 'This is an epoch assessment, it defines a recurring series of assessment instances.';
+//             } else {
+//                 // INSTANCE has 3 variables: ParentASM, RentCycle, Proration
+//                 hdr = app.asmInstanceHeader.format(''+r.PASMID, r.RentCycle, r.ProrationCycle);
+//             }
+//             document.getElementById("AssessmentEpochOrInstance").innerHTML = hdr;
+//         }
+//     });
 
 }
 
@@ -476,6 +413,7 @@ function groupFilterSubmit() {
 function finishInitialization() {
     defineDateFmts();
     buildPageElements();
+    createGroupUI();
     finishPersonForm();
 }
 

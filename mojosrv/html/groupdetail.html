@@ -1,32 +1,49 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <link rel="stylesheet" href="/html/dashboard.css">
-</script>
+<div class="w2ui-page page-0">
 
-</head>
-<body>
+    <div class="w2ui-field"><input type="hidden" name="recid" /></div>
+    <div class="w2ui-field"><input type="hidden" name="GID" /></div>
+    <div class="w2ui-field"><input type="hidden" name="LastModTime" /></div>
+    <div class="w2ui-field"><input type="hidden" name="LastModBy" /></div>
+    <div class="w2ui-field"><input type="hidden" name="MemberCount" /></div>
+    <div class="w2ui-field"><input type="hidden" name="MailToCount" /></div>
+    <div class="w2ui-field"><input type="hidden" name="OptOutCount" /></div>
+    <div class="w2ui-field"><input type="hidden" name="BouncedCount" /></div>
+    <div class="w2ui-field"><input type="hidden" name="ComplaintCount" /></div>
+    <div class="w2ui-field"><input type="hidden" name="SuppressedCount" /></div>
 
-<table cellspacing="4">
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Group Name:</span></td><td><span class="mojoSmallStatValue" id="mojoGroupName"></span></td></tr>
-<tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Last Scrape Start:</span></td><td><span class="mojoSmallStatValue" id="mojoLastScrapeStart"></span></td></tr>
-<tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Last Scrape Stop:</span></td><td><span class="mojoSmallStatValue" id="mojoLastScrapeStop"></span></td></tr>
-<tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Total:</span></td><td><span class="mojoSmallStatValue" id="mojoMemberCount"></span></td></tr>
-<tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Mail to:</span></td><td><span class="mojoSmallStatValue" id="mojoMailToCount"></span></td></tr>
-<tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Opted Out:</span></td><td><span class="mojoSmallStatValue" id="mojoOptOutCount"></span></td></tr>
-<tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Bounced:</span></td><td><span class="mojoSmallStatValue" id="mojoBouncedCount"></span></td></tr>
-<tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Complaints:</span></td><td><span class="mojoSmallStatValue" id="mojoComplaintCount"></span></td></tr>
-<tr><td colspan=3 height="8"></td></tr>
-<tr class="mojorow"><td width="30"></td><td align="baseline"><span class="mojoSmallStatLabel">Suppressed:</span></td><td><span class="mojoSmallStatValue" id="mojoSuppressedCount"></span></td></tr>
-<tr><td colspan=3 height="8"></td></tr>
-</table>
 
-</body>
-</html>
+    <div>
+        <table align="center" cellspacing="4">
+            <tr class="mojorow"><td width="30"></td><td align="right"><span class="mojoSmallStatLabel">GID:</span></td><td width="7"></td><td><span class="mojoSmallStatValue" id="mojoGroupGID"></span></td></tr>
+            <tr><td colspan="4" height="8"></td></tr>
+            <tr class="mojorow"><td width="30"></td><td align="right"><span class="mojoSmallStatLabel">Total:</span></td><td width="7"></td><td><span class="mojoSmallStatValue" id="mojoMemberCount"></span></td></tr>
+            <tr><td colspan="4" height="8"></td></tr>
+            <tr class="mojorow"><td width="30"></td><td align="right"><span class="mojoSmallStatLabel">Mail to:</span></td><td width="7"></td><td><span class="mojoSmallStatValue" id="mojoMailToCount"></span></td></tr>
+            <tr><td colspan="4" height="8"></td></tr>
+            <tr class="mojorow"><td width="30"></td><td align="right"><span class="mojoSmallStatLabel">Opted Out:</span></td><td width="7"></td><td><span class="mojoSmallStatValue" id="mojoOptOutCount"></span></td></tr>
+            <tr><td colspan="4" height="8"></td></tr>
+            <tr class="mojorow"><td width="30"></td><td align="right"><span class="mojoSmallStatLabel">Bounced:</span></td><td width="7"></td><td><span class="mojoSmallStatValue" id="mojoBouncedCount"></span></td></tr>
+            <tr><td colspan="4" height="8"></td></tr>
+            <tr class="mojorow"><td width="30"></td><td align="right"><span class="mojoSmallStatLabel">Complaints:</span></td><td width="7"></td><td><span class="mojoSmallStatValue" id="mojoComplaintCount"></span></td></tr>
+            <tr><td colspan="4" height="8"></td></tr>
+            <tr class="mojorow"><td width="30"></td><td align="right"><span class="mojoSmallStatLabel">Suppressed:</span></td><td width="7"></td><td><span class="mojoSmallStatValue" id="mojoSuppressedCount"></span></td></tr>
+            <tr><td colspan="4" height="8"></td></tr>
+        </table>
+    </div>
+
+
+    <div class="w2ui-field">
+        <label>Group Name:</label>
+        <div><input name="GroupName" maxlength="80" style="width: 100%;" type="text"/></div>
+    </div>
+    <div class="w2ui-field">
+        <label>Group Description:</label>
+        <div><textarea name="GroupDescription" style="width: 100%;" maxlength="512" rows="10"></textarea></div>
+    </div>
+
+    <div class="w2ui-buttons">
+        <button class="w2ui-btn" id="save" name="save">Save</button>
+        <!-- <button class="w2ui-btn" id="delete" name="delete">Delete</button> -->
+    </div>
+
+</div>
