@@ -184,7 +184,7 @@ GetLatestRepoRelease() {
 RunActivation() {
 	echo -n "Invoking activation script: "
 	stat=$(./activate.sh -b start)
-	sleep 2
+	sleep 1
 	status=$(./activate.sh ready)
 	if [ "${status}" = "OK" ]; then
 	    echo "Success!"
@@ -234,7 +234,6 @@ fi
 echo -n "Shutting down mojo server: "
 if [ -f "activate.sh" ]; then
     $(./activate.sh stop) >/dev/null 2>&1
-    sleep 6
     echo "OK"
 else
     echo "*** WARNING:  activate.sh was not found! Using killall instead ***"
