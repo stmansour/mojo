@@ -184,7 +184,7 @@ GetLatestRepoRelease() {
 RunActivation() {
 	echo -n "Invoking activation script: "
 	stat=$(./activate.sh -b start)
-	sleep 1
+	sleep 4
 	status=$(./activate.sh ready)
 	if [ "${status}" = "OK" ]; then
 	    echo "Success!"
@@ -255,5 +255,16 @@ echo "done"
 chmod u+s mojosrv mojowatchdog
 
 if [ "${STARTUP}" = "1" ]; then
-        RunActivation
+    echo -n "Invoking activation script: "
+	stat=$(./activate.sh -b start)
+	sleep 4
+	status=$(./activate.sh ready)
+	if [ "${status}" = "OK" ]; then
+	    echo "Success!"
+	    rm ../mojo*.tar.gz
+	else
+	    echo "error:  status = ${status}"
+	    echo "output from ./activate.sh -b start "
+	    echo "${stat}"
+	fi
 fi

@@ -14,7 +14,7 @@ DATABASENAME="${PROGNAME}"
 DBUSER="ec2-user"
 SERVERNAME="mojosrv"
 IAM=$(whoami)
-TRACE=1
+TRACE=0
 
 
 usage() {
