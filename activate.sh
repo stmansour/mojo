@@ -14,6 +14,7 @@ DATABASENAME="${PROGNAME}"
 DBUSER="ec2-user"
 SERVERNAME="mojosrv"
 IAM=$(whoami)
+TRACE=1
 
 
 usage() {
@@ -69,25 +70,39 @@ makeDevNode() {
 	echo "Done."
 }
 
+Trace () {
+    if (( TRACE == 1 )); then
+        echo $1
+    fi
+}
+
 start() {
 	# Create a database if this is a localhost instance
+    Trace "Entered start"
 	if [ ! -f "config.json" ]; then
 		echo "config.json not found, setting up as development node"
 		makeDevNode
 	fi
 
+    Trace "[2]"
+
 	if [ ${IAM} == "root" ]; then
 		if [ ! -f "mojo.log" ]; then
+            Trace "[3]"
 			touch mojo.log
 			touch mojowatchdog.log
 		fi
+        Trace "[4]"
 		chown -R ec2-user:ec2-user *
 		# chmod u+s ${PROGNAME} pbwatchdog
+        Trace "[5]"
 		if [ $(uname) == "Linux" -a ! -f "/etc/init.d/${PROGNAME}" ]; then
+            Trace "[6]"
 			cp ./activate.sh /etc/init.d/${PROGNAME}
 			chkconfig --add ${PROGNAME}
 		fi
 	fi
+    Trace "[7]"
 
 	# if [ ! -d "./js" ]; then
 	# 	${GETFILE} jenkins-snapshot/mojo/latest/js.tar.gz
@@ -103,29 +118,42 @@ start() {
 	# fi
 
 	x=$(pgrep "${SERVERNAME}")
+    Trace "[8]"
 	if [ "${X}x" == "x" ]; then
+        Trace "[9]"
 		./${SERVERNAME} >log.out 2>&1 &
+        Trace "[10]"
 	fi
 
+    Trace "[11]"
 	# make sure it can survive a reboot...
 	if [ ${IAM} == "root" ]; then
+        Trace "[12]"
 		if [ ! -d /var/run/${SERVERNAME} ]; then
+            Trace "[13]"
 			mkdir /var/run/${SERVERNAME}
 		fi
+        Trace "[14]"
 		echo $! >/var/run/${SERVERNAME}/${SERVERNAME}.pid
 		touch /var/lock/${SERVERNAME}
 	fi
 
+    Trace "[15]"
 	# give ${SERVERNAME} a few seconds to start up before initiating the watchdog
 	sleep 1
 
+    Trace "[16]"
 	#---------------------------------------------------
 	# If the watchdog is NOT running, then start it...
 	#---------------------------------------------------
 	W=$(ps -ef | grep "mojowatchdog" | grep "bash" | wc -l)
+    Trace "[17]"
 	if [ ${W} == 0 ]; then
+        Trace "[18]"
 		./mojowatchdog &
+        Trace "[19]"
 	fi
+    Trace "[20]"
 }
 
 stop() {
@@ -195,6 +223,8 @@ restart() {
 	sleep 3
 	start
 }
+
+Trace "TRACE IS TURNED ON"
 
 while getopts ":p:qih:N:Tb" o; do
     case "${o}" in
