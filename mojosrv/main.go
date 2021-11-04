@@ -28,6 +28,15 @@ var App struct {
 	startName string
 }
 
+// Chttp is a server mux for handling unprocessed html page requests.
+// For example, a .css file or an image file.
+var Chttp = http.NewServeMux()
+
+func unauthorizeFileReqHandler(w http.ResponseWriter, r *http.Request) {
+	util.Ulog("UNAUTHORIZED FILE ACCESS ATTEMPT: url = %s\n", r.URL.Path)
+	fmt.Fprintf(w, "404 page not found")
+}
+
 // HomeHandler serves static http content such as the .css files
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(r.URL.Path, ".") {
@@ -37,11 +46,10 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Chttp is a server mux for handling unprocessed html page requests.
-// For example, a .css file or an image file.
-var Chttp = http.NewServeMux()
-
 func initHTTP() {
+	http.HandleFunc("/config.json", unauthorizeFileReqHandler)
+	http.HandleFunc("/confprod.json", unauthorizeFileReqHandler)
+	http.HandleFunc("/confdev.json", unauthorizeFileReqHandler)
 	Chttp.Handle("/", http.FileServer(http.Dir("./")))
 	http.HandleFunc("/", HomeHandler)
 	http.HandleFunc("/home/", HomeUIHandler)
