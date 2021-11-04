@@ -165,7 +165,7 @@ GetLatestRepoRelease() {
     decho "curl -s -u ${REPOUSER}:${APIKEY} ${URLBASE}${f} > ../${t}"
     curl -s -u "${REPOUSER}:${APIKEY}" ${URLBASE}${f} > ../${t}
     decho "After call to curl, directory contents ls .."
-    tmpx=$(ls ../phonebook_*.tar.gz)
+    tmpx=$(ls ../mojo_*.tar.gz)
     echo "Downlowded: ${tmpx}"
 }
 
@@ -188,7 +188,7 @@ RunActivation() {
 	status=$(./activate.sh ready)
 	if [ "${status}" = "OK" ]; then
 	    echo "Success!"
-	    rm ../phonebook*.tar.gz
+	    rm ../mojo*.tar.gz
 	else
 	    echo "error:  status = ${status}"
 	    echo "output from ./activate.sh -b start "
@@ -214,13 +214,13 @@ readConfig
 configure
 
 #----------------------------------------------
-#  ensure that we're in the phonebook directory...
+#  ensure that we're in the mojo directory...
 #----------------------------------------------
 
 cd ${RELDIR}
 dir=${PWD##*/}
-if [ ${dir} != "phonebook" ]; then
-    echo "This script must execute in the phonebook directory."
+if [ ${dir} != "mojo" ]; then
+    echo "This script must execute in the mojo directory."
     echo "current directory is: ${dir}"
     exit 1
 fi
@@ -231,29 +231,29 @@ if [ ${user} != "root" ]; then
     exit 1
 fi
 
-echo -n "Shutting down phonebook server: "
+echo -n "Shutting down mojo server: "
 if [ -f "activate.sh" ]; then
     $(./activate.sh stop) >/dev/null 2>&1
     sleep 6
     echo "OK"
 else
     echo "*** WARNING:  activate.sh was not found! Using killall instead ***"
-    killall phonebook >/dev/null 2>&1
+    killall mojo >/dev/null 2>&1
 fi
 
 cd ..
 echo "Distribution download to:  ${PWD}"
-rm -f phonebook*.tar*
-GetLatestRepoRelease "phonebook"
+rm -f mojo*.tar*
+GetLatestRepoRelease "mojo"
 
 echo -n "Extracting: "
 cd ${RELDIR}/..
-tar xzf phonebook*.tar.gz
-chown -R ec2-user:ec2-user phonebook
+tar xzf mojo*.tar.gz
+chown -R ec2-user:ec2-user mojo
 cd ${RELDIR}
 echo "done"
 
-chmod u+s phonebook pbwatchdog
+chmod u+s mojosrv mojowatchdog
 
 if [ "${STARTUP}" = "1" ]; then
         RunActivation
