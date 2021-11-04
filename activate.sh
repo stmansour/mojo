@@ -37,7 +37,7 @@ CMD is one of: start | stop | status | restart | ready | reload | condrestart | 
 
 Examples:
 Command to start ${PROGNAME}:
-	bash$  activate.sh start 
+	bash$  activate.sh start
 
 Command to stop ${PROGNAME}:
 	bash$  activate.sh Stop
@@ -70,7 +70,7 @@ makeDevNode() {
 }
 
 start() {
-	# Create a database if this is a localhost instance  
+	# Create a database if this is a localhost instance
 	if [ ! -f "config.json" ]; then
 		echo "config.json not found, setting up as development node"
 		makeDevNode
@@ -89,18 +89,18 @@ start() {
 		fi
 	fi
 
-	if [ ! -d "./js" ]; then
-		${GETFILE} jenkins-snapshot/mojo/latest/js.tar.gz
-		tar xzvf js.tar.gz
-	fi
-	if [ ! -d "./html/images" ]; then
-		${GETFILE} jenkins-snapshot/mojo/latest/images.tar.gz
-		tar xzvf images.tar.gz
-	fi
-	if [ ! -d "./html/fa" ]; then
-		${GETFILE} jenkins-snapshot/mojo/latest/fa.tar.gz
-		tar xzvf fa.tar.gz
-	fi
+	# if [ ! -d "./js" ]; then
+	# 	${GETFILE} jenkins-snapshot/mojo/latest/js.tar.gz
+	# 	tar xzvf js.tar.gz
+	# fi
+	# if [ ! -d "./html/images" ]; then
+	# 	${GETFILE} jenkins-snapshot/mojo/latest/images.tar.gz
+	# 	tar xzvf images.tar.gz
+	# fi
+	# if [ ! -d "./html/fa" ]; then
+	# 	${GETFILE} jenkins-snapshot/mojo/latest/fa.tar.gz
+	# 	tar xzvf fa.tar.gz
+	# fi
 
 	x=$(pgrep "${SERVERNAME}")
 	if [ "${X}x" == "x" ]; then
@@ -172,7 +172,7 @@ status() {
 		exit 0
 		;;
 	"0")
-		# ${SERVERNAME} is not responsive or not running.  Exit status as described in 
+		# ${SERVERNAME} is not responsive or not running.  Exit status as described in
 		# http://refspecs.linuxbase.org/LSB_3.1.0/LSB-Core-generic/LSB-Core-generic/iniscrptact.html
 		if [ ${IAM} == "root" -a -f /var/run/${SERVERNAME}/${SERVERNAME}.pid ]; then
 			exit 1
