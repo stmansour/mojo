@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"mojo/db"
 	"mojo/util"
-	"rentroll/rlib"
 )
 
 // ValidateGroupEmailAddresses looks up the email address for every person
@@ -27,7 +26,7 @@ func ValidateGroupEmailAddresses(grp string) error {
 	}
 	q := fmt.Sprintf("SELECT People.PID,People.Email1 FROM People INNER JOIN PGroup ON (PGroup.PID=People.PID AND PGroup.GID=%d)", g.GID)
 	rows, err := db.DB.Db.Query(q)
-	rlib.Errcheck(err)
+	util.ErrCheck(err)
 	defer rows.Close()
 	good := 0
 	bad := 0

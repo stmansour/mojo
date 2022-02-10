@@ -135,7 +135,6 @@ func doExport() {
 		count++ // update the count only after adding the record
 	}
 	// util.Console("Exported Records:  %d\n", count)
-	return
 }
 
 func exportHandle(p db.Person) {

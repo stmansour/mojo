@@ -6,11 +6,10 @@ import (
 	"html/template"
 	"mojo/db"
 	"mojo/util"
-	"rentroll/rlib"
 	"strings"
 	"time"
 
-	"gopkg.in/gomail.v2"
+	"github.com/teamnsrg/gomail.v2"
 )
 
 const (
@@ -220,7 +219,7 @@ func Sendmail(si *Info) error {
 		util.Ulog("\t ComplaintCount:   = %d\n", grp.ComplaintCount)
 		util.Ulog("\t SuppressedCount:  = %d\n", grp.SuppressedCount)
 	} else {
-		return fmt.Errorf("No group name or query name was supplied")
+		return fmt.Errorf("no group name or query name was supplied")
 	}
 
 	//----------------------------------------
@@ -235,7 +234,7 @@ func Sendmail(si *Info) error {
 
 	fmt.Printf("query is:\n%s\n", q)
 	rows, err := db.DB.Db.Query(q)
-	rlib.Errcheck(err)
+	util.ErrCheck(err)
 	defer rows.Close()
 
 	//fmt.Printf("EMAIL:  host: %s, port: %d, login: %s, pass: %s\n", si.SMTPHost, si.SMTPPort, si.SMTPLogin, si.SMTPPass)

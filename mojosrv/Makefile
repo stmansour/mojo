@@ -10,7 +10,7 @@ mojosrv: ver.go *.go config.json
 	@find . -name "fail" -exec rm -r "{}" \;
 	@touch fail
 	@${COUNTOL} "go vet"
-	@${COUNTOL} golint
+	if [[ -f "${GOPATH}/bin/golint" ]]; then golint; else staticcheck; fi
 	go build
 	@rm -f fail
 	@echo "*** ${THISDIR}: completed mojosrv ***"
@@ -34,7 +34,7 @@ clean:
 	rm -f js/mweb.js mojosrv ver.go tmp *.log *.json buildno
 	@echo "*** ${THISDIR}: completed clean ***"
 
-package: webdoc
+package:
 	@find . -name "fail" -exec rm -r "{}" \;
 	@touch fail
 	mkdir -p ${BINDIR}

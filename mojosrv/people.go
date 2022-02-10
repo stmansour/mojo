@@ -110,14 +110,12 @@ func SvcHandlerPerson(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 			}
 			getPerson(w, r, d)
 		}
-		break
 	case "save":
 		savePerson(w, r, d)
-		break
 	case "delete":
 		deletePerson(w, r, d)
 	default:
-		err := fmt.Errorf("Unhandled command: %s", d.wsSearchReq.Cmd)
+		err := fmt.Errorf("unhandled command: %s", d.wsSearchReq.Cmd)
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -417,12 +415,12 @@ func PersonUpdate(p *PersonGrid, d *ServiceData) error {
 	}
 
 	if !util.ValidEmailAddress(p.Email1) {
-		return fmt.Errorf("Invalid email address: %s", p.Email1)
+		return fmt.Errorf("invalid email address: %s", p.Email1)
 	}
 
 	if len(p.Email2) > 0 {
 		if !util.ValidEmailAddress(p.Email2) {
-			return fmt.Errorf("Invalid email address: %s", p.Email2)
+			return fmt.Errorf("invalid email address: %s", p.Email2)
 		}
 	}
 

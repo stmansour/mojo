@@ -7,7 +7,7 @@ util: *.go
 	@find . -name "fail" -exec rm -r "{}" \;
 	@touch fail
 	@${COUNTOL} "go vet"
-	@${COUNTOL} golint
+	if [[ -f "${GOPATH}/bin/golint" ]]; then golint; fi
 	go build
 	go install
 	go test

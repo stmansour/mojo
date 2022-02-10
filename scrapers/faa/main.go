@@ -10,7 +10,6 @@ import (
 	"mojo/db"
 	"mojo/util"
 	"os"
-	"phonebook/lib"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -116,7 +115,7 @@ func main() {
 	// Open the logfile and begin logging...
 	//==============================================
 	App.LogFile, err = os.OpenFile("scrapefaa.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	lib.Errcheck(err)
+	util.ErrCheck(err)
 	defer App.LogFile.Close()
 	log.SetOutput(App.LogFile)
 	util.Ulog("*** Accord MOJO FAA Scraper ***\n")

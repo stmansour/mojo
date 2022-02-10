@@ -5,8 +5,8 @@ CREATE DATABASE mojo;
 USE mojo;
 GRANT ALL PRIVILEGES ON mojo TO 'ec2-user'@'localhost';
 GRANT ALL PRIVILEGES ON mojo.* TO 'ec2-user'@'localhost';
-GRANT ALL PRIVILEGES ON mojo TO 'adbuser'@'localhost';
-GRANT ALL PRIVILEGES ON mojo.* TO 'adbuser'@'localhost';
+GRANT ALL PRIVILEGES ON mojo TO 'adbuser'@'%';
+GRANT ALL PRIVILEGES ON mojo.* TO 'adbuser'@'%';
 set GLOBAL sql_mode='ALLOW_INVALID_DATES';
 
 -- **************************************
@@ -38,8 +38,8 @@ CREATE TABLE People (
     OptOutDate DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',     -- if State is 1, the date/time when the person opted out
     LastModTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     LastModBy BIGINT NOT NULL DEFAULT 0,
-    PRIMARY KEY (PID)     
-);      
+    PRIMARY KEY (PID)
+);
 
 CREATE TABLE EGroup (
     GID BIGINT NOT NULL AUTO_INCREMENT,                         -- Group ID
@@ -49,7 +49,7 @@ CREATE TABLE EGroup (
     DtStop DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00',     -- stop time of last scrap
     LastModTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     LastModBy BIGINT NOT NULL DEFAULT 0,
-    PRIMARY KEY (GID)     
+    PRIMARY KEY (GID)
 );
 
 CREATE TABLE PGroup (

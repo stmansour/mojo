@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"mojo/db"
 	"mojo/util"
-	"rentroll/rlib"
 	"strings"
 )
 
@@ -79,9 +78,9 @@ func nameHandler(s string, p *db.Person) {
 func badAddress(s string, p *db.Person) {
 	fmt.Printf("db.Person = %#v\n", p)
 	if len(s) == 0 {
-		rlib.Errcheck(fmt.Errorf("Address string s:  len(s) == 0"))
+		util.ErrCheck(fmt.Errorf("address string s:  len(s) == 0"))
 	}
-	rlib.Errcheck(fmt.Errorf("Unrecognized address format:  %s", s))
+	util.ErrCheck(fmt.Errorf("unrecognized address format:  %s", s))
 }
 
 // parseCityStateZip  does its best to pull a city, state, and zipcode out of
@@ -91,8 +90,7 @@ func parseCityStateZip(address []string, p *db.Person) {
 	if len(address) == 0 {
 		return
 	}
-	var s string
-	s = strings.TrimSpace(address[len(address)-1])
+	var s = strings.TrimSpace(address[len(address)-1])
 	if len(s) == 0 {
 		return
 	}
@@ -124,5 +122,4 @@ func parseCityStateZip(address []string, p *db.Person) {
 		}
 	}
 	p.MailAddress = address[len(address)-2]
-	return
 }

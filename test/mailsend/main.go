@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/gomail.v2"
+	"github.com/teamnsrg/gomail.v2"
 
 	_ "github.com/go-sql-driver/mysql"
 )

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"mojo/db"
 	"mojo/util"
-	"rentroll/rlib"
 	"strings"
 )
 
@@ -16,7 +15,7 @@ func fixDoubleDotEmail() {
 	util.UlogAndPrint("Fix double-dot email addresses\n")
 	q := "SELECT " + db.DB.DBFields["People"] + " FROM People WHERE Email1 LIKE \"%..%\""
 	rows, err := db.DB.Db.Query(q)
-	rlib.Errcheck(err)
+	util.ErrCheck(err)
 	defer rows.Close()
 	i := 0
 	for rows.Next() {
@@ -52,7 +51,7 @@ func fixDotAtEmail() {
 	util.UlogAndPrint("Fix dot-at email addresses\n")
 	q := "SELECT " + db.DB.DBFields["People"] + " FROM People WHERE Email1 LIKE \"%.@%\""
 	rows, err := db.DB.Db.Query(q)
-	rlib.Errcheck(err)
+	util.ErrCheck(err)
 	defer rows.Close()
 	i := 0
 	for rows.Next() {

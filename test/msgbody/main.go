@@ -52,5 +52,9 @@ func main() {
 
 	var p = db.Person{FirstName: "Steven", MiddleName: "F", LastName: "Mansour", JobTitle: "CTO, Accord Interests", OfficePhone: "323-512-0111 X305", Email1: "sman@accordinterests.com", MailAddress: "11719 Bee Cave Road", MailAddress2: "Suite 301", MailCity: "Austin", MailState: "TX", MailPostalCode: "78738", MailCountry: "USA", Status: 0}
 	th, err := mailsend.GeneratePageHTML(App.MsgFile, App.MojoHost, &p, t)
+	if nil != err {
+		fmt.Printf("error with BeneratePageHTML: %v\n", err)
+		os.Exit(1)
+	}
 	fmt.Printf("Body string:\n\n%s\n", string(th))
 }

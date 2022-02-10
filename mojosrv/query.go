@@ -79,14 +79,12 @@ func SvcHandlerQuery(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 			}
 			getQuery(w, r, d)
 		}
-		break
 	case "save":
 		saveQuery(w, r, d)
-		break
 	case "delete":
 		deleteQuery(w, r, d)
 	default:
-		err := fmt.Errorf("Unhandled command: %s", d.wsSearchReq.Cmd)
+		err := fmt.Errorf("unhandled command: %s", d.wsSearchReq.Cmd)
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -171,7 +169,7 @@ func SvcSearchHandlerQueries(w http.ResponseWriter, r *http.Request, d *ServiceD
 
 	order := "QueryName ASC"                                           // default ORDER
 	q := fmt.Sprintf("SELECT %s FROM Query ", db.DB.DBFields["Query"]) // the fields we want
-	qw := fmt.Sprintf("")                                              // don't need WHERE clause on this query
+	qw := ""                                             // don't need WHERE clause on this query
 	if len(qw) > 0 {
 		q += "WHERE " + qw
 	}

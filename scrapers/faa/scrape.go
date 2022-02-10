@@ -291,6 +291,9 @@ func AddPersonToGroup(pid, gid int64) error {
 func InsertOrUpdatePerson(p *db.Person) {
 	// Job title may have been updated.
 	plist, err := db.GetPersonByRecordFieldMatching(p.FirstName, p.MiddleName, p.LastName, p.OfficePhone, p.MailAddress)
+	if err != nil {
+		util.Ulog("ERROR: GetPersonByRecordFieldMatching says: %s\n",err.Error())
+	}
 	if len(plist) > 1 {
 		util.Ulog("ERROR: YIPES! %d people returned by GetPersonByRecordFieldMatching for name %s %s %s\n", len(plist), p.FirstName, p.MiddleName, p.LastName)
 		return
@@ -405,6 +408,7 @@ func processSearchResults(q string) {
 	switch resp.Header.Get("Content-Encoding") {
 	case "gzip":
 		reader, err = gzip.NewReader(resp.Body)
+		util.ErrCheck(err)
 	default:
 		reader = resp.Body
 	}

@@ -163,7 +163,7 @@ func GetQueryRowCount(qname string) (int64, error) {
 	util.Console("Successfully read query: %s\n", q.QueryName)
 	i := strings.Index(q.QueryJSON, "FROM")
 	if i < 0 {
-		return c, fmt.Errorf("Could not find FROM in query")
+		return c, fmt.Errorf("could not find FROM in query")
 	}
 	s := "SELECT COUNT(People.PID) " + q.QueryJSON[i:]
 	err = DB.Db.QueryRow(s).Scan(&c)

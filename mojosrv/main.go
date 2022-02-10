@@ -11,7 +11,6 @@ import (
 	"mojo/util"
 	"net/http"
 	"os"
-	"phonebook/lib"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -80,7 +79,7 @@ func main() {
 	// Open the logfile and begin logging...
 	//==============================================
 	App.LogFile, err = os.OpenFile("mojo.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	lib.Errcheck(err)
+	util.ErrCheck(err)
 	defer App.LogFile.Close()
 	log.SetOutput(App.LogFile)
 	util.Ulog("*** Accord MOJO ***\n")

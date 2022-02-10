@@ -192,7 +192,7 @@ func V1ServiceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if sid < 0 {
 		util.Console("**** YIPES! **** %s - Handler not found\n", r.RequestURI)
-		e := fmt.Errorf("Service not recognized: %s", d.Service)
+		e := fmt.Errorf("service not recognized: %s", d.Service)
 		util.Console("***ERROR IN URL***  %s", e.Error())
 		SvcGridErrorReturn(w, e)
 		return
@@ -201,7 +201,7 @@ func V1ServiceHandler(w http.ResponseWriter, r *http.Request) {
 		var err error
 		d.ID, err = util.IntFromString(pathElements[2], "bad ID")
 		if err != nil {
-			e := fmt.Errorf("ID in URL is invalid: %s", err.Error())
+			e := fmt.Errorf("the ID in URL is invalid: %s", err.Error())
 			util.Console("***ERROR IN URL***  %s", e.Error())
 			SvcGridErrorReturn(w, e)
 			return
@@ -277,7 +277,7 @@ func SvcExtractIDFromURI(uri, errmsg string, pos int, w http.ResponseWriter) (in
 	sa := strings.Split(uri[1:], "/")
 	// util.Console("uri parts:  %v\n", sa)
 	if len(sa) < pos+1 {
-		err = fmt.Errorf("Expecting at least %d elements in URI: %s, but found only %d", pos+1, uri, len(sa))
+		err = fmt.Errorf("expecting at least %d elements in URI: %s, but found only %d", pos+1, uri, len(sa))
 		// util.Console("err = %s\n", err)
 		SvcGridErrorReturn(w, err)
 		return ID, err
@@ -424,7 +424,7 @@ func svcDebugTxnEnd() {
 func SvcWriteResponse(g interface{}, w http.ResponseWriter) {
 	b, err := json.Marshal(g)
 	if err != nil {
-		e := fmt.Errorf("Error marshaling json data: %s", err.Error())
+		e := fmt.Errorf("error marshaling json data: %s", err.Error())
 		util.Ulog("SvcWriteResponse: %s\n", err.Error())
 		SvcGridErrorReturn(w, e)
 		return

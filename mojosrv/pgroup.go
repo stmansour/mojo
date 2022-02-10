@@ -82,14 +82,12 @@ func SvcHandlerPGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 			return
 		}
 		getPGroup(w, r, d)
-		break
 	case "save":
 		savePGroup(w, r, d)
-		break
 	case "delete":
 		deletePGroup(w, r, d)
 	default:
-		err := fmt.Errorf("Unhandled command: %s", d.wsSearchReq.Cmd)
+		err := fmt.Errorf("unhandled command: %s", d.wsSearchReq.Cmd)
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -141,7 +139,9 @@ func SvcHandlerGroupMembership(w http.ResponseWriter, r *http.Request, d *Servic
 		}
 		if !found {
 			// util.Console("Add to GID: %d\n", a.Groups[i])
-			err = mailsend.AddPersonToGroup(d.ID, a.Groups[i])
+			if err = mailsend.AddPersonToGroup(d.ID, a.Groups[i]); err != nil {
+				SvcGridErrorReturn(w, err)
+			}
 		}
 	}
 
@@ -158,7 +158,9 @@ func SvcHandlerGroupMembership(w http.ResponseWriter, r *http.Request, d *Servic
 		}
 		if !found {
 			util.Console("Remove from GID: %d\n", gcur.Records[i].GID)
-			err = mailsend.RemovePersonFromGroup(d.ID, gcur.Records[i].GID)
+			if err = mailsend.RemovePersonFromGroup(d.ID, gcur.Records[i].GID); err != nil {
+				SvcGridErrorReturn(w, err)
+			}
 		}
 	}
 	SvcWriteSuccessResponse(w)
@@ -169,7 +171,7 @@ func SvcHandlerGroupMembership(w http.ResponseWriter, r *http.Request, d *Servic
 // name
 //-----------------------------------------------------------------------------
 func SvcGroupTD(w http.ResponseWriter, r *http.Request, d *ServiceData) {
-	const funcname = "SvcGroupTD"
+	// const funcname = "SvcGroupTD"
 	var (
 		g   GroupTypedownResponse
 		m   []db.EGroup
@@ -179,7 +181,7 @@ func SvcGroupTD(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	// util.Console("handle typedown: GetGroupTypedown( search=%s, limit=%d\n", d.wsTypeDownReq.Search, d.wsTypeDownReq.Max)
 	m, err = db.GetGroupTypedown(r.Context(), d.wsTypeDownReq.Search, d.wsTypeDownReq.Max)
 	if err != nil {
-		e := fmt.Errorf("Error getting typedown matches: %s", err.Error())
+		e := fmt.Errorf("error getting typedown matches: %s", err.Error())
 		SvcErrorReturn(w, e)
 		return
 	}
@@ -328,15 +330,15 @@ func SvcHandlerATG(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 	var gg ATGResponse
 	var pg db.EGroup
 
+	// util.Console("Entered %s\n", funcname)
+	// util.Console("data = %#v\n", a)
+
 	err := json.Unmarshal(d.b, &a)
 	if err != nil {
 		e := fmt.Errorf("%s: Error with json.Unmarshal:  %s", funcname, err.Error())
 		SvcErrorReturn(w, e)
 		return
 	}
-
-	// util.Console("Entered %s\n", funcname)
-	// util.Console("data = %#v\n", a)
 
 	//----------------------------------------------------------
 	// Make sure required parameters are valid.

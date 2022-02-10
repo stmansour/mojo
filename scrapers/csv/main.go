@@ -9,7 +9,6 @@ import (
 	"mojo/db"
 	"mojo/util"
 	"os"
-	"phonebook/lib"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -72,7 +71,7 @@ func main() {
 	// Open the logfile and begin logging...
 	//==============================================
 	App.LogFile, err = os.OpenFile("scrapefaa.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	lib.Errcheck(err)
+	util.ErrCheck(err)
 	defer App.LogFile.Close()
 	log.SetOutput(App.LogFile)
 	util.Ulog("*** Accord MOJO FAA Scraper ***\n")
@@ -211,7 +210,7 @@ func MapAndImport(fname string) {
 		}
 	}
 	if count == 0 {
-		err := fmt.Errorf("No mapping information in second line of csv file could be mapped to a recognized column")
+		err := fmt.Errorf("no mapping information in second line of csv file could be mapped to a recognized column")
 		util.LogAndPrintError("MapAndImport", err)
 		os.Exit(1)
 	}
@@ -292,7 +291,7 @@ func MapAndImport(fname string) {
 			}
 		}
 		if len(a.Email1) == 0 && len(a.Email2) == 0 {
-			// util.Console("no email address found for this entry, skipping to next person\n")
+			util.Console("no email address found for this entry, skipping to next person\n")
 		}
 		// util.Console("Processing person:  Firstname = %q, MiddleName = %q, LastName = %q  email = %q)\n", a.FirstName, a.MiddleName, a.LastName, a.Email1)
 
@@ -430,8 +429,6 @@ func MapAndImport(fname string) {
 			if err != nil {
 				if !util.IsSQLNoResultsError(err) {
 					log.Fatalf("Error getting person group: %s\n", err.Error())
-				} else {
-					// util.Console("At point P1 - PID=%d IS NOT already a member of group %d.  addToGroup = %t\n", PID, GID, addToGroup)
 				}
 			} else {
 				addToGroup = false // this person is already a member of the group

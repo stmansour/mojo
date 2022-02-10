@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"rentroll/rlib"
+	"mojo/util"
 )
 
 // MojoUISupport is a structure of data that will be passed to all html pages.
@@ -46,7 +46,7 @@ func HomeUIHandler(w http.ResponseWriter, r *http.Request) {
 	err = t.Execute(w, &ui)
 
 	if nil != err {
-		rlib.LogAndPrintError(funcname, err)
+		util.LogAndPrintError(funcname, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

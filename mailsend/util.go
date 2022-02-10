@@ -15,7 +15,7 @@ func AddPersonToGroupByGroupName(pid int64, g string) error {
 		return err
 	}
 	if pg.GID == 0 {
-		return fmt.Errorf("Group Not Found: %s", g)
+		return fmt.Errorf("group not found: %s", g)
 	}
 	return AddPersonToGroup(pid, pg.GID)
 }

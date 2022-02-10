@@ -59,7 +59,7 @@ func ErrCheck(err error) {
 // Stripchars removes the characters from chr in str and returns the updated string.
 func Stripchars(str, chr string) string {
 	return strings.Map(func(r rune) rune {
-		if strings.IndexRune(chr, r) < 0 {
+		if !strings.ContainsRune(chr, r) {
 			return r
 		}
 		return -1

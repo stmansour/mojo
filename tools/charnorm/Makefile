@@ -7,7 +7,7 @@ charnorm: *.go
 	@find . -name "fail" -exec rm -r "{}" \;
 	@touch fail
 	@${COUNTOL} "go vet"
-	@${COUNTOL} golint
+	if [[ -f "${GOPATH}/bin/golint" ]]; then golint; else staticcheck; fi
 	go build
 	@rm -f fail
 	@echo "*** ${THIS}: completed ***"

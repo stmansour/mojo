@@ -82,14 +82,12 @@ func SvcHandlerGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 			}
 			getGroup(w, r, d)
 		}
-		break
 	case "save":
 		saveGroup(w, r, d)
-		break
 	case "delete":
 		deleteGroup(w, r, d)
 	default:
-		err := fmt.Errorf("Unhandled command: %s", d.wsSearchReq.Cmd)
+		err := fmt.Errorf("unhandled command: %s", d.wsSearchReq.Cmd)
 		SvcGridErrorReturn(w, err)
 		return
 	}
@@ -138,7 +136,7 @@ func SvcSearchHandlerGroups(w http.ResponseWriter, r *http.Request, d *ServiceDa
 
 	order := "GroupName ASC"                                             // default ORDER
 	q := fmt.Sprintf("SELECT %s FROM EGroup ", db.DB.DBFields["EGroup"]) // the fields we want
-	qw := fmt.Sprintf("")                                                // don't need WHERE clause on this query
+	qw := ""                                           // don't need WHERE clause on this query
 	if len(qw) > 0 {
 		q += "WHERE " + qw
 	}
@@ -258,7 +256,7 @@ func saveGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 			grp.DtStart = time.Now()
 			grp.GroupDescription = foo.Record.GroupDescription
 			if err = db.InsertGroup(&grp); err != nil {
-				e := fmt.Errorf("Error inserting group %s: %s", foo.Record.GroupName, err.Error())
+				e := fmt.Errorf("error inserting group %s: %s", foo.Record.GroupName, err.Error())
 				SvcGridErrorReturn(w, e)
 				return
 			}
@@ -275,7 +273,7 @@ func saveGroup(w http.ResponseWriter, r *http.Request, d *ServiceData) {
 		}
 		if chg {
 			if err = db.UpdateGroup(&grp); err != nil {
-				e := fmt.Errorf("Error updating group %s: %s", foo.Record.GroupName, err.Error())
+				e := fmt.Errorf("error updating group %s: %s", foo.Record.GroupName, err.Error())
 				SvcGridErrorReturn(w, e)
 				return
 			}
