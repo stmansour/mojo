@@ -17,7 +17,7 @@ clean:
 
 package:
 	@find . -name "fail" -exec rm -r "{}" \;
-	mkdir -p ./tmp/mojo
+	@mkdir -p ./tmp/mojo
 	cp activate.sh ./tmp/mojo/
 	cp update.sh ./tmp/mojo/
 	for dir in $(DIRS); do make -C $$dir package;done
