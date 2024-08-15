@@ -40,7 +40,7 @@ package:
 	mkdir -p ${BINDIR}
 	cp mojosrv ${BINDIR}/mojosrv
 	cp config.json ${BINDIR}/
-	cp -r doc ${BINDIR}/
+	if [ -d doc ]; then cp -r doc ${BINDIR}/; fi
 	mkdir -p ${BINDIR}/js
 	cat js/elems/*.js > js/mweb.js
 	cp js/*.js js/*.css ${BINDIR}/js/
